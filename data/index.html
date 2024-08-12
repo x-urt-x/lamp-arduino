@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP8266 Lamp Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    input, button {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>ESP8266 Lamp Control</h1>
+  <form id="lampForm">
+
+    <label for="state">State:</label>
+    <input type="checkbox" id="state" name="state" checked><br>
+
+    <label for="brightness">Brightness:</label>
+    <input type="range" id="brightness" name="brightness" min="0" max="255" value="128"><br>
+
+    <label for="color">Color:</label>
+    <input type="color" id="color" name="color" value="#ffffff"><br>
+
+    <label for="effect">Effect:</label>
+    <select id="effect" name="effect">
+      <option value="00">Effect 0</option>
+      <option value="01">Effect 1</option>
+      <option value="02">Effect 2</option>
+      <option value="03">Effect 3</option>
+      <option value="04">Effect 4</option>
+      <option value="05">Effect 5</option>
+    </select><br>
+
+    <label for="strip_update_delay_time">Strip Update Delay Time (ms):</label>
+    <input type="number" id="strip_update_delay_time" name="strip_update_delay_time" value="100"><br>
+
+    <label for="effect_speed">Effect Speed:</label>
+    <input type="number" id="effect_speed" name="effect_speed" value="50"><br>
+
+    <button type="button" onclick="applySettings()">Apply</button>
+
+  </form>
+
+  <script>
+    function applySettings() {
+      var state = document.getElementById("state").checked;
+      var brightness = document.getElementById("brightness").value.padStart(3, '0');
+      var color = document.getElementById("color").value;
+      var effect = document.getElementById("effect").value;
+      var strip_update_delay_time = document.getElementById("strip_update_delay_time").value;
+      var effect_speed = document.getElementById("effect_speed").value;
+
+      var xhr = new XMLHttpRequest();
+
+      xhr.open("POST", "/", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.send("state=" + state + "&brightness=" + brightness + "&color=" + color + "&effect=" + effect +
+               "&strip_update_delay_time=" + strip_update_delay_time + "&effect_speed=" + effect_speed);
+    }
+  </script>
+</body>
+</html>
