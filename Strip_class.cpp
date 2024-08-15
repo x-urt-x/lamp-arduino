@@ -39,7 +39,7 @@ Serial.printf("main  cyc i=%d\t", i);
 #ifdef USB_LOG_BR
 Serial.printf("cutoff\t");
 #endif
-      br_avg_per =  float(_leds_arr[i].sum())*(br_max-1+br_add)*br_gain / 765;
+      br_avg_per =  float(_leds_arr[i].sum())*((_br_vir-1) / 97.0+br_add)*br_gain / 765;
       _leds_arr[i].map((br_max-1+br_add)*br_gain);
       br_cutoff_count--;
     }
@@ -48,7 +48,7 @@ Serial.printf("cutoff\t");
 #ifdef USB_LOG_BR
 Serial.printf("full\t");
 #endif
-      br_avg_per =  float(_leds_arr[i].sum())*(br_max+br_add)*br_gain / 765;
+      br_avg_per =  float(_leds_arr[i].sum())*((_br_vir-1) / 97.0 + 1+br_add)*br_gain / 765;
       _leds_arr[i].map((br_max+br_add)*br_gain);
     }
     j--;
@@ -56,7 +56,7 @@ Serial.printf("full\t");
     if(_leds_arr[i].sum()<=_br_cutoff_bound)
     {
 #ifdef USB_LOG_BR
-Serial.printf("dissable\t");
+Serial.printf("dis\t");
 #endif
 
       _led_active_count--;
