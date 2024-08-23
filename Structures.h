@@ -1,9 +1,8 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
-#define USB_LOG_BR
-
+#include "log.h"
 struct Color_str{
-  byte r, g, b;
+  byte g, r, b; //внутренний массив библиотеки имеет формат grb 
   
   Color_str(byte red, byte green, byte blue) : r(red), g(green), b(blue) {}
 
@@ -34,9 +33,7 @@ struct Color_str{
     if(g>255) g=255;
     b = b * br;
     if(b>255) b=255;
-    #ifdef USB_LOG_BR
-    Serial.printf("| map- br%f r%d g%d b%d |\t",br,r,g,b);
-    #endif
+    LOG_USB_COLOR_MAP("| map- br%f r%d g%d b%d |\t",br,r,g,b);
   }
 };
 

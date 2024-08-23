@@ -1,4 +1,5 @@
 #include "Strip_class.h"
+#include "log.h"
 
 #define EB_NO_FOR
 #define EB_NO_CALLBACK
@@ -19,8 +20,7 @@
 #define STRIP_PIN D4
 
 #define STRIP_LED_COUNT 100
-#define USB_LOG
-#define USB_LOG_BR
+
 
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
@@ -75,7 +75,7 @@ void loop() {
                 br = 247335;
               if(br < 0)
                 br = 0;
-                Serial.printf("%d\n",br);
+              LOG_USB_ENC("%d\n",br);
       }
 
   if (Serial.available() > 0) {
@@ -97,18 +97,21 @@ void loop() {
     }
   }
 
-  #ifdef USB_LOG_BR
+  #if defined(LOG_USB_BR_ENABLE) || defined(LOG_USB_COLOR_MAP_ENABLE)
   strip_update_cur_time = millis();
   if (strip_update_cur_time - strip_update_prev_time > strip_update_delay_time) 
   {
     strip_update_prev_time = strip_update_cur_time;
+    Serial.printf("\n");
     #else
     {
     #endif
     strip.eff_singleColor();
+    //strip.eff_halfSingleColor();
     strip.set_br(br);
     strip.apply_br();
     strip.show();
+    
   }
 }
 
