@@ -51,11 +51,13 @@ void setup() {
 
   strip.set_main_color(Color_str(50, 50, 50));
   strip.eff_singleColor();
+  randomSeed(analogRead(0));
 }
 
-int br = 100;
+int br = 5000;
 int enc_select = 1;
 volatile bool is_enc = false;
+int d = 200;
 
 void loop() {
     encoder.tick();
@@ -86,6 +88,9 @@ void loop() {
       case 'b':
         br = input;
         break;
+      case 'd':
+        d = input;
+        break;
       case 'a':
         strip._br_cutoff_bound = input;
         break;
@@ -94,6 +99,7 @@ void loop() {
         col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
         strip.set_main_color(col);
         break;
+      
     }
   }
 
@@ -106,7 +112,10 @@ void loop() {
     #else
     {
     #endif
-    strip.eff_singleColor();
+    //strip.eff_singleColor();
+    
+    strip.eff_fire();
+    delay(d);
     //strip.eff_halfSingleColor();
     strip.set_br(br);
     strip.apply_br();
@@ -114,7 +123,6 @@ void loop() {
     
   }
 }
-
 
 
 

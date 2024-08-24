@@ -19,8 +19,14 @@ public:
 	void set_main_color(Color_str color);
 	float _br_max_gain;
 	int _br_cutoff_bound;
+  void eff_fire();
+  void eff_fire_setup();
 
 private:
+  uint32_t fireColor(byte temp);
+  byte _fire_temp[10][10];
+  byte _eff_fire_center; 
+  byte _eff_fire_center_dec;
 	uint8* _pixels;
 	byte _led_amount;
 	byte _led_active_count; //count of active leds on each frame
