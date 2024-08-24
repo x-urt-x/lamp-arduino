@@ -89,16 +89,16 @@ void Strip::set_main_color(Color_str color) {
 void Strip::eff_fire_setup()
 {
   _eff_fire_center_dec = 20;
-  _eff_fire_center = random(0,9);
+  _eff_fire_center = random(0,10);
   //eff_fire_center=9;
-  _fire_temp[_eff_fire_center][9] = random(150,255);
+  _fire_temp[_eff_fire_center][9] = random(150,256);
 
   for(int x = _eff_fire_center+1; x<10; x++)
   {
     byte near = _fire_temp[x-1][9];
     _fire_temp[x][9] = random(
       byte_d(near-sqrt(abs(_eff_fire_center-x))*15),
-      byte_u(near+5)
+      byte_u(near+6)
     );
   }
     for(int x = _eff_fire_center-1; x>=0; x--)
@@ -106,7 +106,7 @@ void Strip::eff_fire_setup()
       byte near = _fire_temp[x+1][9];
       _fire_temp[x][9] = random(
         byte_d(near-sqrt(abs(_eff_fire_center-x))*15),
-        byte_u(near+5)
+        byte_u(near+6)
       );
   }
 }
@@ -115,7 +115,8 @@ void Strip::eff_fire()
 {
   byte old = _fire_temp[_eff_fire_center][9];
 
-  _eff_fire_center += random(0,2);
+  _eff_fire_center += random(0,3);
+  LOG_USB_FIRE("center r %d\n", _eff_fire_center);
   _eff_fire_center = constrain(_eff_fire_center, 1, 10);
   _eff_fire_center--;
 
@@ -123,7 +124,7 @@ void Strip::eff_fire()
 
   _fire_temp[_eff_fire_center][9] = random(
       byte_d(old-_eff_fire_center_dec),
-      byte_u(old+20)
+      byte_u(old+21)
       );;
   
   if(_fire_temp[_eff_fire_center][9]<100) _eff_fire_center_dec = 0;
@@ -135,7 +136,7 @@ void Strip::eff_fire()
     byte near = _fire_temp[x-1][9];
     _fire_temp[x][9] = random(
       byte_d(near-sqrt(abs(_eff_fire_center-x))*15),
-      byte_u(near+5)
+      byte_u(near+6)
     );
   }
     for(int x = _eff_fire_center-1; x>=0; x--)
@@ -143,7 +144,7 @@ void Strip::eff_fire()
       byte near = _fire_temp[x+1][9];
       _fire_temp[x][9] = random(
         byte_d(near-(abs(_eff_fire_center-x))*15),
-        byte_u(near+5)
+        byte_u(near+6)
       );
   }
 
