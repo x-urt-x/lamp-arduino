@@ -33,7 +33,7 @@ struct Color_str{
     if(g>255) g=255;
     b = b * br;
     if(b>255) b=255;
-    LOG_USB_COLOR_MAP("| map- br%f r%d g%d b%d |\t",br,r,g,b);
+    LOG_USB_COLOR_MAP("| map- br%d r%d g%d b%d |\t",br_in,r,g,b);
   }
 };
 

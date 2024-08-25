@@ -30,8 +30,11 @@ Strip strip(STRIP_LED_COUNT, STRIP_PIN);
 
 unsigned long strip_update_prev_time = 0;
 unsigned long strip_update_cur_time = 0;
+#if defined(LOG_USB_BR_ENABLE) || defined(LOG_USB_COLOR_MAP_ENABLE)
 uint strip_update_delay_time = 2000;
-
+#else
+uint strip_update_delay_time = 200;
+#endif
 void setup() {
 
   Serial.begin(115200);
@@ -50,14 +53,12 @@ void setup() {
   digitalWrite(RED_PIN, LOW);
 
   strip.set_main_color(Color_str(50, 50, 50));
-  strip.eff_singleColor();
   randomSeed(analogRead(0));
 }
 
 int br = 5000;
 int enc_select = 1;
 volatile bool is_enc = false;
-int d = 200;
 
 void loop() {
     encoder.tick();
@@ -89,10 +90,13 @@ void loop() {
         br = input;
         break;
       case 'd':
-        d = input;
+        strip_update_delay_time = input;
         break;
       case 'a':
         strip._br_cutoff_bound = input;
+        break;
+      case 'm':
+        strip.set_effect(input);
         break;
       case 'c':
         Color_str col(0,0,0);
@@ -103,24 +107,16 @@ void loop() {
     }
   }
 
-  #if defined(LOG_USB_BR_ENABLE) || defined(LOG_USB_COLOR_MAP_ENABLE)
   strip_update_cur_time = millis();
   if (strip_update_cur_time - strip_update_prev_time > strip_update_delay_time) 
   {
     strip_update_prev_time = strip_update_cur_time;
+
     Serial.printf("\n");
-    #else
-    {
-    #endif
-    //strip.eff_singleColor();
-    
-    strip.eff_fire();
-    delay(d);
-    //strip.eff_halfSingleColor();
+
     strip.set_br(br);
-    strip.apply_br();
+    strip.frame();
     strip.show();
-    
   }
 }
 
