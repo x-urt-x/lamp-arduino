@@ -5,6 +5,11 @@
 #include "Structures.h"
 #include "IEffect.h"
 
+struct Random_holder
+{
+  byte down=0, side=0, dic;
+};
+
 class Effect_fire : public IEffect
 {
 public:
@@ -20,13 +25,23 @@ public:
 private:
   static uint32_t fireColor(byte temp);
 
-
   Color_str *_leds_arr, *_main_color, *_second_color;
-
-  byte _fire_temp[10][10];
-  byte _eff_fire_center; 
-  byte _eff_fire_center_dec;
   int _step;
+
+  static uint32_t fireColor(byte temp);
+  void fire_key_rand_gen();
+  int fire_central_frame();
+  void fire_temp_frame();
+
+  Random_holder _fire_central_key_rand[10][10];
+  Random_holder _fire_central_cur_rand[10][10];
+  byte _fire_temp[10][10];
+
+  byte _fire_center; 
+  byte _fire_center_dec;
+  byte _fire_center_temp;
+  byte _fire_frame_count;
+
 
   static const byte cutoff_order[98];
   static const byte cutoff_imm[2];

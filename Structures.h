@@ -2,7 +2,6 @@
 #define STRUCTURES_H
 #include "log.h"
 
-#define led_m(x,y) _leds_arr[y*10+(y%2==0?x:9-x)]
 #define byte_u(val) ((val) > 255 ? 255 : (val)) 
 #define byte_d(val) ((val) < 0 ? 0 : (val))
 #define byte_round_up(val) ((val)==byte(val)?(val):byte(val+1)) 
