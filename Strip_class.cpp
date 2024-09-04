@@ -15,7 +15,7 @@ Strip::Strip(uint16_t n, int16_t p)
     _led_amount(n),
     _br_cutoff_bound(10)
 {
-  set_effect(EFF_SINGLE);
+  set_effect(EFF_FIRE);
 }
 
 

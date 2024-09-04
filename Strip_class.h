@@ -14,6 +14,10 @@
 #include "log.h"
 #include "Structures.h"
 
+struct Random_holder
+{
+  byte down=0, side=0, dic;
+};
 
 class Strip : public Adafruit_NeoPixel
 {
@@ -35,14 +39,21 @@ private:
   static uint32_t fireColor(byte temp);
   void eff_fire();
   void eff_fire_setup();
+  void eff_fire_key_rand_gen();
+  int eff_fire_central_frame();
+  void eff_fire_temp_frame();
 
   void eff_singleColor();
   void eff_halfSingleColor();
 
+  Random_holder _fire_central_key_rand[10][10];
+  Random_holder _fire_central_cur_rand[10][10];
+  byte _fire_temp_frame[10][10];
 
-  byte _fire_temp[10][10];
   byte _eff_fire_center; 
   byte _eff_fire_center_dec;
+  byte _eff_fire_center_temp;
+  byte _eff_fire_frame_count;
 
   const uint8_t* _cur_cutoff_order;
   const uint8_t*  _cur_cutoff_imm;
