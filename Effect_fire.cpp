@@ -1,6 +1,37 @@
-#include "Strip_class.h"
+#include "Effect_fire.h"
 
-void Strip::eff_fire_setup()
+const byte Effect_fire::cutoff_order[98] = { 0,9,1,8,2,7,3,6,4,5,10,19,11,18,12,17,13,16,14,15,20,29,21,28,22,27,23,26,24,25,30,39,31,38,32,37,33,36,34,35,40,49,41,48,42,47,43,46,44,45,50,59,51,58,52,57,53,56,54,55,60,69,61,68,62,67,63,66,64,65,70,79,71,78,72,77,73,76,74,75,80,89,81,88,82,87,83,86,84,85,90,99,91,98,92,97,93,96};
+const byte Effect_fire::cutoff_imm[2] = { 94,95};
+
+Effect_fire::Effect_fire(Color_str* leds_arr, Color_str* main_color, Color_str* second_color) 
+  : _leds_arr(leds_arr), _main_color(main_color), _second_color(second_color) {}
+
+void Effect_fire::set_step(int step)
+{
+  _step = step;
+}
+
+const unsigned char* Effect_fire::get_cutoff_order()
+{
+  return cutoff_order;
+}
+
+const unsigned char* Effect_fire::get_cutoff_imm()
+{
+  return cutoff_imm;
+}
+
+byte Effect_fire::get_cutoff_order_len()
+{
+    return cutoff_order_len;
+}
+
+byte Effect_fire::get_cutoff_imm_len()
+{
+    return cutoff_imm_len;
+}
+
+void Effect_fire::setup() 
 {
   _eff_fire_center_dec = 20;
   _eff_fire_center = random(0,10);
@@ -25,9 +56,9 @@ void Strip::eff_fire_setup()
   }
 }
 
-void Strip::eff_fire()
+void Effect_fire::make_frame()
 {
-  byte old = _fire_temp[_eff_fire_center][9];
+  unsigned char old = _fire_temp[_eff_fire_center][9];
 
   _eff_fire_center += random(0,3);
   LOG_USB_FIRE("center r %d\n", _eff_fire_center);
@@ -47,7 +78,7 @@ void Strip::eff_fire()
 
   for(int x = _eff_fire_center+1; x<10; x++)
   {
-    byte near = _fire_temp[x-1][9];
+    unsigned char near = _fire_temp[x-1][9];
     _fire_temp[x][9] = random(
       byte_d(near-sqrt(abs(_eff_fire_center-x))*15),
       byte_u(near+6)
@@ -55,7 +86,7 @@ void Strip::eff_fire()
   }
     for(int x = _eff_fire_center-1; x>=0; x--)
   {
-      byte near = _fire_temp[x+1][9];
+      unsigned char near = _fire_temp[x+1][9];
       _fire_temp[x][9] = random(
         byte_d(near-(abs(_eff_fire_center-x))*15),
         byte_u(near+6)
@@ -85,11 +116,11 @@ void Strip::eff_fire()
 
 }
 
-uint32_t Strip::fireColor(byte temp) {
+uint32_t Effect_fire::fireColor(byte temp) {
   // Определение цветов от красного до желтого в зависимости от температуры
   int t192 = round((temp / 255.0) * 191);
 
-  uint8_t heatramp = t192 & 0x3F;  // 0..63
+  unsigned char heatramp = t192 & 0x3F;  // 0..63
   heatramp <<= 2;  // 0..252
 
   if (t192 > 128) {

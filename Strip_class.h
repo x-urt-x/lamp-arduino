@@ -1,10 +1,6 @@
 #ifndef STRIP_CLASS_H
 #define STRIP_CLASS_H
 
-#define led_m(x,y) _leds_arr[y*10+(y%2==0?x:9-x)]
-#define byte_u(val) ((val) > 255 ? 255 : (val)) 
-#define byte_d(val) ((val) < 0 ? 0 : (val))
-#define byte_round_up(val) ((val)==byte(val)?(val):byte(val+1)) 
 
 //effects numbers
 #define EFF_SINGLE 0
@@ -12,8 +8,8 @@
 
 #include <Adafruit_NeoPixel.h>
 #include "log.h"
+#include "IEffect.h"
 #include "Structures.h"
-
 
 class Strip : public Adafruit_NeoPixel
 {
@@ -28,21 +24,7 @@ public:
   void frame();
   
 private:
-  void set_cutoff_order(const uint8_t* cutoff_order, uint8_t cutoff_order_len, const uint8_t* cutoff_imm, uint8_t cutoff_imm_len);
-  void(Strip::*_effect_cur)(); //указатель на текущий эффект
-
-  //методы для эффектов
-  static uint32_t fireColor(byte temp);
-  void eff_fire();
-  void eff_fire_setup();
-
-  void eff_singleColor();
-  void eff_halfSingleColor();
-
-
-  byte _fire_temp[10][10];
-  byte _eff_fire_center; 
-  byte _eff_fire_center_dec;
+  IEffect* effect;
 
   const uint8_t* _cur_cutoff_order;
   const uint8_t*  _cur_cutoff_imm;
@@ -54,6 +36,7 @@ private:
 	Color_str* _leds_arr; //array of leds color
 	int _br_vir; //virtual brightness up to 255*97=24735
 };
+
 #endif
 
 
