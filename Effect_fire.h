@@ -5,11 +5,6 @@
 #include "Structures.h"
 #include "IEffect.h"
 
-struct Random_holder
-{
-  byte down=0, side=0, dic;
-};
-
 class Effect_fire : public IEffect
 {
 public:
@@ -23,25 +18,25 @@ public:
   byte get_cutoff_imm_len() override;
 
 private:
-  static uint32_t fireColor(byte temp);
-
   Color_str *_leds_arr, *_main_color, *_second_color;
   int _step;
 
-  static uint32_t fireColor(byte temp);
-  void fire_key_rand_gen();
-  int fire_central_frame();
-  void fire_temp_frame();
+  static uint32_t temp_to_color(byte temp); //переход из температуры в реальный цвет
+  void dic_map_key_gen();		//создание ключевого кадра. учитывает прошлое положение и температуру центра огня
+  int dic_map_cur_step();		//приблежает на 1 каждое значение из текущего кадра к ключевому. возвращает разницу между ними
+  void temp_map_gen();			//создает карту температур на основе текущего кадра
+  float dic_coef(float x);
 
-  Random_holder _fire_central_key_rand[10][10];
-  Random_holder _fire_central_cur_rand[10][10];
-  byte _fire_temp[10][10];
+  byte _dic_map_key[10][10];	//ключевой кадр с центрами диапазона для генерации _temp_map 
+  byte _side_coef_key[10];		//построчный коэфициент наклона огня для ключевого кадра
+  byte _dic_map_cur[10][10];	//текущий кадр
+  byte _side_coef_cur[10];		//коэфы для текущего кадра
+  byte _temp_map[10][10];		//карта температур для каждого пикселя
 
-  byte _fire_center; 
-  byte _fire_center_dec;
-  byte _fire_center_temp;
-  byte _fire_frame_count;
-
+  byte _center_pos;				//позиция ценра огня
+  int _center_temp_change;		//смещение диапазона изменения температуры центра 
+  byte _center_temp;			//температура центра огня
+  byte _frame_count;			//отсчет кадров после генерации ключевого кадра, считает вниз от FRAMES
 
   static const byte cutoff_order[98];
   static const byte cutoff_imm[2];

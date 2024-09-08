@@ -30,8 +30,8 @@ Strip strip(STRIP_LED_COUNT, STRIP_PIN);
 
 unsigned long strip_update_prev_time = 0;
 unsigned long strip_update_cur_time = 0;
-#if defined(LOG_USB_BR_ENABLE) || defined(LOG_USB_COLOR_MAP_ENABLE)
-uint strip_update_delay_time = 2000;
+#if defined(LOG_USB_BR_ENABLE) || defined(LOG_USB_COLOR_MAP_ENABLE) || defined(LOG_USB_FIRE_ENABLE)
+uint strip_update_delay_time = 5000;
 #else
 uint strip_update_delay_time = 200;
 #endif

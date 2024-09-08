@@ -8,8 +8,8 @@
 
 #include <Adafruit_NeoPixel.h>
 #include "log.h"
-#include "IEffect.h"
 #include "Structures.h"
+#include "IEffect.h"
 
 class Strip : public Adafruit_NeoPixel
 {
