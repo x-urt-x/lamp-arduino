@@ -18,6 +18,7 @@ public:
 	void apply_br();
 	void set_br(int br);
 	void set_main_color(Color_str color);
+	void set_second_color(Color_str color);
 	float _br_max_gain;
 	int _br_cutoff_bound;
   void set_effect(byte num);

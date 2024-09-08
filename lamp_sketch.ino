@@ -99,11 +99,19 @@ void loop() {
         strip.set_effect(input);
         break;
       case 'c':
+      {
         Color_str col(0,0,0);
         col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
         strip.set_main_color(col);
         break;
-      
+      }
+      case 'v':
+      {
+        Color_str col(0, 0, 0);
+        col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
+        strip.set_second_color(col);
+        break;
+      }
     }
   }
 

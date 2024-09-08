@@ -19,8 +19,14 @@ void Strip::set_main_color(Color_str color) {
   _main_color = color;
 }
 
+void Strip::set_second_color(Color_str color)
+{
+    _second_color = color;
+}
+
 void Strip::frame()
 {
+    LOG_USB_STARTUP("%d %d %d", _main_color.r, _main_color.g, _main_color.b);
     effect->make_frame();
     apply_br();
 }

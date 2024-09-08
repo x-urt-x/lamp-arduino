@@ -43,6 +43,13 @@ byte Effect_fire::get_cutoff_imm_len()
 
 void Effect_fire::setup()
 {
+	//_main_color->r = 255;
+	//_main_color->g = 0;
+	//_main_color->b = 0;
+	//_second_color->r = 255;
+	//_second_color->g = 165;
+	//_second_color->b = 0;
+
 	_frame_count = FRAMES;
 	//центр пламени
 	_center_temp_change = 20;
@@ -211,19 +218,32 @@ void Effect_fire::make_frame()
 }
 
 uint32_t Effect_fire::temp_to_color(byte temp) {
-	// Определение цветов от красного до желтого в зависимости от температуры
-	int t192 = round((temp / 255.0) * 191);
+	Color_str color(0,0,0);
 
-	unsigned char heatramp = t192 & 0x3F;  // 0..63
-	heatramp <<= 2;  // 0..252
+	// Нормализуем температуру от 0 до 1
+	float t = temp / 255.0f;
 
-	if (t192 > 128) {
-		return 0xffff00 | heatramp;
+	// Если температура низкая, интерполируем от чёрного к baseColor
+	if (t < 0.33f) {
+		float localT = t / 0.33f;  // Нормализуем для этого сегмента (0.0 до 0.33 -> 0.0 до 1.0)
+		color.r = static_cast<uint8_t>(_main_color->r * localT);
+		color.g = static_cast<uint8_t>(_main_color->g * localT);
+		color.b = static_cast<uint8_t>(_main_color->b * localT);
 	}
-	else if (t192 > 64) {
-		return 0xff0000 | heatramp << 8;
+	// Если температура средняя, интерполируем от baseColor к colorMid
+	else if (t < 0.66f) {
+		float localT = (t - 0.33f) / 0.33f;  // Нормализуем для этого сегмента (0.33 до 0.66 -> 0.0 до 1.0)
+		color.r = static_cast<uint8_t>(_main_color->r * (1 - localT) + _second_color->r * localT);
+		color.g = static_cast<uint8_t>(_main_color->g * (1 - localT) + _second_color->g * localT);
+		color.b = static_cast<uint8_t>(_main_color->b * (1 - localT) + _second_color->b * localT);
 	}
+	// Если температура высокая, интерполируем от colorMid к colorHigh
 	else {
-		return heatramp << 16;
+		float localT = (t - 0.66f) / 0.34f;  // Нормализуем для этого сегмента (0.66 до 1.0 -> 0.0 до 1.0)
+		color.r = static_cast<uint8_t>(_second_color->r * (1 - localT) + 255 * localT);
+		color.g = static_cast<uint8_t>(_second_color->g * (1 - localT) + 255 * localT);
+		color.b = static_cast<uint8_t>(_second_color->b * (1 - localT) + 255 * localT);
 	}
+
+	return color.get();
 }

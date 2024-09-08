@@ -21,7 +21,7 @@ private:
   Color_str *_leds_arr, *_main_color, *_second_color;
   int _step;
 
-  static uint32_t temp_to_color(byte temp); //переход из температуры в реальный цвет
+  uint32_t temp_to_color(byte temp); //переход из температуры в реальный цвет
   void dic_map_key_gen();		//создание ключевого кадра. учитывает прошлое положение и температуру центра огня
   int dic_map_cur_step();		//приблежает на 1 каждое значение из текущего кадра к ключевому. возвращает разницу между ними
   void temp_map_gen();			//создает карту температур на основе текущего кадра
