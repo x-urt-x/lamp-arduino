@@ -10,11 +10,13 @@
 #define RANDOM_CENTER 0
 #define RANDOM_RANGE 3
 
-const byte Effect_fire::cutoff_order[98] = { 0,9,1,8,2,7,3,6,4,5,10,19,11,18,12,17,13,16,14,15,20,29,21,28,22,27,23,26,24,25,30,39,31,38,32,37,33,36,34,35,40,49,41,48,42,47,43,46,44,45,50,59,51,58,52,57,53,56,54,55,60,69,61,68,62,67,63,66,64,65,70,79,71,78,72,77,73,76,74,75,80,89,81,88,82,87,83,86,84,85,90,99,91,98,92,97,93,96 };
-const byte Effect_fire::cutoff_imm[2] = { 94,95 };
+const byte Effect_fire::_cutoff_order[98] = { 0,9,1,8,2,7,3,6,4,5,10,19,11,18,12,17,13,16,14,15,20,29,21,28,22,27,23,26,24,25,30,39,31,38,32,37,33,36,34,35,40,49,41,48,42,47,43,46,44,45,50,59,51,58,52,57,53,56,54,55,60,69,61,68,62,67,63,66,64,65,70,79,71,78,72,77,73,76,74,75,80,89,81,88,82,87,83,86,84,85,90,99,91,98,92,97,93,96 };
+const byte Effect_fire::_cutoff_imm[2] = { 94,95 };
 
-Effect_fire::Effect_fire(Color_str* leds_arr, Color_str* main_color, Color_str* second_color)
-	: _leds_arr(leds_arr), _main_color(main_color), _second_color(second_color) {}
+const String Effect_fire::_preset_names[3] = { "red fire", "blue fire", "green fire" };
+
+Effect_fire::Effect_fire(Color_str* leds_arr, Color_str* main_color, Color_str* second_color, uint* strip_update_delay_time)
+	: _leds_arr(leds_arr), _main_color(main_color), _second_color(second_color), _strip_update_delay_time(strip_update_delay_time){}
 
 void Effect_fire::set_step(int step)
 {
@@ -23,33 +25,77 @@ void Effect_fire::set_step(int step)
 
 const unsigned char* Effect_fire::get_cutoff_order()
 {
-	return cutoff_order;
+	return _cutoff_order;
 }
 
 const unsigned char* Effect_fire::get_cutoff_imm()
 {
-	return cutoff_imm;
+	return _cutoff_imm;
 }
 
 byte Effect_fire::get_cutoff_order_len()
 {
-	return cutoff_order_len;
+	return _cutoff_order_len;
 }
 
 byte Effect_fire::get_cutoff_imm_len()
 {
-	return cutoff_imm_len;
+	return _cutoff_imm_len;
+}
+
+int Effect_fire::get_preset_count()
+{
+	return _preset_len;
+}
+
+const String* Effect_fire::get_preset_names()
+{
+	return _preset_names;
+}
+
+void Effect_fire::set_preset(int num)
+{
+	switch (num)
+	{
+	case 0:
+	{
+		_main_color->r = 255;
+		_main_color->g = 0;
+		_main_color->b = 0;
+		_second_color->r = 255;
+		_second_color->g = 165;
+		_second_color->b = 0;
+		break;
+	}
+	case 1:
+	{
+		_main_color->r = 0;
+		_main_color->g = 0;
+		_main_color->b = 255;
+		_second_color->r = 49;
+		_second_color->g = 207;
+		_second_color->b = 216;
+		break;
+	}
+	case 2:
+	{
+		_main_color->r = 0;
+		_main_color->g = 255;
+		_main_color->b = 0;
+		_second_color->r = 27;
+		_second_color->g = 239;
+		_second_color->b = 15;
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 void Effect_fire::setup()
 {
-	//_main_color->r = 255;
-	//_main_color->g = 0;
-	//_main_color->b = 0;
-	//_second_color->r = 255;
-	//_second_color->g = 165;
-	//_second_color->b = 0;
-
+	*_strip_update_delay_time = 50;
+	set_preset(0);
 	_frame_count = FRAMES;
 	//центр пламени
 	_center_temp_change = 20;
@@ -79,7 +125,7 @@ void Effect_fire::dic_map_key_gen()
 
 	_side_coef_key[0] = random(SIDE_CENTER - SIDE_RANGE, SIDE_CENTER + SIDE_RANGE + 1);
 	for (int y = 1; y < 10; y++)
-		_side_coef_key[y] = _side_coef_key[y - 1] + int(_side_coef_key[y - 1] < SIDE_CENTER ? random(-11,4): random(-3, 12))/4;
+		_side_coef_key[y] = _side_coef_key[y - 1] + int(_side_coef_key[y - 1] < SIDE_CENTER ? random(-11, 4) : random(-3, 12)) / 4;
 
 	for (int y = 0; y < 9; y++)
 		for (int x = 0; x < 10; x++)
@@ -142,9 +188,9 @@ void Effect_fire::temp_map_gen()
 {
 	_temp_map[_center_pos][9] = _center_temp;
 	for (int x = _center_pos + 1; x < 10; x++)
-		_temp_map[x][9] = constrain(_temp_map[x - 1][9] - _dic_map_cur[x][9] * (1 + sqrt(x - _center_pos)/2), 1, 254) - random(-1, 2);
+		_temp_map[x][9] = constrain(_temp_map[x - 1][9] - _dic_map_cur[x][9] * (1 + sqrt(x - _center_pos) / 2), 1, 254) - random(-1, 2);
 	for (int x = _center_pos - 1; x >= 0; x--)
-		_temp_map[x][9] = constrain(_temp_map[x + 1][9] - _dic_map_cur[x][9] * (1 + sqrt(_center_pos - x)/2), 1, 254) - random(-1, 2);
+		_temp_map[x][9] = constrain(_temp_map[x + 1][9] - _dic_map_cur[x][9] * (1 + sqrt(_center_pos - x) / 2), 1, 254) - random(-1, 2);
 
 	for (int y = 0; y < 9; y++)
 	{
@@ -218,7 +264,7 @@ void Effect_fire::make_frame()
 }
 
 uint32_t Effect_fire::temp_to_color(byte temp) {
-	Color_str color(0,0,0);
+	Color_str color(0, 0, 0);
 
 	// Нормализуем температуру от 0 до 1
 	float t = temp / 255.0f;

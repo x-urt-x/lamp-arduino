@@ -8,7 +8,7 @@
 class Effect_fire : public IEffect
 {
 public:
-  Effect_fire(Color_str* leds_arr, Color_str* main_color, Color_str* second_color);
+  Effect_fire(Color_str* leds_arr, Color_str* main_color, Color_str* second_color, uint* strip_update_delay_time);
   void setup() override;
   void make_frame() override;
   void set_step(int step) override;
@@ -16,10 +16,14 @@ public:
   const byte* get_cutoff_imm() override;
   byte get_cutoff_order_len() override;
   byte get_cutoff_imm_len() override;
+  int get_preset_count() override;
+  const String* get_preset_names() override;
+  void set_preset(int num) override;
 
 private:
   Color_str *_leds_arr, *_main_color, *_second_color;
   int _step;
+  uint* _strip_update_delay_time;
 
   uint32_t temp_to_color(byte temp); //переход из температуры в реальный цвет
   void dic_map_key_gen();		//создание ключевого кадра. учитывает прошлое положение и температуру центра огня
@@ -38,10 +42,12 @@ private:
   byte _center_temp;			//температура центра огня
   byte _frame_count;			//отсчет кадров после генерации ключевого кадра, считает вниз от FRAMES
 
-  static const byte cutoff_order[98];
-  static const byte cutoff_imm[2];
-  static const int cutoff_order_len = 98;
-  static const int cutoff_imm_len = 2;
+  static const byte _cutoff_order[98];
+  static const byte _cutoff_imm[2];
+  static const int _cutoff_order_len = 98;
+  static const int _cutoff_imm_len = 2;
+  static const String _preset_names[3];
+  static const int _preset_len = 3;
 };
 
 #endif

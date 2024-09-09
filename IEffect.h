@@ -12,6 +12,9 @@ public:
   virtual const byte* get_cutoff_imm();		//набор светодиодов, для которых яркость не уменьшается 
   virtual byte get_cutoff_order_len();		//длинна _cutoff_order
   virtual byte get_cutoff_imm_len();		//длинна _cutoff_imm_len
+  virtual int get_preset_count();
+  virtual const String* get_preset_names();
+  virtual void set_preset(int num);
 };
 
 #endif
