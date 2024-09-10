@@ -10,48 +10,35 @@
 #define RANDOM_CENTER 0
 #define RANDOM_RANGE 3
 
+Options Effect_fire::_options = Options();
+bool Effect_fire::_options_ini = false;
+
 const byte Effect_fire::_cutoff_order[98] = { 0,9,1,8,2,7,3,6,4,5,10,19,11,18,12,17,13,16,14,15,20,29,21,28,22,27,23,26,24,25,30,39,31,38,32,37,33,36,34,35,40,49,41,48,42,47,43,46,44,45,50,59,51,58,52,57,53,56,54,55,60,69,61,68,62,67,63,66,64,65,70,79,71,78,72,77,73,76,74,75,80,89,81,88,82,87,83,86,84,85,90,99,91,98,92,97,93,96 };
 const byte Effect_fire::_cutoff_imm[2] = { 94,95 };
 
 const String Effect_fire::_preset_names[3] = { "red fire", "blue fire", "green fire" };
 
-Effect_fire::Effect_fire(Color_str* leds_arr, Color_str* main_color, Color_str* second_color, uint* strip_update_delay_time)
-	: _leds_arr(leds_arr), _main_color(main_color), _second_color(second_color), _strip_update_delay_time(strip_update_delay_time){}
+const String Effect_fire::_name = "Fire";
 
-void Effect_fire::set_step(int step)
-{
-	_step = step;
-}
 
-const unsigned char* Effect_fire::get_cutoff_order()
-{
-	return _cutoff_order;
-}
+Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr) {}
 
-const unsigned char* Effect_fire::get_cutoff_imm()
-{
-	return _cutoff_imm;
-}
 
-byte Effect_fire::get_cutoff_order_len()
-{
-	return _cutoff_order_len;
-}
+const unsigned char* Effect_fire::get_cutoff_order() { return _cutoff_order; }
 
-byte Effect_fire::get_cutoff_imm_len()
-{
-	return _cutoff_imm_len;
-}
+const unsigned char* Effect_fire::get_cutoff_imm() { return _cutoff_imm; }
 
-int Effect_fire::get_preset_count()
-{
-	return _preset_len;
-}
+byte Effect_fire::get_cutoff_order_len() { return _cutoff_order_len; }
 
-const String* Effect_fire::get_preset_names()
-{
-	return _preset_names;
-}
+byte Effect_fire::get_cutoff_imm_len() { return _cutoff_imm_len; }
+
+int Effect_fire::get_preset_count() { return _preset_len; }
+
+const String* Effect_fire::get_preset_names() { return _preset_names; }
+
+String Effect_fire::get_effect_name() { return _name; }
+
+Options* Effect_fire::get_options_ptr() { return &_options; }
 
 void Effect_fire::set_preset(int num)
 {
@@ -59,43 +46,44 @@ void Effect_fire::set_preset(int num)
 	{
 	case 0:
 	{
-		_main_color->r = 255;
-		_main_color->g = 0;
-		_main_color->b = 0;
-		_second_color->r = 255;
-		_second_color->g = 165;
-		_second_color->b = 0;
+		_options.main_color = Color_str(255, 0, 0);
+		_options.second_color = Color_str(255, 165, 0);
+		_options.strip_update_delay_time = 50;
+		_options.step = 30;
+		_options.br_cutoff_bound = 30;
 		break;
 	}
 	case 1:
 	{
-		_main_color->r = 0;
-		_main_color->g = 0;
-		_main_color->b = 255;
-		_second_color->r = 49;
-		_second_color->g = 207;
-		_second_color->b = 216;
+		_options.main_color = Color_str(0, 0, 255);
+		_options.second_color = Color_str(49, 207, 216);
+		_options.strip_update_delay_time = 60;
+		_options.step = 30;
+		_options.br_cutoff_bound = 60;
 		break;
 	}
 	case 2:
 	{
-		_main_color->r = 0;
-		_main_color->g = 255;
-		_main_color->b = 0;
-		_second_color->r = 27;
-		_second_color->g = 239;
-		_second_color->b = 15;
+		_options.main_color = Color_str(0, 255, 0);
+		_options.second_color = Color_str(27, 239, 15);
+		_options.strip_update_delay_time = 50;
+		_options.step = 30;
+		_options.br_cutoff_bound = 30;
 		break;
 	}
 	default:
+		set_preset(0);
 		break;
 	}
 }
 
 void Effect_fire::setup()
 {
-	*_strip_update_delay_time = 50;
-	set_preset(0);
+	if (!_options_ini)
+	{
+	set_preset();
+	_options_ini = true;
+	}
 	_frame_count = FRAMES;
 	//центр пламени
 	_center_temp_change = 20;
@@ -138,9 +126,6 @@ int Effect_fire::dic_map_cur_step()
 {
 	LOG_USB_FIRE("++++dic_map_cur_step++++\n");
 
-	//LOG_USB_FIRE_SIDE_MAP(_side_coef_key, _dic_map_key);
-	//LOG_USB_FIRE_SIDE_MAP(_side_coef_cur, _dic_map_cur);
-
 	LOG_USB_FIRE("dic_map_cur_step calculation\n");
 
 	for (int y = 0; y < 10; y++)
@@ -173,9 +158,6 @@ int Effect_fire::dic_map_cur_step()
 			difference += dif;
 		}
 	}
-
-
-	//LOG_USB_FIRE_SIDE_MAP(_side_coef_cur, _dic_map_cur);
 
 	_frame_count--;
 	LOG_USB_FIRE("difference = %d _fire_frame_count = %d\n", difference, _frame_count);
@@ -213,13 +195,6 @@ void Effect_fire::temp_map_gen()
 		LOG_USB_FIRE("\n");
 	}
 }
-
-float Effect_fire::dic_coef(float x)
-{
-	LOG_USB_FIRE("input = %f output = %f\n", x, (1 - pow(1 - x, 3)));
-	return 1 - pow(1 - x, 3);
-}
-
 
 void Effect_fire::make_frame()
 {
@@ -272,23 +247,23 @@ uint32_t Effect_fire::temp_to_color(byte temp) {
 	// Если температура низкая, интерполируем от чёрного к baseColor
 	if (t < 0.33f) {
 		float localT = t / 0.33f;  // Нормализуем для этого сегмента (0.0 до 0.33 -> 0.0 до 1.0)
-		color.r = static_cast<uint8_t>(_main_color->r * localT);
-		color.g = static_cast<uint8_t>(_main_color->g * localT);
-		color.b = static_cast<uint8_t>(_main_color->b * localT);
+		color.r = static_cast<uint8_t>(_options.main_color.r * localT);
+		color.g = static_cast<uint8_t>(_options.main_color.g * localT);
+		color.b = static_cast<uint8_t>(_options.main_color.b * localT);
 	}
 	// Если температура средняя, интерполируем от baseColor к colorMid
 	else if (t < 0.66f) {
 		float localT = (t - 0.33f) / 0.33f;  // Нормализуем для этого сегмента (0.33 до 0.66 -> 0.0 до 1.0)
-		color.r = static_cast<uint8_t>(_main_color->r * (1 - localT) + _second_color->r * localT);
-		color.g = static_cast<uint8_t>(_main_color->g * (1 - localT) + _second_color->g * localT);
-		color.b = static_cast<uint8_t>(_main_color->b * (1 - localT) + _second_color->b * localT);
+		color.r = static_cast<uint8_t>(_options.main_color.r * (1 - localT) + _options.second_color.r * localT);
+		color.g = static_cast<uint8_t>(_options.main_color.g * (1 - localT) + _options.second_color.g * localT);
+		color.b = static_cast<uint8_t>(_options.main_color.b * (1 - localT) + _options.second_color.b * localT);
 	}
 	// Если температура высокая, интерполируем от colorMid к colorHigh
 	else {
 		float localT = (t - 0.66f) / 0.34f;  // Нормализуем для этого сегмента (0.66 до 1.0 -> 0.0 до 1.0)
-		color.r = static_cast<uint8_t>(_second_color->r * (1 - localT) + 255 * localT);
-		color.g = static_cast<uint8_t>(_second_color->g * (1 - localT) + 255 * localT);
-		color.b = static_cast<uint8_t>(_second_color->b * (1 - localT) + 255 * localT);
+		color.r = static_cast<uint8_t>(_options.second_color.r * (1 - localT) + 255 * localT);
+		color.g = static_cast<uint8_t>(_options.second_color.g * (1 - localT) + 255 * localT);
+		color.b = static_cast<uint8_t>(_options.second_color.b * (1 - localT) + 255 * localT);
 	}
 
 	return color.get();

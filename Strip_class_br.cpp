@@ -37,7 +37,7 @@ LOG_USB_BR("full\t");
 
     to_process--;
     br_add += (br_add - int(br_add)) / to_process; //переносим дробную часть на оставшиеся
-    if (led->sum() <= _br_cutoff_bound)
+    if (led->sum() <= options->br_cutoff_bound)
     //отключаем светодиод для сохранения корректных оттенков
     {
 LOG_USB_BR("dis\t");

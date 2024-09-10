@@ -26,18 +26,16 @@
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 
 
+
 Strip strip(STRIP_LED_COUNT, STRIP_PIN);
 
-
 void setup() {
-
 	Serial.begin(115200);
 	Serial.println("");
 	strip.begin();
 	strip.fill(strip.Color(0, 0, 0));
 	delay(0);
 	strip.show();
-
 	pinMode(inbr_cur_PIN, INPUT);
 	pinMode(GREEN_PIN, OUTPUT);
 	digitalWrite(GREEN_PIN, LOW);
@@ -47,6 +45,7 @@ void setup() {
 	digitalWrite(RED_PIN, LOW);
 
 	//strip.set_main_color(Color_str(50, 50, 50));
+  strip.set_effect(EFF_FIRE);
 	strip.set_br(5000);
 	randomSeed(analogRead(0));
 }
@@ -96,14 +95,14 @@ void loop() {
 			break;
 		case 'c':
 		{
-			Color_str col(0, 0, 0);
+			Color_str col;
 			col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
 			strip.set_main_color(col);
 			break;
 		}
 		case 'v':
 		{
-			Color_str col(0, 0, 0);
+			Color_str col;
 			col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
 			strip.set_second_color(col);
 			break;
@@ -128,6 +127,11 @@ void loop() {
 		case 'l':
 		{
 			strip.set_preset(input);
+			break;
+		}
+		case 's':
+		{
+			Serial.printf(strip.get_status().c_str());
 			break;
 		}
 		}

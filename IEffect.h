@@ -1,20 +1,25 @@
 #ifndef IEFFECT_H
 #define IEFFECT_H
-
-//интерфейс для паттерна стратегия. структура эффекта
+#include "Structures.h"
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 class IEffect
 {
 public:
-  virtual void setup();						//запускается один раз после создания объекта
-  virtual void make_frame();				//генерация одного кадра
-  virtual void set_step(int step);			//скорость эффекта (изменение эффекта между соседними кадрами)
-  virtual const byte* get_cutoff_order();	//порядок уменьшения яркости светодиодов
-  virtual const byte* get_cutoff_imm();		//набор светодиодов, для которых яркость не уменьшается 
-  virtual byte get_cutoff_order_len();		//длинна _cutoff_order
-  virtual byte get_cutoff_imm_len();		//длинна _cutoff_imm_len
+  virtual void setup();						//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  virtual void make_frame();				//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+
+  virtual Options* get_options_ptr();
+
+  virtual const byte* get_cutoff_order();	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  virtual const byte* get_cutoff_imm();		//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
+  virtual byte get_cutoff_order_len();		//пїЅпїЅпїЅпїЅпїЅпїЅ _cutoff_order
+  virtual byte get_cutoff_imm_len();		//пїЅпїЅпїЅпїЅпїЅпїЅ _cutoff_imm_len
+
   virtual int get_preset_count();
   virtual const String* get_preset_names();
-  virtual void set_preset(int num);
+  virtual void set_preset(int num = 0);			//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+
+  virtual String get_effect_name();
 };
 
 #endif
