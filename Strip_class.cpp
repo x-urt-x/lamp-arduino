@@ -77,6 +77,6 @@ void Strip::set_effect(byte num)
 	_cur_cutoff_order = effect->get_cutoff_order();
 	_cur_cutoff_imm = effect->get_cutoff_imm();
 	_cur_cutoff_order_len = effect->get_cutoff_order_len();
-	_cur_cutoff_imm_len = effect->get_cutoff_order_len();
+	_cur_cutoff_imm_len = effect->get_cutoff_imm_len();
 	_cur_cutoff_units = _cur_cutoff_order_len + (_cur_cutoff_imm_len == 0 ? 0 : 1);
 }

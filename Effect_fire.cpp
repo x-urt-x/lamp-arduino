@@ -259,12 +259,11 @@ uint32_t Effect_fire::temp_to_color(byte temp) {
 		color.b = static_cast<uint8_t>(_options.main_color.b * (1 - localT) + _options.second_color.b * localT);
 	}
 	// Если температура высокая, интерполируем от colorMid к colorHigh
-	else {
+	else{
 		float localT = (t - 0.66f) / 0.34f;  // Нормализуем для этого сегмента (0.66 до 1.0 -> 0.0 до 1.0)
 		color.r = static_cast<uint8_t>(_options.second_color.r * (1 - localT) + 255 * localT);
 		color.g = static_cast<uint8_t>(_options.second_color.g * (1 - localT) + 255 * localT);
 		color.b = static_cast<uint8_t>(_options.second_color.b * (1 - localT) + 255 * localT);
 	}
-
 	return color.get();
 }

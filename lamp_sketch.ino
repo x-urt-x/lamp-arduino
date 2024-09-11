@@ -30,6 +30,7 @@ EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 Strip strip(STRIP_LED_COUNT, STRIP_PIN);
 
 void setup() {
+	randomSeed(analogRead(0));
 	Serial.begin(115200);
 	Serial.println("");
 	strip.begin();
@@ -45,9 +46,10 @@ void setup() {
 	digitalWrite(RED_PIN, LOW);
 
 	//strip.set_main_color(Color_str(50, 50, 50));
-  strip.set_effect(EFF_FIRE);
+	strip.set_effect(EFF_SINGLE);
 	strip.set_br(5000);
-	randomSeed(analogRead(0));
+	strip.tick(true);
+	
 }
 
 int br = 5000;

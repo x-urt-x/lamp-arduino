@@ -37,7 +37,7 @@ void Effect_singleColor::set_preset(int num )
 	case 0:
 	{
 		_options.main_color = Color_str(255, 255, 255);
-		_options.second_color = Color_str(255, 165, 0);
+		_options.second_color = Color_str(255, 255, 255);
 		_options.strip_update_delay_time = 60000;
 		_options.step = 0;
 		_options.br_cutoff_bound = 0;
