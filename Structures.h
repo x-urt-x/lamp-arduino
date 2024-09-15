@@ -8,7 +8,7 @@
 
 struct Color_str {
 	byte g, r, b; //внутренний массив библиотеки имеет формат grb 
-	Color_str(): r(0), g(0), b(0) {}
+	Color_str() : r(0), g(0), b(0) {}
 	Color_str(byte red, byte green, byte blue) : r(red), g(green), b(blue) {}
 
 	void set(uint32_t colorValue) {
@@ -38,7 +38,7 @@ struct Color_str {
 		if (g > 255) g = 255;
 		b = b * br;
 		if (b > 255) b = 255;
-		LOG_USB_COLOR_MAP("| map- br%d r%d g%d b%d |\t", br_in, r, g, b);
+		LOG_USB_COLOR_MAP("| map- br%d r%d g%d b%d |\n", br_in, r, g, b);
 	}
 };
 
@@ -49,7 +49,7 @@ struct Options
 	int br_cutoff_bound;
 	int step;
 
-	Options(): strip_update_delay_time(0), main_color(), second_color(), br_cutoff_bound(0), step(0) {}
+	Options() : strip_update_delay_time(0), main_color(), second_color(), br_cutoff_bound(0), step(0) {}
 };
 
 #endif

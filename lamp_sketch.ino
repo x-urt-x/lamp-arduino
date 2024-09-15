@@ -49,7 +49,6 @@ void setup() {
 	strip.set_effect(EFF_SINGLE);
 	strip.set_br(5000);
 	strip.tick(true);
-	
 }
 
 int br = 5000;
@@ -57,12 +56,12 @@ int enc_select = 1;
 volatile bool is_enc = false;
 
 void loop() {
-	encoder.tick();
+	//Serial.printf("%d\n", analogRead(0));
+	//encoder.tick();
 	if (encoder.turn()) {
 		if (encoder.pressing())
 		{
 			br += (encoder.fast() ? 500 : 100) * encoder.dir();
-
 		}
 		else
 		{
@@ -94,6 +93,9 @@ void loop() {
 			break;
 		case 'm':
 			strip.set_effect(input);
+			break;
+		case 'x':
+			strip.set_step(input);
 			break;
 		case 'c':
 		{

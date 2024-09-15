@@ -1,6 +1,7 @@
 #include "Strip_class.h"
 #include "Effect_singleColor.h"
 #include "Effect_fire.h"
+#include "Effect_rainbowStrip.h"
 
 Strip::Strip(uint16_t n, int16_t p)
 	: Adafruit_NeoPixel(n, p),
@@ -23,6 +24,8 @@ void Strip::set_second_color(Color_str color) { options->second_color = color; }
 void Strip::set_delay(uint delay) {	options->strip_update_delay_time = delay; }
 
 void Strip::set_br_cutoff_bound(int br_cutoff_bound) { options->br_cutoff_bound = br_cutoff_bound; }
+
+void Strip::set_step(uint step) { options->step = step; }
 
 void Strip::tick(bool now)
 {
@@ -69,7 +72,14 @@ void Strip::set_effect(byte num)
 	case EFF_FIRE:
 		effect = new Effect_fire(_leds_arr);
 		break;
+	case 2:
+		effect = new Effect_rainbowStrip(_leds_arr);
+		break;
+	default:
+		set_effect(0);
+		break;
 	}
+	
 
 	effect->setup();
 	options = effect->get_options_ptr();

@@ -25,6 +25,7 @@ public:
 	void set_delay(uint delay);
 	void set_br_cutoff_bound(int br_cutoff_bound);
 	void set_preset(int num);
+	void set_step(uint step);
 
 	void tick(bool now = false);
 private:
@@ -32,6 +33,7 @@ private:
 	Options* options;
 
 	void apply_br();
+	//void 
 
 	unsigned long _strip_update_prev_time = 0;
 	unsigned long _strip_update_cur_time = 0;
