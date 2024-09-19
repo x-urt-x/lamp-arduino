@@ -46,7 +46,7 @@ void setup() {
 	digitalWrite(RED_PIN, LOW);
 
 	//strip.set_main_color(Color_str(50, 50, 50));
-	strip.set_effect(EFF_SINGLE);
+	strip.set_effect(0);
 	strip.set_br(5000);
 	strip.tick(true);
 }

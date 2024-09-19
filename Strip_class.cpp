@@ -2,6 +2,7 @@
 #include "Effect_singleColor.h"
 #include "Effect_fire.h"
 #include "Effect_rainbowStrip.h"
+#include "Effect_Noise.h"
 
 Strip::Strip(uint16_t n, int16_t p)
 	: Adafruit_NeoPixel(n, p),
@@ -74,6 +75,9 @@ void Strip::set_effect(byte num)
 		break;
 	case 2:
 		effect = new Effect_rainbowStrip(_leds_arr);
+		break;
+	case 3:
+		effect = new Effect_Noise(_leds_arr);
 		break;
 	default:
 		set_effect(0);
