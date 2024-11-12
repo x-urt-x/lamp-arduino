@@ -22,17 +22,13 @@
 #define STRIP_LED_COUNT 100
 
 
-
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
-
-
-
 Strip strip(STRIP_LED_COUNT, STRIP_PIN);
 
 void setup() {
 	randomSeed(analogRead(0));
 	Serial.begin(115200);
-	Serial.println("");
+	Serial.println("start");
 	strip.begin();
 	strip.fill(strip.Color(0, 0, 0));
 	delay(0);
@@ -45,7 +41,6 @@ void setup() {
 	pinMode(RED_PIN, OUTPUT);
 	digitalWrite(RED_PIN, LOW);
 
-	//strip.set_main_color(Color_str(50, 50, 50));
 	strip.set_effect(0);
 	strip.set_br(5000);
 	strip.tick(true);
@@ -56,8 +51,7 @@ int enc_select = 1;
 volatile bool is_enc = false;
 
 void loop() {
-	//Serial.printf("%d\n", analogRead(0));
-	//encoder.tick();
+	encoder.tick();
 	if (encoder.turn()) {
 		if (encoder.pressing())
 		{
@@ -75,69 +69,112 @@ void loop() {
 			br = 0;
 		LOG_USB_ENC("%d\n", br);
 		strip.set_br(br);
+		strip.tick(true);
 	}
 
 	if (Serial.available() > 0) {
-		String inputstr = Serial.readStringUntil('\n');
-		int key = inputstr[0];
-		int input = inputstr.substring(1).toInt();
-		switch (key) {
-		case 'b':
-			strip.set_br(input);
-			break;
-		case 'd':
-			strip.set_delay(input);
-			break;
-		case 'a':
-			strip.set_br_cutoff_bound(input);
-			break;
-		case 'm':
-			strip.set_effect(input);
-			break;
-		case 'x':
-			strip.set_step(input);
-			break;
-		case 'c':
+		char key0 = Serial.read();
+		LOG_USB_SWITCH("key0 - %c\n",key0);
+		switch (key0)
 		{
-			Color_str col;
-			col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
-			strip.set_main_color(col);
+		case 'e':
+		{
+			char key1 = Serial.read();
+			LOG_USB_SWITCH("key1 - %c\n", key1);
+			switch (key1)
+			{
+			case 'd':
+				strip.set_effect_strip_update_delay_time(Serial.readStringUntil('\n').toInt());
+				break;
+			case 'b':
+				strip.set_br(Serial.readStringUntil('\n').toInt());
+				break;
+			case 'c':
+				strip.set_effect_br_cutoff_bound(Serial.readStringUntil('\n').toInt());
+				break;
+			case 's':
+				strip.set_effect_step(Serial.readStringUntil('\n').toInt());
+				break;
+			default:
+				break;
+			}
 			break;
 		}
-		case 'v':
+		case 'c':
 		{
+			byte pos = Serial.readStringUntil(' ').toInt();
 			Color_str col;
-			col.set(strtoul(inputstr.substring(1).c_str(), nullptr, 16));
-			strip.set_second_color(col);
-			break;
+			col.set(strtoul(Serial.readStringUntil('\n').c_str(), nullptr, 16));
+			strip.set_color(col, pos);
 		}
 		case 'p':
 		{
-			int count = strip.get_preset_count();
-			if (count > 0)
+			char key1 = Serial.read();
+			LOG_USB_SWITCH("key1 - %c\n", key1);
+			switch (key1)
 			{
-				const String* names = strip.get_preset_names();
-				for (int i = 0; i < count; i++)
+			case 'n':
+			{
+				int count = strip.get_preset_count();
+				if (count > 0)
 				{
-					Serial.printf("%d - %s\n", i, names[i]);
+					const String* names = strip.get_preset_names();
+					for (int i = 0; i < count; i++)
+					{
+						Serial.printf("%d - %s\n", i, names[i]);
+					}
 				}
+				else
+				{
+					Serial.printf("no preset\n");
+				}
+				break;
 			}
-			else
+			case 's':
 			{
-				Serial.printf("no preset\n");
+				strip.set_preset(Serial.readStringUntil('\n').toInt());
+				break;
+			}
+			default:
+				break;
 			}
 			break;
 		}
-		case 'l':
+		case 'r':
 		{
-			strip.set_preset(input);
+			char key1 = Serial.read();
+			LOG_USB_SWITCH("key1 - %c\n", key1);
+			switch (key1)
+			{
+			case 'm':
+			{
+				byte pos = Serial.readStringUntil(' ').toInt();
+				strip.set_rainbow_state(Serial.readStringUntil('\n').toInt(), pos);
+				break;
+			}
+			case 's':
+			{
+				byte pos = Serial.readStringUntil(' ').toInt();
+				strip.set_rainbow_step(Serial.readStringUntil('\n').toInt(), pos);
+				break;
+			}
+			default:
+				break;
+			}
 			break;
 		}
 		case 's':
 		{
-			Serial.printf(strip.get_status().c_str());
+			LOG_USB_SWITCH(strip.get_status().c_str());
 			break;
 		}
+		case 'm':
+		{
+			strip.set_effect(Serial.readStringUntil('\n').toInt());
+			break;
+		}
+		default:
+			break;
 		}
 		strip.tick(true);
 	}

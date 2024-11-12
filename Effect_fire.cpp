@@ -10,35 +10,41 @@
 #define RANDOM_CENTER 0
 #define RANDOM_RANGE 3
 
-Options Effect_fire::_options = Options();
-bool Effect_fire::_options_ini = false;
+byte Effect_fire::_cutoff_order[98] = { 0,9,1,8,2,7,3,6,4,5,10,19,11,18,12,17,13,16,14,15,20,29,21,28,22,27,23,26,24,25,30,39,31,38,32,37,33,36,34,35,40,49,41,48,42,47,43,46,44,45,50,59,51,58,52,57,53,56,54,55,60,69,61,68,62,67,63,66,64,65,70,79,71,78,72,77,73,76,74,75,80,89,81,88,82,87,83,86,84,85,90,99,91,98,92,97,93,96 };
+byte Effect_fire::_cutoff_imm[2] = { 94,95 };
 
-const byte Effect_fire::_cutoff_order[98] = { 0,9,1,8,2,7,3,6,4,5,10,19,11,18,12,17,13,16,14,15,20,29,21,28,22,27,23,26,24,25,30,39,31,38,32,37,33,36,34,35,40,49,41,48,42,47,43,46,44,45,50,59,51,58,52,57,53,56,54,55,60,69,61,68,62,67,63,66,64,65,70,79,71,78,72,77,73,76,74,75,80,89,81,88,82,87,83,86,84,85,90,99,91,98,92,97,93,96 };
-const byte Effect_fire::_cutoff_imm[2] = { 94,95 };
+//class Effect_fire : public Effectable, public Colorable, public Preseteble
+IEffect::ParentBaseIDs Effect_fire::_parent_base_IDs =
+{
+	new BaseIDEnum[3] {
+	IEffect::BaseIDEnum::EffectableID,
+	IEffect::BaseIDEnum::ColorableID,
+	IEffect::BaseIDEnum::PresetebleID
+	},
+	3
+};
+IEffect::ParentBaseIDs* Effect_fire::get_parent_base_ids() { return &_parent_base_IDs; }
 
-const String Effect_fire::_preset_names[3] = { "red fire", "blue fire", "green fire" };
+Effectable::Option_effect Effect_fire::_option_effect{};
+inline Effectable::Option_effect* Effect_fire::get_option_effect() { return &_option_effect; }
 
-const String Effect_fire::_name = "Fire";
+Colorable::Option_color Effect_fire::_option_color{ new Color_str[4]{}, 4 };
+inline Colorable::Option_color* Effect_fire::get_option_color() { return &_option_color; }
+
+Preseteble::Option_preset Effect_fire::_option_preset{ (new String[3]{"red fire","blue fire","green fire"}),4 };
+inline Preseteble::Option_preset* Effect_fire::get_option_preset() { return &_option_preset; }
+
+Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
 
 
-Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr) {}
-
-
-const unsigned char* Effect_fire::get_cutoff_order() { return _cutoff_order; }
-
-const unsigned char* Effect_fire::get_cutoff_imm() { return _cutoff_imm; }
-
+byte* Effect_fire::get_cutoff_order() { return _cutoff_order; }
+byte* Effect_fire::get_cutoff_imm() { return _cutoff_imm; }
 byte Effect_fire::get_cutoff_order_len() { return _cutoff_order_len; }
-
 byte Effect_fire::get_cutoff_imm_len() { return _cutoff_imm_len; }
 
-int Effect_fire::get_preset_count() { return _preset_len; }
+String Effect_fire::get_effect_name() { return "Fire"; }
 
-const String* Effect_fire::get_preset_names() { return _preset_names; }
-
-String Effect_fire::get_effect_name() { return _name; }
-
-Options* Effect_fire::get_options_ptr() { return &_options; }
+void Effect_fire::apply_default_option() { set_preset(0); }
 
 void Effect_fire::set_preset(int num)
 {
@@ -46,29 +52,35 @@ void Effect_fire::set_preset(int num)
 	{
 	case 0:
 	{
-		_options.main_color = Color_str(255, 0, 0);
-		_options.second_color = Color_str(255, 165, 0);
-		_options.strip_update_delay_time = 50;
-		_options.step = 30;
-		_options.br_cutoff_bound = 30;
+		_option_color.colors[0] = Color_str(0, 0, 0);
+		_option_color.colors[1] = Color_str(255, 0, 0);
+		_option_color.colors[2] = Color_str(255, 165, 0);
+		_option_color.colors[3] = Color_str(255, 240, 200);
+		_option_effect.strip_update_delay_time = 50;
+		_option_effect.effect_step = 30;
+		_option_effect.br_cutoff_bound = 30;
 		break;
 	}
 	case 1:
 	{
-		_options.main_color = Color_str(0, 0, 255);
-		_options.second_color = Color_str(49, 207, 216);
-		_options.strip_update_delay_time = 60;
-		_options.step = 30;
-		_options.br_cutoff_bound = 60;
+		_option_color.colors[0] = Color_str(0, 0, 0);
+		_option_color.colors[1] = Color_str(0, 0, 255);
+		_option_color.colors[2] = Color_str(49, 207, 216);
+		_option_color.colors[3] = Color_str(255, 255, 255);
+		_option_effect.strip_update_delay_time = 60;
+		_option_effect.effect_step = 30;
+		_option_effect.br_cutoff_bound = 60;
 		break;
 	}
 	case 2:
 	{
-		_options.main_color = Color_str(0, 255, 0);
-		_options.second_color = Color_str(27, 239, 15);
-		_options.strip_update_delay_time = 50;
-		_options.step = 30;
-		_options.br_cutoff_bound = 30;
+		_option_color.colors[0] = Color_str(0, 0, 0);
+		_option_color.colors[1] = Color_str(0, 255, 0);
+		_option_color.colors[2] = Color_str(27, 239, 15);
+		_option_color.colors[3] = Color_str(255, 255, 255);
+		_option_effect.strip_update_delay_time = 50;
+		_option_effect.effect_step = 30;
+		_option_effect.br_cutoff_bound = 30;
 		break;
 	}
 	default:
@@ -79,11 +91,6 @@ void Effect_fire::set_preset(int num)
 
 void Effect_fire::setup()
 {
-	if (!_options_ini)
-	{
-	set_preset();
-	_options_ini = true;
-	}
 	_frame_count = FRAMES;
 	//центр пламени
 	_center_temp_change = 20;
@@ -247,23 +254,23 @@ uint32_t Effect_fire::temp_to_color(byte temp) {
 	// Если температура низкая, интерполируем от чёрного к baseColor
 	if (t < 0.33f) {
 		float localT = t / 0.33f;  // Нормализуем для этого сегмента (0.0 до 0.33 -> 0.0 до 1.0)
-		color.r = static_cast<uint8_t>(_options.main_color.r * localT);
-		color.g = static_cast<uint8_t>(_options.main_color.g * localT);
-		color.b = static_cast<uint8_t>(_options.main_color.b * localT);
+		color.r = static_cast<uint8_t>(_option_color.colors[0].r * (1 - localT) + _option_color.colors[1].r * localT);
+		color.g = static_cast<uint8_t>(_option_color.colors[0].g * (1 - localT) + _option_color.colors[1].g * localT);
+		color.b = static_cast<uint8_t>(_option_color.colors[0].b * (1 - localT) + _option_color.colors[1].b * localT);
 	}
 	// Если температура средняя, интерполируем от baseColor к colorMid
 	else if (t < 0.66f) {
 		float localT = (t - 0.33f) / 0.33f;  // Нормализуем для этого сегмента (0.33 до 0.66 -> 0.0 до 1.0)
-		color.r = static_cast<uint8_t>(_options.main_color.r * (1 - localT) + _options.second_color.r * localT);
-		color.g = static_cast<uint8_t>(_options.main_color.g * (1 - localT) + _options.second_color.g * localT);
-		color.b = static_cast<uint8_t>(_options.main_color.b * (1 - localT) + _options.second_color.b * localT);
+		color.r = static_cast<uint8_t>(_option_color.colors[1].r * (1 - localT) + _option_color.colors[2].r * localT);
+		color.g = static_cast<uint8_t>(_option_color.colors[1].g * (1 - localT) + _option_color.colors[2].g * localT);
+		color.b = static_cast<uint8_t>(_option_color.colors[1].b * (1 - localT) + _option_color.colors[2].b * localT);
 	}
 	// Если температура высокая, интерполируем от colorMid к colorHigh
-	else{
+	else {
 		float localT = (t - 0.66f) / 0.34f;  // Нормализуем для этого сегмента (0.66 до 1.0 -> 0.0 до 1.0)
-		color.r = static_cast<uint8_t>(_options.second_color.r * (1 - localT) + 255 * localT);
-		color.g = static_cast<uint8_t>(_options.second_color.g * (1 - localT) + 255 * localT);
-		color.b = static_cast<uint8_t>(_options.second_color.b * (1 - localT) + 255 * localT);
+		color.r = static_cast<uint8_t>(_option_color.colors[2].r * (1 - localT) + _option_color.colors[3].r * localT);
+		color.g = static_cast<uint8_t>(_option_color.colors[2].g * (1 - localT) + _option_color.colors[3].g * localT);
+		color.b = static_cast<uint8_t>(_option_color.colors[2].b * (1 - localT) + _option_color.colors[3].b * localT);
 	}
 	return color.get();
 }

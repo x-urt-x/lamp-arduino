@@ -4,6 +4,7 @@ void Strip::apply_br() {
 
 	float br_max = float(_br_vir) / _cur_cutoff_units; //базовая яркость, 
 	uint8_t br_cutoff_count = _cur_cutoff_order_len - (_br_vir + _cur_cutoff_order_len) % _cur_cutoff_units; //количество с яркостью br_max-1
+	int br_cutoff_bound = reinterpret_cast<Effectable*>(effect)->get_br_cutoff_bound();
 
 	LOG_USB_BR("apply_br - _main_color %02X%02X%02X\n", options->main_color.r, options->main_color.g, options->main_color.b);
 	LOG_USB_BR("apply_br - _br_vir %d\n", _br_vir);
@@ -39,7 +40,7 @@ void Strip::apply_br() {
 
 		to_process--;
 		br_add += (br_add - int(br_add)) / to_process; //переносим дробную часть на оставшиеся
-		if (led->sum() <= options->br_cutoff_bound)
+		if (led->sum() <= br_cutoff_bound)
 			//отключаем светодиод для сохранения корректных оттенков
 		{
 			LOG_USB_BR("dis\t");

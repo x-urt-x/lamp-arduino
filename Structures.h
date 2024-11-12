@@ -1,5 +1,7 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
+#include <Arduino.h>
+#include <Adafruit_NeoPixel.h>
 #include "log.h"
 
 #define byte_u(val) ((val) > 255 ? 255 : (val)) 
@@ -10,11 +12,17 @@ struct Color_str {
 	byte g, r, b; //внутренний массив библиотеки имеет формат grb 
 	Color_str() : r(0), g(0), b(0) {}
 	Color_str(byte red, byte green, byte blue) : r(red), g(green), b(blue) {}
+	Color_str(uint32_t colorValue) : r((colorValue >> 16) & 0xFF), g((colorValue >> 8) & 0xFF), b(colorValue & 0xFF) {}
 
 	void set(uint32_t colorValue) {
 		r = (colorValue >> 16) & 0xFF;
 		g = (colorValue >> 8) & 0xFF;
 		b = colorValue & 0xFF;
+	}
+	void set(Color_str color) {
+		r = color.r;
+		g = color.g;
+		b = color.b;
 	}
 	uint32_t get()
 	{
@@ -40,16 +48,26 @@ struct Color_str {
 		if (b > 255) b = 255;
 		LOG_USB_COLOR_MAP("| map- br%d r%d g%d b%d |\n", br_in, r, g, b);
 	}
+	static Color_str lerp(Color_str from, Color_str to, byte coef) { return lerp(from, to, float(coef / 255.0)); }
+	static Color_str lerp(Color_str from, Color_str to, float coef)
+	{
+		Color_str res;
+		res.r = from.r * coef + to.r * (1 - coef);
+		res.g = from.g * coef + to.g * (1 - coef);
+		res.b = from.b * coef + to.b * (1 - coef);
+		return res;
+	}
+	static Color_str cyc_lerp(Color_str from, Color_str to, int coef){ return cyc_lerp(from, to, float(coef / 256*256-1)); }
+	static Color_str cyc_lerp(Color_str from, Color_str to, float coef)
+	{
+		if (coef < 0.5)
+			return lerp(from, to, coef * 2);
+		else
+			return lerp(to, from, float((coef-0.5) * 2));
+	}
+	static inline Color_str ColorHSV(int hue)
+	{
+		return Color_str(Adafruit_NeoPixel::ColorHSV(hue));
+	}
 };
-
-struct Options
-{
-	int strip_update_delay_time;
-	Color_str main_color, second_color;
-	int br_cutoff_bound;
-	int step;
-
-	Options() : strip_update_delay_time(0), main_color(), second_color(), br_cutoff_bound(0), step(0) {}
-};
-
 #endif

@@ -2,67 +2,49 @@
 
 #define led_m(x,y) _leds_arr[y*10+(y%2==0?x:9-x)]
 
-Options Effect_Noise::_options = Options();
-bool Effect_Noise::_options_ini = false;
-
-const byte Effect_Noise::_cutoff_order[96] = { 0,90,1,91,2,92,3,93,4,94,5,95,6,96,7,97,8,98,9,99,10,80,11,81,12,82,13,83,14,84,15,85,16,86,17,87,18,88,19,89,20,70,21,71,22,72,23,73,24,74,25,75,26,76,27,77,28,78,29,79,30,60,31,61,32,62,33,63,34,64,35,65,36,66,37,67,38,68,39,69,40,50,49,59,41,51,48,58,42,52,47,57,43,53,46,56 };
-const byte Effect_Noise::_cutoff_imm[4] = { 44,45,54,55 };
-
-const String Effect_Noise::_preset_names[1] = { "default" };
-
-const String Effect_Noise::_name = "Noise";
-
-
-Effect_Noise::Effect_Noise(Color_str* leds_arr) : _leds_arr(leds_arr)
+//class Effect_Noise : public Effectable, public Colorable, public Rainbowble
+IEffect::ParentBaseIDs Effect_Noise::_parent_base_IDs =
 {
-	_x = random(0x10000);
-	_y = random(0x10000);
-	_z = random(0x10000);
-}
+	new BaseIDEnum[3] {
+	IEffect::BaseIDEnum::EffectableID,
+	IEffect::BaseIDEnum::ColorableID,
+	IEffect::BaseIDEnum::RainbowbleID,
+	},
+	3
+};
+IEffect::ParentBaseIDs* Effect_Noise::get_parent_base_ids() { return &_parent_base_IDs; }
+
+Colorable::Option_color Effect_Noise::_option_color{ new Color_str[2]{},2 };
+inline Colorable::Option_color* Effect_Noise::get_option_color() { return &_option_color; }
+
+Rainbowble::Option_rainbow Effect_Noise::_option_rainbow{ new bool[1],1,new int[1] {} };
+inline Rainbowble::Option_rainbow* Effect_Noise::get_option_rainbow() { return &_option_rainbow; }
+
+Effectable::Option_effect Effect_Noise::_option_effect{};
+inline Effectable::Option_effect* Effect_Noise::get_option_effect() { return &_option_effect; }
 
 
-const unsigned char* Effect_Noise::get_cutoff_order() { return _cutoff_order; }
+Effect_Noise::Effect_Noise(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
 
-const unsigned char* Effect_Noise::get_cutoff_imm() { return _cutoff_imm; }
+String Effect_Noise::get_effect_name() { return "Noise"; }
 
-byte Effect_Noise::get_cutoff_order_len() { return _cutoff_order_len; }
-
-byte Effect_Noise::get_cutoff_imm_len() { return _cutoff_imm_len; }
-
-int Effect_Noise::get_preset_count() { return _preset_len; }
-
-const String* Effect_Noise::get_preset_names() { return _preset_names; }
-
-String Effect_Noise::get_effect_name() { return _name; }
-
-Options* Effect_Noise::get_options_ptr() { return &_options; }
-
-void Effect_Noise::set_preset(int num)
+void Effect_Noise::apply_default_option()
 {
-	switch (num)
-	{
-	case 0:
-	{
-		_options.main_color = Color_str(0, 0, 0);
-		_options.second_color = Color_str(0, 0, 0);
-		_options.strip_update_delay_time = 10;
-		_options.step = 1;
-		_options.br_cutoff_bound = 0;
-		break;
-	}
-	default:
-		set_preset(0);
-		break;
-	}
+	_option_color.colors[0] = Color_str(0, 0, 255);
+	_option_color.colors[1] = Color_str(255, 0, 0);
+	_option_effect.strip_update_delay_time = 10;
+	_option_effect.br_cutoff_bound = 0;
+	_option_effect.effect_step = 1;
+	_option_rainbow.states[0] = true;
+	_option_rainbow.steps[0] = 400;
 }
 
 void Effect_Noise::setup()
 {
-	if (!_options_ini)
-	{
-		set_preset();
-		_options_ini = true;
-	}
+	hue_shift = 0;
+	_x = random(0x10000);
+	_y = random(0x10000);
+	_z = random(0x10000);
 }
 
 void Effect_Noise::make_frame()
@@ -71,10 +53,20 @@ void Effect_Noise::make_frame()
 		int ioffset = scale * i;
 		for (int j = 0; j < 10; j++) {
 			int joffset = scale * j;
-			uint8_t hue = inoise8(_x + ioffset, _y + joffset, _z);
-			hue += _z;
-			led_m(i,j).set(Adafruit_NeoPixel::ColorHSV(hue * 256));
+			int noise = inoise8(_x + ioffset, _y + joffset, _z);
+			if (_option_rainbow.states[0])
+			{
+				noise *= 255;
+				noise += hue_shift;
+				noise %= 256 * 256;
+				led_m(i, j).set(Adafruit_NeoPixel::ColorHSV(noise));
+			}
+			else
+			{
+				led_m(i, j).set(Color_str::lerp(_option_color.colors[0], _option_color.colors[1], (uint8_t)noise));
+			}
 		}
 	}
-	_z += _options.step;
+	hue_shift += _option_rainbow.steps[0];
+	_z += _option_effect.effect_step;
 }

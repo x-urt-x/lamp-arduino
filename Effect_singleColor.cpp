@@ -1,68 +1,55 @@
 #include "Effect_singleColor.h"
 
-Options Effect_singleColor::_options = Options();
-bool Effect_singleColor::_options_ini = false;
-
-const byte Effect_singleColor::_cutoff_order[96] = { 0,90,1,91,2,92,3,93,4,94,5,95,6,96,7,97,8,98,9,99,10,80,11,81,12,82,13,83,14,84,15,85,16,86,17,87,18,88,19,89,20,70,21,71,22,72,23,73,24,74,25,75,26,76,27,77,28,78,29,79,30,60,31,61,32,62,33,63,34,64,35,65,36,66,37,67,38,68,39,69,40,50,49,59,41,51,48,58,42,52,47,57,43,53,46,56 };
-const byte Effect_singleColor::_cutoff_imm[4] = { 44,45,54,55 };
-
-const String Effect_singleColor::_preset_names[1] = {"full white"};
-
-const String Effect_singleColor::_name = "Single Color";
-
-
-Effect_singleColor::Effect_singleColor(Color_str* leds_arr): _leds_arr(leds_arr) {}
-
-
-const unsigned char* Effect_singleColor::get_cutoff_order() { return _cutoff_order; }
-
-const unsigned char* Effect_singleColor::get_cutoff_imm() {	return _cutoff_imm; }
-
-byte Effect_singleColor::get_cutoff_order_len() { return _cutoff_order_len; }
-
-byte Effect_singleColor::get_cutoff_imm_len() {	return _cutoff_imm_len; }
-
-int Effect_singleColor::get_preset_count() { return _preset_len; }
-
-const String* Effect_singleColor::get_preset_names() { return _preset_names; }
-
-String Effect_singleColor::get_effect_name() { return _name; }
-
-Options* Effect_singleColor::get_options_ptr() { return &_options; }
-
-void Effect_singleColor::set_preset(int num )
+//class Effect_singleColor : public Effectable, public Colorable, public Rainbowble
+IEffect::ParentBaseIDs Effect_singleColor::_parent_base_IDs =
 {
-	switch (num)
-	{
-	case 0:
-	{
-		_options.main_color = Color_str(255, 255, 255);
-		_options.second_color = Color_str(255, 255, 255);
-		_options.strip_update_delay_time = 60000;
-		_options.step = 0;
-		_options.br_cutoff_bound = 0;
-		break;
-	}
-	default:
-		set_preset(0);
-		break;
-	}
+	new BaseIDEnum[3] {
+	IEffect::BaseIDEnum::EffectableID,
+	IEffect::BaseIDEnum::ColorableID,
+	IEffect::BaseIDEnum::RainbowbleID
+	},
+	3
+};
+IEffect::ParentBaseIDs* Effect_singleColor::get_parent_base_ids() { return &_parent_base_IDs; }
+
+Colorable::Option_color Effect_singleColor::_option_color{ new Color_str[1]{},1 };
+inline Colorable::Option_color* Effect_singleColor::get_option_color() { return &_option_color; }
+
+Rainbowble::Option_rainbow Effect_singleColor::_option_rainbow{ new bool[1], 1, new int[1] };
+inline Rainbowble::Option_rainbow* Effect_singleColor::get_option_rainbow() { return &_option_rainbow; }
+
+Effectable::Option_effect Effect_singleColor::_option_effect{};
+inline Effectable::Option_effect* Effect_singleColor::get_option_effect() { return &_option_effect; }
+
+
+Effect_singleColor::Effect_singleColor(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
+
+String Effect_singleColor::get_effect_name() { return "Single Color"; }
+
+void Effect_singleColor::apply_default_option()
+{
+	_option_color.colors[0] = Color_str(255, 255, 255);
+	_option_effect.strip_update_delay_time = 60000;
+	_option_effect.br_cutoff_bound = 0;
+	_option_effect.effect_step = 0;
+	_option_rainbow.states[0] = false;
+	_option_rainbow.steps[0] = 80;
 }
 
-void Effect_singleColor::setup()
-{
-	if (!_options_ini)
-	{
-		set_preset();
-		_options_ini = true;
-	}
-}
+void Effect_singleColor::setup() {}
 
 void Effect_singleColor::make_frame()
 {
-	for (int i = 0; i < 100; i++) {
-		_leds_arr[i].r = _options.main_color.r;
-		_leds_arr[i].g = _options.main_color.g;
-		_leds_arr[i].b = _options.main_color.b;
+	if (_option_rainbow.states[0])
+	{
+		Color_str color = Color_str::ColorHSV(_hue);
+		for (int i = 0; i < 100; i++)
+			_leds_arr[i].set(color);
+		_hue += _option_rainbow.steps[0];
+	}
+	else
+	{
+		for (int i = 0; i < 100; i++)
+			_leds_arr[i].set(_option_color.colors[0]);
 	}
 }

@@ -3,59 +3,62 @@
 
 #include <Arduino.h>
 #include "Structures.h"
-#include "IEffect.h"
+#include "Effect_bases.h"
 
-class Effect_fire : public IEffect
+class Effect_fire : public Effectable, public Colorable, public Preseteble
 {
 public:
-  Effect_fire(Color_str* leds_arr);
-  void setup() override;
-  void make_frame() override;
+	Effect_fire(Color_str* leds_arr);
 
-  Options* get_options_ptr() override;
-  
-  const byte* get_cutoff_order() override;
-  const byte* get_cutoff_imm() override;
-  byte get_cutoff_order_len() override;
-  byte get_cutoff_imm_len() override;
+	void setup() override;
+	void make_frame() override;
+	String get_effect_name() override;
+	
+	void apply_default_option() override;
 
-  int get_preset_count() override;
-  const String* get_preset_names() override;
-  void set_preset(int num = 0) override;
+	byte* get_cutoff_order() override;
+	byte* get_cutoff_imm() override;
+	byte get_cutoff_order_len() override;
+	byte get_cutoff_imm_len() override;
 
-  String get_effect_name() override;
+	//Preseteble
+	void set_preset(int num = 0) override;
 
 private:
-  Color_str *_leds_arr;
+	Color_str* _leds_arr;
 
-  uint32_t temp_to_color(byte temp); //переход из температуры в реальный цвет
-  void dic_map_key_gen();		//создание ключевого кадра. учитывает прошлое положение и температуру центра огня
-  int dic_map_cur_step();		//приблежает на 1 каждое значение из текущего кадра к ключевому. возвращает разницу между ними
-  void temp_map_gen();			//создает карту температур на основе текущего кадра
+	static IEffect::ParentBaseIDs _parent_base_IDs;
+	IEffect::ParentBaseIDs* get_parent_base_ids() override;
 
-  byte _dic_map_key[10][10];	//ключевой кадр с центрами диапазона для генерации _temp_map 
-  byte _side_coef_key[10];		//построчный коэфициент наклона огня для ключевого кадра
-  byte _dic_map_cur[10][10];	//текущий кадр
-  byte _side_coef_cur[10];		//коэфы для текущего кадра
-  byte _temp_map[10][10];		//карта температур для каждого пикселя
+	static Option_effect _option_effect;
+	inline Option_effect* get_option_effect() override;
 
-  byte _center_pos;				//позиция ценра огня
-  int _center_temp_change;		//смещение диапазона изменения температуры центра 
-  byte _center_temp;			//температура центра огня
-  byte _frame_count;			//отсчет кадров после генерации ключевого кадра, считает вниз от FRAMES
+	static Option_color _option_color;
+	inline Option_color* get_option_color() override;
 
-  static Options _options;
-  static bool _options_ini;
+	static Option_preset _option_preset;
+	inline Option_preset* get_option_preset() override;
 
-  static const byte _cutoff_order[98];
-  static const byte _cutoff_imm[2];
-  static const int _cutoff_order_len = 98;
-  static const int _cutoff_imm_len = 2;
+	uint32_t temp_to_color(byte temp); //переход из температуры в реальный цвет
+	void dic_map_key_gen();		//создание ключевого кадра. учитывает прошлое положение и температуру центра огня
+	int dic_map_cur_step();		//приблежает на 1 каждое значение из текущего кадра к ключевому. возвращает разницу между ними
+	void temp_map_gen();			//создает карту температур на основе текущего кадра
 
-  static const String _preset_names[3];
-  static const int _preset_len = 3;
+	byte _dic_map_key[10][10];	//ключевой кадр с центрами диапазона для генерации _temp_map 
+	byte _side_coef_key[10];		//построчный коэфициент наклона огня для ключевого кадра
+	byte _dic_map_cur[10][10];	//текущий кадр
+	byte _side_coef_cur[10];		//коэфы для текущего кадра
+	byte _temp_map[10][10];		//карта температур для каждого пикселя
 
-  static const String _name;
+	byte _center_pos;				//позиция ценра огня
+	int _center_temp_change;		//смещение диапазона изменения температуры центра 
+	byte _center_temp;			//температура центра огня
+	byte _frame_count;			//отсчет кадров после генерации ключевого кадра, считает вниз от FRAMES
+
+	static byte _cutoff_order[98];
+	static byte _cutoff_imm[2];
+	static const int _cutoff_order_len = 98;
+	static const int _cutoff_imm_len = 2;
 };
 
 #endif

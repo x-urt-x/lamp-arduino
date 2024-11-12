@@ -6,6 +6,7 @@
 //#define LOG_USB_COLOR_MAP_ENABLE
 #define LOG_USB_ENC_ENABLE
 //#define LOG_USB_FIRE_ENABLE
+#define LOG_USB_SWITCH_ENABLE
 
 //use only in this file
 #define LOG_USB_10x10(matr)						\
@@ -62,6 +63,12 @@ for (int i = 0; i < 10; i++)							\
 #define LOG_USB_FIRE(format, ...) ;
 #define LOG_USB_FIRE_SIDE_MAP(_side_coef, _dic_map) ;
 #define LOG_USB_FIRE_TEMP(_temp_map) ;
+#endif
+
+#ifdef LOG_USB_SWITCH_ENABLE
+#define LOG_USB_SWITCH(format, ...) Serial.printf(format, ##__VA_ARGS__)
+#else
+#define LOG_USB_SWITCH(format, ...) ;
 #endif
 
 #endif
