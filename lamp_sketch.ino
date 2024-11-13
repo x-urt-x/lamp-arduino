@@ -75,7 +75,6 @@ void setup() {
 }
 
 int br = 5000;
-int enc_select = 1;
 volatile bool is_enc = false;
 
 void loop() {
@@ -102,115 +101,13 @@ void loop() {
 		strip.tick(true);
 	}
 
-	if (Serial.available() > 0) {
-		char key0 = Serial.read();
-		LOG_USB_SWITCH("key0 - %c\n", key0);
-		switch (key0)
-		{
-		case 'e':
-		{
-			char key1 = Serial.read();
-			LOG_USB_SWITCH("key1 - %c\n", key1);
-			switch (key1)
-			{
-			case 'd':
-				strip.set_effect_strip_update_delay_time(Serial.readStringUntil('\n').toInt());
-				break;
-			case 'b':
-				strip.set_br(Serial.readStringUntil('\n').toInt());
-				break;
-			case 'c':
-				strip.set_effect_br_cutoff_bound(Serial.readStringUntil('\n').toInt());
-				break;
-			case 's':
-				strip.set_effect_step(Serial.readStringUntil('\n').toInt());
-				break;
-			default:
-				break;
-			}
-			break;
-		}
-		case 'c':
-		{
-			byte pos = Serial.readStringUntil(' ').toInt();
-			Color_str col;
-			col.set(strtoul(Serial.readStringUntil('\n').c_str(), nullptr, 16));
-			strip.set_color(col, pos);
-		}
-		case 'p':
-		{
-			char key1 = Serial.read();
-			LOG_USB_SWITCH("key1 - %c\n", key1);
-			switch (key1)
-			{
-			case 'n':
-			{
-				int count = strip.get_preset_count();
-				if (count > 0)
-				{
-					const String* names = strip.get_preset_names();
-					for (int i = 0; i < count; i++)
-					{
-						Serial.printf("%d - %s\n", i, names[i]);
-					}
-				}
-				else
-				{
-					Serial.printf("no preset\n");
-				}
-				break;
-			}
-			case 's':
-			{
-				strip.set_preset(Serial.readStringUntil('\n').toInt());
-				break;
-			}
-			default:
-				break;
-			}
-			break;
-		}
-		case 'r':
-		{
-			char key1 = Serial.read();
-			LOG_USB_SWITCH("key1 - %c\n", key1);
-			switch (key1)
-			{
-			case 'm':
-			{
-				byte pos = Serial.readStringUntil(' ').toInt();
-				strip.set_rainbow_state(Serial.readStringUntil('\n').toInt(), pos);
-				break;
-			}
-			case 's':
-			{
-				byte pos = Serial.readStringUntil(' ').toInt();
-				strip.set_rainbow_step(Serial.readStringUntil('\n').toInt(), pos);
-				break;
-			}
-			default:
-				break;
-			}
-			break;
-		}
-		case 's':
-		{
-			Serial.print(strip.get_status().c_str());
-			break;
-		}
-		case 'm':
-		{
-			strip.set_effect(Serial.readStringUntil('\n').toInt());
-			break;
-		}
-		default:
-			break;
-		}
+	while (Serial.available() > 0)
+	{
+		strip.parse(Serial.readStringUntil('\n').c_str());
 		strip.tick(true);
 	}
 	strip.tick();
 }
-
 
 inline void handleUDP() {
 	if (Udp.parsePacket()) {
@@ -235,30 +132,10 @@ void handleRoot() {
 		}
 	}
 	else if (server.method() == HTTP_POST) {
-		// Обработка POST запроса
-		//String data = server.arg("plain");
-
-		//int state_ind = data.indexOf("state=") + 6;
-		//int brightness_ind = data.indexOf("brightness=") + 11;
-		//int color_ind = data.indexOf("color=") + 6;
-		//int effect_ind = data.indexOf("effect=") + 7;
-		//int strip_update_delay_time_ind = data.indexOf("strip_update_delay_time=") + 24;
-		//int effect_speed_ind = data.indexOf("effect_speed=") + 13;
-
-
-		//if (state_ind != 5)
-		//	changeState(data.substring(state_ind, state_ind + 1) == "t");
-		//if (brightness_ind != 10)
-		//	stripColor.br = data.substring(brightness_ind, brightness_ind + 3).toInt() / 255.0;
-		//if (color_ind != 5)
-		//	stripColor.set(0xFF000000 | strtoul(data.substring(color_ind + 1, color_ind + 7).c_str(), nullptr, 16));
-		//if (effect_ind != 6)
-		//	chooseEffect(data.substring(effect_ind, effect_ind + 2).toInt());
-		//if (strip_update_delay_time_ind != 23)
-		//	strip_update_delay_time = data.substring(strip_update_delay_time_ind, data.indexOf("&", strip_update_delay_time_ind)).toInt();
-		//if (effect_speed_ind != 12)
-		//	effect_speed = data.substring(effect_speed_ind, data.indexOf("&", effect_speed_ind)).toInt();
+		String data = server.arg("plain");
+		strip.parse(data.c_str());
 		strip.tick(true);
 		server.send(200, "text/plain", "Data received successfully");
+		LOG_USB_HTTP("%s",data.c_str());
 	}
 }

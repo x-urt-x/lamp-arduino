@@ -21,6 +21,8 @@ public:
 	void set_effect(byte num);
 	void tick(bool now = false);
 
+	void parse(const char* input_str);
+
 	//Effectable
 	void set_effect_strip_update_delay_time(uint delay);
 	void set_effect_br_cutoff_bound(int br_cutoff_bound);

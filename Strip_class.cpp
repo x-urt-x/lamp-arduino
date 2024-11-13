@@ -99,6 +99,120 @@ void Strip::tick(bool now)
 	}
 }
 
+void Strip::parse(const char* input_str)
+{
+	char key = input_str[0];
+	input_str++
+	LOG_USB_SWITCH("key0 - %c\n", key);
+	switch (key)
+	{
+	case 'e':
+	{
+		key = input_str[0];
+		input_str++
+		LOG_USB_SWITCH("key1 - %c\n", key);
+		switch (key)
+		{
+		case 'd':
+			set_effect_strip_update_delay_time(atoi(input_str));
+			break;
+		case 'b':
+			set_br(atoi(input_str));
+			break;
+		case 'c':
+			set_effect_br_cutoff_bound(atoi(input_str));
+			break;
+		case 's':
+			set_effect_step(atoi(input_str));
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+	case 'c':
+	{
+		byte pos = atoi(input_str);
+		while (input_str[0] != ' ') input_str++;
+		Color_str col;
+		col.set(strtoul(input_str, nullptr, 16));
+		set_color(col, pos);
+	}
+	case 'p':
+	{
+		key = input_str[0];
+		input_str++
+		LOG_USB_SWITCH("key1 - %c\n", key);
+		switch (key)
+		{
+		case 'n':
+		{
+			int count = get_preset_count();
+			if (count > 0)
+			{
+				const String* names = get_preset_names();
+				for (int i = 0; i < count; i++)
+				{
+					Serial.printf("%d - %s\n", i, names[i]);
+				}
+			}
+			else
+			{
+				Serial.printf("no preset\n");
+			}
+			break;
+		}
+		case 's':
+		{
+			set_preset(atoi(input_str));
+			break;
+		}
+		default:
+			break;
+		}
+		break;
+	}
+	case 'r':
+	{
+		key = input_str[0];
+		input_str++
+		LOG_USB_SWITCH("key1 - %c\n", key);
+		switch (key)
+		{
+		case 'm':
+		{
+			byte pos = atoi(input_str);
+			while (input_str[0] != ' ') input_str++;
+			set_rainbow_state(atoi(input_str), pos);
+			break;
+		}
+		case 's':
+		{
+			byte pos = atoi(input_str);
+			while (input_str[0] != ' ') input_str++;
+			set_rainbow_step(atoi(input_str), pos);
+			break;
+		}
+		default:
+			break;
+		}
+		break;
+	}
+	case 's':
+	{
+		Serial.print(get_status().c_str());
+		break;
+	}
+	case 'm':
+	{
+		set_effect(atoi(input_str));
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 String Strip::get_status()
 {
 	String Effectable_str = "";
