@@ -204,12 +204,8 @@ void Strip::set_effect(byte num)
 		break;
 	}
 
-
 	effect->setup();
-	//тут надо переделать
-	_cur_cutoff_order = reinterpret_cast<Effectable*>(effect)->get_cutoff_order();
-	_cur_cutoff_imm = reinterpret_cast<Effectable*>(effect)->get_cutoff_imm();
-	_cur_cutoff_order_len = reinterpret_cast<Effectable*>(effect)->get_cutoff_order_len();
-	_cur_cutoff_imm_len = reinterpret_cast<Effectable*>(effect)->get_cutoff_imm_len();
-	_cur_cutoff_units = _cur_cutoff_order_len + (_cur_cutoff_imm_len == 0 ? 0 : 1);
+
+	_cutoff_option = effect->get_cutoff_str();
+	_cur_cutoff_units = _cutoff_option->_cutoff_order_len + (_cutoff_option->_cutoff_imm_len == 0 ? 0 : 1);
 }

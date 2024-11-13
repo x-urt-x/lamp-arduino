@@ -8,7 +8,8 @@
 #define byte_d(val) ((val) < 0 ? 0 : (val))
 #define byte_round_up(val) ((val)==byte(val)?(val):byte(val+1)) 
 
-struct Color_str {
+struct Color_str 
+{
 	byte g, r, b; //внутренний массив библиотеки имеет формат grb 
 	Color_str() : r(0), g(0), b(0) {}
 	Color_str(byte red, byte green, byte blue) : r(red), g(green), b(blue) {}
@@ -69,5 +70,13 @@ struct Color_str {
 	{
 		return Color_str(Adafruit_NeoPixel::ColorHSV(hue));
 	}
+};
+
+struct Cutoff_str
+{
+	const int _cutoff_order_len;
+	const int _cutoff_imm_len;
+	byte* _cutoff_order;
+	byte* _cutoff_imm;
 };
 #endif

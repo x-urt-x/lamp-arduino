@@ -10,7 +10,11 @@
 #define RANDOM_CENTER 0
 #define RANDOM_RANGE 3
 
-byte Effect_fire::_cutoff_order[Effect_fire::_cutoff_order_len] =
+Cutoff_str Effect_fire::_cutoff_option
+{
+	MATR_LEN - 2,
+	2,
+	new byte[MATR_LEN - 2]
 #ifdef MATR10x10
 {
 	0,9,1,8,2,7,3,6,4,5,
@@ -26,7 +30,7 @@ byte Effect_fire::_cutoff_order[Effect_fire::_cutoff_order_len] =
 	91,98,
 	92,97,
 	93,96
-};
+}
 #else
 #ifdef MATR16x16
 {
@@ -45,26 +49,26 @@ byte Effect_fire::_cutoff_order[Effect_fire::_cutoff_order_len] =
 		192, 207, 193, 206, 194, 205, 195, 204, 196, 203, 197, 202, 198, 201, 199, 200,
 		208, 223, 209, 222, 210, 221, 211, 220, 212, 219, 213, 218, 214, 217, 215, 216,
 		224, 239, 225, 238, 226, 237, 227, 236, 228, 235, 229, 234, 230, 233, 231, 232,
-		240, 255, 
-		241, 254, 
-		242, 253, 
-		243, 252, 
-		244, 251, 
-		245, 250, 
-		246, 249, 
-};
+		240, 255,
+		241, 254,
+		242, 253,
+		243, 252,
+		244, 251,
+		245, 250,
+		246, 249,
+}
 #endif // MATR16x16
 #endif // MATR10x10
-
-byte Effect_fire::_cutoff_imm[Effect_fire::_cutoff_imm_len] =
+,
+new byte[2]
 #ifdef MATR10x10
-{ 94, 95 };
+{ 94, 95 }
 #else
 #ifdef MATR16x16
-{ 247, 248 };
+{ 247, 248 }
 #endif // MATR16x16
 #endif // MATR10x10
-
+};
 
 //class Effect_fire : public Effectable, public Colorable, public Preseteble
 IEffect::ParentBaseIDs Effect_fire::_parent_base_IDs =
@@ -90,14 +94,11 @@ inline Preseteble::Option_preset* Effect_fire::get_option_preset() { return &_op
 Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
 
 
-byte* Effect_fire::get_cutoff_order() { return _cutoff_order; }
-byte* Effect_fire::get_cutoff_imm() { return _cutoff_imm; }
-byte Effect_fire::get_cutoff_order_len() { return _cutoff_order_len; }
-byte Effect_fire::get_cutoff_imm_len() { return _cutoff_imm_len; }
-
 String Effect_fire::get_effect_name() { return "Fire"; }
 
 void Effect_fire::apply_default_option() { set_preset(0); }
+
+Cutoff_str* Effect_fire::get_cutoff_str() { return &_cutoff_option; }
 
 void Effect_fire::set_preset(int num)
 {
@@ -147,7 +148,7 @@ void Effect_fire::setup()
 	_frame_count = FRAMES;
 	//центр пламени
 	_center_temp_change = 20;
-	_center_pos = random(2, MATR_SIZE-2);
+	_center_pos = random(2, MATR_SIZE - 2);
 	_center_temp = random(180, 240);
 
 	dic_map_key_gen();
@@ -165,10 +166,10 @@ void Effect_fire::dic_map_key_gen()
 {
 	LOG_USB_FIRE("center = %d\tcenter_temp = %d\n", _center_pos, _center_temp);
 
-	_dic_map_key[_center_pos][MATR_SIZE-1] = 255 - _center_temp;
+	_dic_map_key[_center_pos][MATR_SIZE - 1] = 255 - _center_temp;
 	for (int x = 0; x < MATR_SIZE; x++)
 	{
-		_dic_map_key[x][MATR_SIZE-1] = random(10, 20);
+		_dic_map_key[x][MATR_SIZE - 1] = random(10, 20);
 	}
 
 	_side_coef_key[0] = random(SIDE_CENTER - SIDE_RANGE, SIDE_CENTER + SIDE_RANGE + 1);
@@ -178,7 +179,7 @@ void Effect_fire::dic_map_key_gen()
 		_side_coef_key[y] = constrain(int(_side_coef_key[y - 1]) + delta, 0, 255);
 	}
 
-	for (int y = 0; y < MATR_SIZE-1; y++)
+	for (int y = 0; y < MATR_SIZE - 1; y++)
 		for (int x = 0; x < MATR_SIZE; x++)
 			_dic_map_key[x][y] = random(DEC_CENTER - DEC_RANGE, DEC_CENTER + DEC_RANGE + 1);
 
@@ -231,13 +232,13 @@ int Effect_fire::dic_map_cur_step()
 
 void Effect_fire::temp_map_gen()
 {
-	_temp_map[_center_pos][MATR_SIZE-1] = _center_temp;
+	_temp_map[_center_pos][MATR_SIZE - 1] = _center_temp;
 	for (int x = _center_pos + 1; x < MATR_SIZE; x++)
-		_temp_map[x][MATR_SIZE-1] = constrain(_temp_map[x - 1][MATR_SIZE-1] - _dic_map_cur[x][MATR_SIZE-1] * (1 + sqrt(x - _center_pos) / 2), 1, 254) - random(-1, 2);
+		_temp_map[x][MATR_SIZE - 1] = constrain(_temp_map[x - 1][MATR_SIZE - 1] - _dic_map_cur[x][MATR_SIZE - 1] * (1 + sqrt(x - _center_pos) / 2), 1, 254) - random(-1, 2);
 	for (int x = _center_pos - 1; x >= 0; x--)
-		_temp_map[x][MATR_SIZE-1] = constrain(_temp_map[x + 1][MATR_SIZE-1] - _dic_map_cur[x][MATR_SIZE-1] * (1 + sqrt(_center_pos - x) / 2), 1, 254) - random(-1, 2);
+		_temp_map[x][MATR_SIZE - 1] = constrain(_temp_map[x + 1][MATR_SIZE - 1] - _dic_map_cur[x][MATR_SIZE - 1] * (1 + sqrt(_center_pos - x) / 2), 1, 254) - random(-1, 2);
 
-	for (int y = 0; y < MATR_SIZE-1; y++)
+	for (int y = 0; y < MATR_SIZE - 1; y++)
 	{
 		byte left = 2 * SIDE_CENTER - _side_coef_cur[y];
 		LOG_USB_FIRE("row: %d\t", y);
@@ -245,9 +246,9 @@ void Effect_fire::temp_map_gen()
 		{
 			_temp_map[x][y] = (
 				_temp_map[x][y + 1] +
-				_temp_map[x][y > MATR_SIZE-3 ? MATR_SIZE-1 : y + 2] * 1.05 +
-				float(_temp_map[constrain(x - 1, 0, MATR_SIZE-1)][y + 1]) * ((left + random(RANDOM_CENTER - RANDOM_RANGE, RANDOM_CENTER + RANDOM_RANGE + 1) / 10.0) / 10.0) +
-				float(_temp_map[constrain(x + 1, 0, MATR_SIZE-1)][y + 1]) * ((_side_coef_cur[y] + random(RANDOM_CENTER - RANDOM_RANGE, RANDOM_CENTER + RANDOM_RANGE + 1) / 10.0) / 10.0)
+				_temp_map[x][y > MATR_SIZE - 3 ? MATR_SIZE - 1 : y + 2] * 1.05 +
+				float(_temp_map[constrain(x - 1, 0, MATR_SIZE - 1)][y + 1]) * ((left + random(RANDOM_CENTER - RANDOM_RANGE, RANDOM_CENTER + RANDOM_RANGE + 1) / 10.0) / 10.0) +
+				float(_temp_map[constrain(x + 1, 0, MATR_SIZE - 1)][y + 1]) * ((_side_coef_cur[y] + random(RANDOM_CENTER - RANDOM_RANGE, RANDOM_CENTER + RANDOM_RANGE + 1) / 10.0) / 10.0)
 				) / 4;
 			LOG_USB_FIRE("%d - ", _temp_map[x][y]);
 			int dic = _dic_map_cur[x][y] + int(random(-4, 6) / 3);
@@ -274,7 +275,7 @@ void Effect_fire::make_frame()
 		if (_center_temp > 220) _center_temp_change = 50;
 
 		//положение центра
-		_center_pos += byte(random((_center_pos > MATR_SIZE*2/3 ? 1 : 5), (_center_pos < MATR_SIZE/3 ? 17 : 13))) / 6;
+		_center_pos += byte(random((_center_pos > MATR_SIZE * 2 / 3 ? 1 : 5), (_center_pos < MATR_SIZE / 3 ? 17 : 13))) / 6;
 		_center_pos = constrain(_center_pos, 1, MATR_SIZE);
 		_center_pos--;
 

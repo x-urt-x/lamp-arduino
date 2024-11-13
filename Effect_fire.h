@@ -16,10 +16,7 @@ public:
 	
 	void apply_default_option() override;
 
-	byte* get_cutoff_order() override;
-	byte* get_cutoff_imm() override;
-	byte get_cutoff_order_len() override;
-	byte get_cutoff_imm_len() override;
+	virtual Cutoff_str* get_cutoff_str() override;
 
 	//Preseteble
 	void set_preset(int num = 0) override;
@@ -55,10 +52,7 @@ private:
 	byte _center_temp;			//температура центра огня
 	byte _frame_count;			//отсчет кадров после генерации ключевого кадра, считает вниз от FRAMES
 
-	static const int _cutoff_order_len = MATR_LEN-2;
-	static const int _cutoff_imm_len = 2;
-	static byte _cutoff_order[_cutoff_order_len];
-	static byte _cutoff_imm[_cutoff_imm_len];
+	static Cutoff_str _cutoff_option;
 };
 
 #endif

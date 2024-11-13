@@ -10,10 +10,7 @@ class Effectable : virtual public IEffect
 public:
 	static const BaseIDEnum BaseID = BaseIDEnum::EffectableID;
 	static const size_t BaseSize;
-	virtual byte* get_cutoff_order();
-	virtual byte* get_cutoff_imm();
-	virtual byte get_cutoff_order_len();
-	virtual byte get_cutoff_imm_len();
+	virtual Cutoff_str* get_cutoff_str();
 
 	virtual String get_effect_name() = 0;
 	virtual void apply_default_option() = 0;
@@ -33,11 +30,7 @@ protected:
 	};
 	inline virtual Option_effect* get_option_effect() = 0;
 
-	//direct pointer for better perfomance
-	static const int _cutoff_order_len = MATR_LEN-4;
-	static const int _cutoff_imm_len = 4;
-	static byte _cutoff_order[_cutoff_order_len];
-	static byte _cutoff_imm[_cutoff_imm_len];
+	static Cutoff_str _cutoff_option;
 };
 
 class Colorable : virtual public IEffect

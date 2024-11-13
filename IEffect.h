@@ -1,11 +1,14 @@
 #ifndef IEFFECT_H
 #define IEFFECT_H
 
+#include "Structures.h"
+
 class IEffect
 {
 public:
 	virtual void setup() = 0;
 	virtual void make_frame() = 0;
+	virtual Cutoff_str* get_cutoff_str() = 0;
 
 	enum BaseIDEnum : byte
 	{

@@ -41,9 +41,9 @@ private:
 	unsigned long _strip_update_cur_time = 0;
 	float _br_max_gain;
 	
-	byte* _cur_cutoff_order;
-	byte* _cur_cutoff_imm;
-	byte _cur_cutoff_order_len, _cur_cutoff_imm_len, _cur_cutoff_units;
+	Cutoff_str* _cutoff_option;
+	byte _cur_cutoff_units;
+
 	int _strip_update_delay_time = 0;
 
 	uint8* _pixels;
