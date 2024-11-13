@@ -11,6 +11,7 @@
 #define LOG_USB_ENC_ENABLE
 //#define LOG_USB_FIRE_ENABLE
 //#define LOG_USB_SWITCH_ENABLE
+#define LOG_USB_UPD_ENABLE
 
 #endif // LOG_USB_ENABLE
 
@@ -78,6 +79,12 @@ for (int i = 0; i < MATR_SIZE; i++)							\
 #define LOG_USB_SWITCH(format, ...) Serial.printf(format, ##__VA_ARGS__)
 #else
 #define LOG_USB_SWITCH(format, ...) ;
+#endif
+
+#ifdef LOG_USB_UPD_ENABLE
+#define LOG_USB_UPD(format, ...) Serial.printf(format, ##__VA_ARGS__)
+#else
+#define LOG_USB_UPD(format, ...) ;
 #endif
 
 #endif
