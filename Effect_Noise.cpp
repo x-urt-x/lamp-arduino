@@ -1,6 +1,6 @@
 #include "Effect_Noise.h"
 
-#define led_m(x,y) _leds_arr[y*10+(y%2==0?x:9-x)]
+#define led_m(x,y) _leds_arr[y*MATR_SIZE+(y%2==0?x:MATR_SIZE-x-1)]
 
 //class Effect_Noise : public Effectable, public Colorable, public Rainbowble
 IEffect::ParentBaseIDs Effect_Noise::_parent_base_IDs =
@@ -49,9 +49,9 @@ void Effect_Noise::setup()
 
 void Effect_Noise::make_frame()
 {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < MATR_SIZE; i++) {
 		int ioffset = scale * i;
-		for (int j = 0; j < 10; j++) {
+		for (int j = 0; j < MATR_SIZE; j++) {
 			int joffset = scale * j;
 			int noise = inoise8(_x + ioffset, _y + joffset, _z);
 			if (_option_rainbow.states[0])

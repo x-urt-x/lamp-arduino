@@ -32,13 +32,13 @@ void Effect_rainbowStrip::apply_default_option()
 
 void Effect_rainbowStrip::setup()
 {
-	for (int i = 0; i < 100; i++)
-		_hue[i] = i * 65535 / 100;
+	for (int i = 0; i < MATR_LEN; i++)
+		_hue[i] = i * 65535 / MATR_LEN;
 }
 
 void Effect_rainbowStrip::make_frame()
 {
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < MATR_LEN; i++)
 	{
 		_leds_arr[i].set(Color_str::ColorHSV(_hue[i]));
 		_hue[i] += _option_rainbow.steps[0];

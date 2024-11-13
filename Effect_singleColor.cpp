@@ -29,7 +29,7 @@ String Effect_singleColor::get_effect_name() { return "Single Color"; }
 void Effect_singleColor::apply_default_option()
 {
 	_option_color.colors[0] = Color_str(255, 255, 255);
-	_option_effect.strip_update_delay_time = 60000;
+	_option_effect.strip_update_delay_time = 100;
 	_option_effect.br_cutoff_bound = 0;
 	_option_effect.effect_step = 0;
 	_option_rainbow.states[0] = false;
@@ -43,13 +43,13 @@ void Effect_singleColor::make_frame()
 	if (_option_rainbow.states[0])
 	{
 		Color_str color = Color_str::ColorHSV(_hue);
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < MATR_LEN; i++)
 			_leds_arr[i].set(color);
 		_hue += _option_rainbow.steps[0];
 	}
 	else
 	{
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < MATR_LEN; i++)
 			_leds_arr[i].set(_option_color.colors[0]);
 	}
 }

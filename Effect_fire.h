@@ -44,21 +44,21 @@ private:
 	int dic_map_cur_step();		//приблежает на 1 каждое значение из текущего кадра к ключевому. возвращает разницу между ними
 	void temp_map_gen();			//создает карту температур на основе текущего кадра
 
-	byte _dic_map_key[10][10];	//ключевой кадр с центрами диапазона для генерации _temp_map 
-	byte _side_coef_key[10];		//построчный коэфициент наклона огня для ключевого кадра
-	byte _dic_map_cur[10][10];	//текущий кадр
-	byte _side_coef_cur[10];		//коэфы для текущего кадра
-	byte _temp_map[10][10];		//карта температур для каждого пикселя
+	byte _dic_map_key[MATR_SIZE][MATR_SIZE];	//ключевой кадр с центрами диапазона для генерации _temp_map 
+	byte _side_coef_key[MATR_SIZE];		//построчный коэфициент наклона огня для ключевого кадра
+	byte _dic_map_cur[MATR_SIZE][MATR_SIZE];	//текущий кадр
+	byte _side_coef_cur[MATR_SIZE];		//коэфы для текущего кадра
+	byte _temp_map[MATR_SIZE][MATR_SIZE];		//карта температур для каждого пикселя
 
 	byte _center_pos;				//позиция ценра огня
 	int _center_temp_change;		//смещение диапазона изменения температуры центра 
 	byte _center_temp;			//температура центра огня
 	byte _frame_count;			//отсчет кадров после генерации ключевого кадра, считает вниз от FRAMES
 
-	static byte _cutoff_order[98];
-	static byte _cutoff_imm[2];
-	static const int _cutoff_order_len = 98;
+	static const int _cutoff_order_len = MATR_LEN-2;
 	static const int _cutoff_imm_len = 2;
+	static byte _cutoff_order[_cutoff_order_len];
+	static byte _cutoff_imm[_cutoff_imm_len];
 };
 
 #endif

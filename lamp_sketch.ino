@@ -1,43 +1,32 @@
-#include "Strip_class.h"
+#include "Config.h"
 #include "log.h"
+#include "Strip_class.h"
 
-#define EB_NO_FOR
-#define EB_NO_CALLBACK
-#define EB_DEB_TIME 50     // таймаут гашения дребезга кнопки (кнопка)
-#define EB_CLICK_TIME 500  // таймаут ожидания кликов (кнопка)
-#define EB_HOLD_TIME 1500  // таймаут удержания (кнопка)
-#define EB_STEP_TIME 200   // таймаут импульсного удержания (кнопка)
-#define EB_FAST_TIME 30    // таймаут быстрого поворота (энкодер)
 #include <EncButton.h>
 
-#define ENC_S1 D0
-#define ENC_S2 D5
-#define ENC_KEY D6
-#define inbr_cur_PIN A0
-#define GREEN_PIN D1
-#define RED_PIN D2
-#define ORNG_PIN D3
-#define STRIP_PIN D4
-
-#define STRIP_LED_COUNT 100
 
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
-Strip strip(STRIP_LED_COUNT, STRIP_PIN);
+Strip strip(MATR_LEN, STRIP_PIN);
 
 void setup() {
 	randomSeed(analogRead(0));
+#ifdef LOG_USB_ENABLE
 	Serial.begin(115200);
-	Serial.println("start");
+#endif // LOG_USB_ENABLE
+	LOG_USB_STARTUP("start");
 	strip.begin();
 	strip.fill(strip.Color(0, 0, 0));
 	delay(0);
 	strip.show();
+#ifdef MATR10x10
 	pinMode(inbr_cur_PIN, INPUT);
 	pinMode(GREEN_PIN, OUTPUT);
 	digitalWrite(GREEN_PIN, LOW);
 	pinMode(ORNG_PIN, OUTPUT);
 	digitalWrite(ORNG_PIN, LOW);
+#endif // MATR10x10
+
 	pinMode(RED_PIN, OUTPUT);
 	digitalWrite(RED_PIN, LOW);
 
@@ -74,7 +63,7 @@ void loop() {
 
 	if (Serial.available() > 0) {
 		char key0 = Serial.read();
-		LOG_USB_SWITCH("key0 - %c\n",key0);
+		LOG_USB_SWITCH("key0 - %c\n", key0);
 		switch (key0)
 		{
 		case 'e':
@@ -165,7 +154,7 @@ void loop() {
 		}
 		case 's':
 		{
-			LOG_USB_SWITCH(strip.get_status().c_str());
+			Serial.print(strip.get_status().c_str());
 			break;
 		}
 		case 'm':

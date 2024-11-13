@@ -1,6 +1,7 @@
 #ifndef EFFECT_BASES_H
 #define EFFECT_BASES_H
 
+#include "Config.h"
 #include "Structures.h"
 #include "IEffect.h"
 
@@ -33,7 +34,7 @@ protected:
 	inline virtual Option_effect* get_option_effect() = 0;
 
 	//direct pointer for better perfomance
-	static const int _cutoff_order_len = 96;
+	static const int _cutoff_order_len = MATR_LEN-4;
 	static const int _cutoff_imm_len = 4;
 	static byte _cutoff_order[_cutoff_order_len];
 	static byte _cutoff_imm[_cutoff_imm_len];

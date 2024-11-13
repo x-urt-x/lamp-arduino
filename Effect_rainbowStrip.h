@@ -28,7 +28,7 @@ private:
 	static Option_effect _option_effect;
 	inline Option_effect* get_option_effect() override;
 
-	uint16_t _hue[100];
+	uint16_t _hue[MATR_LEN];
 };
 
 #endif
