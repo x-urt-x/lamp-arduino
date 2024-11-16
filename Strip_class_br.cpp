@@ -69,4 +69,9 @@ void Strip::set_br(int br) {
 	_br_vir = constrain(br, 0, 255 * _cur_cutoff_units);
 }
 
+int Strip::get_br()
+{
+	return _br_vir;
+}
+
 

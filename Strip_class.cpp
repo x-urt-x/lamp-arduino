@@ -41,6 +41,30 @@ void Strip::apply_default_option()
 	if (Effectable* tmp = effect->castToBase<Effectable>())
 		tmp->apply_default_option();
 }
+int Strip::get_strip_update_delay_time()
+{
+	if (Effectable* tmp = effect->castToBase<Effectable>())
+		return tmp->get_strip_update_delay_time();
+	return -1;
+}
+int Strip::get_br_cutoff_bound()
+{
+	if (Effectable* tmp = effect->castToBase<Effectable>())
+		return tmp->get_br_cutoff_bound();
+	return -1;
+}
+int Strip::get_effect_step()
+{
+	if (Effectable* tmp = effect->castToBase<Effectable>())
+		return tmp->get_effect_step();
+	return -1;
+}
+String Strip::get_effect_name()
+{
+	if (Effectable* tmp = effect->castToBase<Effectable>())
+		return tmp->get_effect_name();
+	return String();
+}
 
 //Colorable
 void Strip::set_color(Color_str color, int num)
@@ -48,29 +72,38 @@ void Strip::set_color(Color_str color, int num)
 	if (Colorable* tmp = effect->castToBase<Colorable>())
 		tmp->set_color(color, num);
 }
+Color_str* Strip::get_colors()
+{
+	if (Colorable* tmp = effect->castToBase<Colorable>())
+		return tmp->get_colors();
+	return nullptr;
+}
+int Strip::get_color_len()
+{
+	if (Colorable* tmp = effect->castToBase<Colorable>())
+		return tmp->get_color_len();
+	return 0;
+}
 
 //Preseteble
-int Strip::get_preset_count()
-{
-	if (Preseteble* tmp = effect->castToBase<Preseteble>())
-		return tmp->get_preset_len();
-	else
-		return -1;
-}
-const String* Strip::get_preset_names()
-{
-	if (Preseteble* tmp = effect->castToBase<Preseteble>())
-	{
-		return tmp->get_preset_names();
-	}
-	else
-		return nullptr;
-}
 void Strip::set_preset(int num)
 {
 	if (Preseteble* tmp = effect->castToBase<Preseteble>())
 		tmp->set_preset(num);
 }
+int Strip::get_preset_count()
+{
+	if (Preseteble* tmp = effect->castToBase<Preseteble>())
+		return tmp->get_preset_len();
+	return 0;
+}
+const String* Strip::get_preset_names()
+{
+	if (Preseteble* tmp = effect->castToBase<Preseteble>())
+		return tmp->get_preset_names();
+	return nullptr;
+}
+
 //Rainbowble
 void Strip::set_rainbow_state(bool state, int num)
 {
@@ -81,6 +114,24 @@ void Strip::set_rainbow_step(int step, int num)
 {
 	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
 		tmp->set_rainbow_step(step, num);
+}
+bool* Strip::get_rainbow_states()
+{
+	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+		return tmp->get_rainbow_states();
+	return nullptr;
+}
+int* Strip::get_rainbow_steps()
+{
+	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+		return tmp->get_rainbow_steps();
+	return nullptr;
+}
+int Strip::get_rainbow_len()
+{
+	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+		return tmp->get_rainbow_len();
+	return 0;
 }
 
 
@@ -101,16 +152,17 @@ void Strip::tick(bool now)
 
 void Strip::parse(const char* input_str)
 {
+	LOG_USB_SWITCH("%s\n", input_str);
 	char key = input_str[0];
-	input_str++
-	LOG_USB_SWITCH("key0 - %c\n", key);
+	input_str++;
+		LOG_USB_SWITCH("key0 - %c\n", key);
 	switch (key)
 	{
 	case 'e':
 	{
 		key = input_str[0];
-		input_str++
-		LOG_USB_SWITCH("key1 - %c\n", key);
+		input_str++;
+			LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'd':
@@ -141,8 +193,8 @@ void Strip::parse(const char* input_str)
 	case 'p':
 	{
 		key = input_str[0];
-		input_str++
-		LOG_USB_SWITCH("key1 - %c\n", key);
+		input_str++;
+			LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'n':
@@ -175,8 +227,8 @@ void Strip::parse(const char* input_str)
 	case 'r':
 	{
 		key = input_str[0];
-		input_str++
-		LOG_USB_SWITCH("key1 - %c\n", key);
+		input_str++;
+			LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'm':
@@ -224,6 +276,10 @@ String Strip::get_status()
 
 		Effectable_str += "strip_update_delay_time = ";
 		Effectable_str += tmp->get_strip_update_delay_time();
+		Effectable_str += "\n";
+
+		Effectable_str += "br = ";
+		Effectable_str += String(_br_vir);
 		Effectable_str += "\n";
 
 		Effectable_str += "br_cutoff_bound = ";

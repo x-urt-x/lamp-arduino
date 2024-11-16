@@ -1,68 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ESP8266 Lamp Control</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    input, button {
-      margin: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1>ESP8266 Lamp Control</h1>
-  <form id="lampForm">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Effect Settings</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .block {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      .block h3 {
+        margin-top: 0;
+      }
+      .field {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+      }
+      .field input[type="text"] {
+        margin-right: 10px;
+      }
+      .apply-btn {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Effect Configuration</h1>
 
-    <label for="state">State:</label>
-    <input type="checkbox" id="state" name="state" checked><br>
+    <label for="effect-selector">Choose Effect:</label>
+    <select id="effect-selector">
+      <option value="m0">Single Color</option>
+      <option value="m1">Fire</option>
+      <option value="m2">Rainbow</option>
+      <option value="m3">Noise</option>
+      <!-- Add more effects here if needed -->
+    </select>
 
-    <label for="brightness">Brightness:</label>
-    <input type="range" id="brightness" name="brightness" min="0" max="255" value="128"><br>
+    <div id="form-container"></div>
+    <button class="apply-btn" onclick="applyChanges()">Apply All</button>
 
-    <label for="color">Color:</label>
-    <input type="color" id="color" name="color" value="#ffffff"><br>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        loadEffectOptions();
+        document
+          .getElementById("effect-selector")
+          .addEventListener("change", handleEffectChange);
+      });
 
-    <label for="effect">Effect:</label>
-    <select id="effect" name="effect">
-      <option value="00">Effect 0</option>
-      <option value="01">Effect 1</option>
-      <option value="02">Effect 2</option>
-      <option value="03">Effect 3</option>
-      <option value="04">Effect 4</option>
-      <option value="05">Effect 5</option>
-    </select><br>
+      function loadEffectOptions() {
+        fetch("/get-effect-option")
+          .then((response) => response.json())
+          .then((data) => {
+            setEffectSelector(data.name);
+            generateForm(data.blocks);
+          });
+      }
 
-    <label for="strip_update_delay_time">Strip Update Delay Time (ms):</label>
-    <input type="number" id="strip_update_delay_time" name="strip_update_delay_time" value="100"><br>
+      function setEffectSelector(selectedEffectName) {
+        const effectSelector = document.getElementById("effect-selector");
+        for (const option of effectSelector.options) {
+          if (option.textContent === selectedEffectName) {
+            option.selected = true;
+            break;
+          }
+        }
+      }
 
-    <label for="effect_speed">Effect Speed:</label>
-    <input type="number" id="effect_speed" name="effect_speed" value="50"><br>
+      function generateForm(blocks) {
+        const container = document.getElementById("form-container");
+        container.innerHTML = "";
 
-    <button type="button" onclick="applySettings()">Apply</button>
+        blocks.forEach((block) => {
+          const blockDiv = document.createElement("div");
+          blockDiv.className = "block";
+          blockDiv.innerHTML = `<h3>${block.block_name}</h3>`;
 
-  </form>
+          switch (block.block_name) {
+            case "effectable":
+              {
+                blockDiv.insertAdjacentHTML(
+                  "beforeend",
+                  `
+          <div class="field">
+              <input type="number" value="${block["strip_update_delay_time"]}" data-to-send="" data-prefix="ed" />
+              <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
+          </div>
+      `
+                );
+              }
+              {
+                blockDiv.insertAdjacentHTML(
+                  "beforeend",
+                  `
+          <div class="field">
+              <input type="number" value="${block["br"]}" data-to-send="" data-prefix="eb" />
+              <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
+          </div>
+      `
+                );
+              }
+              {
+                blockDiv.insertAdjacentHTML(
+                  "beforeend",
+                  `
+          <div class="field">
+              <input type="number" value="${block["br_cutoff_bound"]}" data-to-send="" data-prefix="ec" />
+              <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
+          </div>
+      `
+                );
+              }
+              break;
+            case "colorable":
+              for (const [key, value] of Object.entries(block)) {
+                if (key === "block_name") continue;
+            
+                  blockDiv.insertAdjacentHTML(
+                    "beforeend",
+                    `
+            <div class="field">
+                <input type="color" value="${value["Color"]}" data-to-send="" data-prefix="c${key}" />
+                <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
+            </div>
+        `
+                  );
+              }
+              break;
+            case "rainbowble":
+              for (const [key, value] of Object.entries(block)) {
+                if (key === "block_name") continue;
 
-  <script>
-    function applySettings() {
-      var state = document.getElementById("state").checked;
-      var brightness = document.getElementById("brightness").value.padStart(3, '0');
-      var color = document.getElementById("color").value;
-      var effect = document.getElementById("effect").value;
-      var strip_update_delay_time = document.getElementById("strip_update_delay_time").value;
-      var effect_speed = document.getElementById("effect_speed").value;
+                blockDiv.insertAdjacentHTML(
+                  "beforeend",
+                  `
+            <div class="field">
+                <input type="checkbox" ${
+                  value["State"] == 1 ? "checked" : ""
+                }  data-to-send="" data-prefix="rm${key}" />
+                <input type="number" value="${value["Step"]}" data-to-send="" data-prefix="rs${key}" />
+                <input type="checkbox" title="Auto-send on change" data-auto-send-toggle="" />
+            </div>
+        `
+                );
+              }
+              break;
+            case "preseteble":
+              for (const [key, value] of Object.entries(block)) {
+                if (key === "block_name") continue;
+                  blockDiv.insertAdjacentHTML(
+                    "beforeend",
+                    `
+            <div class="field">
+                <button data-prefix="ps" value="${key}" data-send-btn="">${value["Name"]}</button>
+            </div>
+        `
+                  );
+              }
 
-      var xhr = new XMLHttpRequest();
+              break;
+            default:
+              break;
+          }
+          const inputs = blockDiv.querySelectorAll("input[data-to-send]");
 
-      xhr.open("POST", "/", true);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.send("state=" + state + "&brightness=" + brightness + "&color=" + color + "&effect=" + effect +
-               "&strip_update_delay_time=" + strip_update_delay_time + "&effect_speed=" + effect_speed);
-    }
-  </script>
-</body>
+          inputs.forEach((input) => {
+            input.addEventListener("input", handleInput);
+          });
+
+          const buttons = blockDiv.querySelectorAll("button[data-send-btn]");
+          buttons.forEach((button) => {
+            button.addEventListener("click", handleBtnClick);
+          });
+          container.appendChild(blockDiv);
+        });
+      }
+
+      function handleInput(event) {
+        const input = event.target;
+        const parentDiv = input.closest("div");
+        const autoSendToggle = parentDiv.querySelector(
+          "[data-auto-send-toggle]"
+        );
+        if (autoSendToggle && autoSendToggle.checked) {
+          sendPostRequest(getEncodedString(input));
+        }
+      }
+      function handleBtnClick(event) {
+        const input = event.target;
+        sendPostRequest(getEncodedString(input));
+        loadEffectOptions();
+      }
+
+      function handleEffectChange() {
+        const selectedEffectCode =
+          document.getElementById("effect-selector").value;
+        sendPostRequest(selectedEffectCode);
+
+        setTimeout(() => loadEffectOptions(), 500);
+      }
+
+      function applyChanges() {
+        const inputs = document.querySelectorAll("input[data-to-send]");
+        const changes = Array.from(inputs).map((input) => {
+          return getEncodedString(input);
+        });
+
+        sendPostRequest(changes.join("\n"));
+      }
+
+      function getEncodedString(input) {
+        const prefix = input.dataset.prefix;
+        let value;
+
+        if (input.type === "checkbox") {
+          value = input.checked ? "1" : "0";
+        } else {
+          value = input.value.replace("#", "");
+        }
+        return `${prefix} ${value}`;
+      }
+
+      let isRequestInProgress = false;
+      let lastData = null;
+
+      function sendPostRequest(data) {
+        if (isRequestInProgress) {
+          lastData = data;
+          return;
+        }
+        isRequestInProgress = true;
+
+        fetch("/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          body: data,
+        })
+          .then((response) => response.text())
+          .then((result) => {
+            console.log("Server response:", result);
+            isRequestInProgress = false;
+            if (lastData) {
+              sendPostRequest(lastData);
+              lastData = null;
+            }
+          })
+          .catch((error) => {
+            console.error("Ошибка:", error);
+            isRequestInProgress = false;
+            if (lastData) {
+              sendPostRequest(lastData);
+              lastData = null;
+            }
+          });
+      }
+    </script>
+  </body>
 </html>

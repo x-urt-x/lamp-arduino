@@ -88,7 +88,7 @@ inline Effectable::Option_effect* Effect_fire::get_option_effect() { return &_op
 Colorable::Option_color Effect_fire::_option_color{ new Color_str[4]{}, 4 };
 inline Colorable::Option_color* Effect_fire::get_option_color() { return &_option_color; }
 
-Preseteble::Option_preset Effect_fire::_option_preset{ (new String[3]{"red fire","blue fire","green fire"}),4 };
+Preseteble::Option_preset Effect_fire::_option_preset{ (new String[3]{"red fire","blue fire","green fire"}),3 };
 inline Preseteble::Option_preset* Effect_fire::get_option_preset() { return &_option_preset; }
 
 Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }

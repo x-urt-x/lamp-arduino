@@ -10,14 +10,12 @@
 class Strip : public Adafruit_NeoPixel
 {
 public:
-	Strip(uint16_t n, int16_t p = 6); //n=100
+	Strip(uint16_t n, int16_t p = 6);
 
 	void begin();
-
-	int get_preset_count();
-	const String* get_preset_names();
 	String get_status();
 	void set_br(int br);
+	int get_br();
 	void set_effect(byte num);
 	void tick(bool now = false);
 
@@ -28,13 +26,24 @@ public:
 	void set_effect_br_cutoff_bound(int br_cutoff_bound);
 	void set_effect_step(uint step);
 	void apply_default_option();
+	int get_strip_update_delay_time();
+	int get_br_cutoff_bound();
+	int get_effect_step();
+	String get_effect_name();
 	//Colorable
 	void set_color(Color_str color, int num);
+	Color_str* get_colors();
+	int get_color_len();
 	//Preseteble
 	void set_preset(int num);
+	int get_preset_count();
+	const String* get_preset_names();
 	//Rainbowble
 	void set_rainbow_state(bool state, int num);
 	void set_rainbow_step(int step, int num);
+	bool* get_rainbow_states();
+	int* get_rainbow_steps();
+	int get_rainbow_len();
 private:
 	IEffect* effect;
 	void apply_br();
