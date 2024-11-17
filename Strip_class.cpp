@@ -8,7 +8,8 @@ Strip::Strip(uint16_t n, int16_t p)
 	: Adafruit_NeoPixel(n, p),
 	_leds_arr(reinterpret_cast<Color_str*>(getPixels())),
 	_pixels(getPixels()),
-	_led_amount(n)
+	_led_amount(n),
+	_state(true)
 {}
 
 void Strip::begin()
@@ -137,17 +138,25 @@ int Strip::get_rainbow_len()
 
 void Strip::tick(bool now)
 {
-	_strip_update_cur_time = millis();
-	if ((_strip_update_cur_time - _strip_update_prev_time > _strip_update_delay_time) || now)
+	if (_state)
 	{
-		_strip_update_prev_time = _strip_update_cur_time;
-		_strip_update_delay_time = reinterpret_cast<Effectable*>(effect)->get_strip_update_delay_time();
-		//Serial.printf("\n");
+		_strip_update_cur_time = millis();
+		if ((_strip_update_cur_time - _strip_update_prev_time > _strip_update_delay_time) || now)
+		{
+			_strip_update_prev_time = _strip_update_cur_time;
+			_strip_update_delay_time = reinterpret_cast<Effectable*>(effect)->get_strip_update_delay_time();
+			//Serial.printf("\n");
 
-		effect->make_frame();
-		apply_br();
-		show();
+			effect->make_frame();
+			apply_br();
+			show();
+		}
 	}
+}
+
+void Strip::udp_set_color(Color_str color)
+{
+	set_color(color, 0);
 }
 
 void Strip::parse(const char* input_str)
@@ -155,14 +164,14 @@ void Strip::parse(const char* input_str)
 	LOG_USB_SWITCH("%s\n", input_str);
 	char key = input_str[0];
 	input_str++;
-		LOG_USB_SWITCH("key0 - %c\n", key);
+	LOG_USB_SWITCH("key0 - %c\n", key);
 	switch (key)
 	{
 	case 'e':
 	{
 		key = input_str[0];
 		input_str++;
-			LOG_USB_SWITCH("key1 - %c\n", key);
+		LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'd':
@@ -194,7 +203,7 @@ void Strip::parse(const char* input_str)
 	{
 		key = input_str[0];
 		input_str++;
-			LOG_USB_SWITCH("key1 - %c\n", key);
+		LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'n':
@@ -228,7 +237,7 @@ void Strip::parse(const char* input_str)
 	{
 		key = input_str[0];
 		input_str++;
-			LOG_USB_SWITCH("key1 - %c\n", key);
+		LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'm':
@@ -252,7 +261,7 @@ void Strip::parse(const char* input_str)
 	}
 	case 's':
 	{
-		Serial.print(get_status().c_str());
+		set_state(atoi(input_str));
 		break;
 	}
 	case 'm':
@@ -265,88 +274,60 @@ void Strip::parse(const char* input_str)
 	}
 }
 
-String Strip::get_status()
+JsonDocument Strip::getJSON()
 {
-	String Effectable_str = "";
-	if (Effectable* tmp = effect->castToBase<Effectable>())
+	JsonDocument doc;
+	doc["state"] = String(_state);
+	doc["name"] = get_effect_name();
+	JsonArray blocks = doc.createNestedArray("blocks");
+
+	JsonObject effectable = blocks.createNestedObject();
+	effectable["block_name"] = "effectable";
+	effectable["strip_update_delay_time"] = get_strip_update_delay_time();
+	effectable["br"] = get_br();
+	effectable["br_cutoff_bound"] = get_br_cutoff_bound();
+
+	if (int len = get_color_len())
 	{
-		Effectable_str += "name = ";
-		Effectable_str += tmp->get_effect_name();
-		Effectable_str += "\n";
-
-		Effectable_str += "strip_update_delay_time = ";
-		Effectable_str += tmp->get_strip_update_delay_time();
-		Effectable_str += "\n";
-
-		Effectable_str += "br = ";
-		Effectable_str += String(_br_vir);
-		Effectable_str += "\n";
-
-		Effectable_str += "br_cutoff_bound = ";
-		Effectable_str += tmp->get_br_cutoff_bound();
-		Effectable_str += "\n";
-
-		Effectable_str += "effect_step = ";
-		Effectable_str += tmp->get_effect_step();
-		Effectable_str += "\n";
-	}
-
-	String Colorable_str = "";
-	if (Colorable* tmp = effect->castToBase<Colorable>())
-	{
-		int len = tmp->get_color_len();
-		Color_str* colors = tmp->get_colors();
+		JsonObject colorable = blocks.createNestedObject();
+		colorable["block_name"] = "colorable";
+		//colorable["color_len"] = String(len);
+		Color_str* colors = get_colors();
+		char hex[8] = {};
 		for (int i = 0; i < len; i++)
 		{
-			Colorable_str += "Color ";
-			Colorable_str += String(i);
-			Colorable_str += " = ";
-			char hex[8] = { '1', '2', '3', '4', '5', '6', '7', '8' };
+			JsonObject field = colorable.createNestedObject(String(i));
 			snprintf(hex, sizeof(hex), "#%02X%02X%02X", colors[i].r, colors[i].g, colors[i].b);
-			Colorable_str += String(hex);
-			Colorable_str += "\n";
+			field["Color"] = String(hex);
 		}
 	}
-
-	String Preseteble_str = "";
-	if (Preseteble* tmp = effect->castToBase<Preseteble>())
+	if (int len = get_preset_count())
 	{
-		int len = tmp->get_preset_len();
-		const String* presets = tmp->get_preset_names();
-
+		JsonObject preseteble = blocks.createNestedObject();
+		preseteble["block_name"] = "preseteble";
+		//preseteble["preseteble_len"] = String(len);
+		const String* presets = get_preset_names();
 		for (int i = 0; i < len; i++)
 		{
-			Colorable_str += "Preset name ";
-			Colorable_str += String(i);
-			Colorable_str += " = ";
-			Colorable_str += presets[i];
-			Colorable_str += "\n";
+			JsonObject field = preseteble.createNestedObject(String(i));
+			field["Name"] = String(presets[i]);
 		}
 	}
-
-	String Rainbowble_str = "";
-	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+	if (int len = get_rainbow_len())
 	{
-		int len = tmp->get_rainbow_len();
-		bool* states = tmp->get_rainbow_states();
-		int* steps = tmp->get_rainbow_steps();
-
+		JsonObject rainbowble = blocks.createNestedObject();
+		rainbowble["block_name"] = "rainbowble";
+		//rainbowble["rainbow_len"] = String(len);
+		bool* states = get_rainbow_states();
+		int* steps = get_rainbow_steps();
 		for (int i = 0; i < len; i++)
 		{
-			Colorable_str += "State ";
-			Colorable_str += String(i);
-			Colorable_str += " = ";
-			Colorable_str += String(states[i]);
-			Colorable_str += "\t";
-			Colorable_str += "Step ";
-			Colorable_str += String(i);
-			Colorable_str += " = ";
-			Colorable_str += String(steps[i]);
-			Colorable_str += "\n";
+			JsonObject field = rainbowble.createNestedObject(String(i));
+			field["State"] = String(states[i]);
+			field["Step"] = String(steps[i]);
 		}
 	}
-
-	return Effectable_str + Colorable_str + Preseteble_str + Rainbowble_str;
+	return doc;
 }
 
 void Strip::set_effect(byte num)
@@ -378,4 +359,15 @@ void Strip::set_effect(byte num)
 
 	_cutoff_option = effect->get_cutoff_str();
 	_cur_cutoff_units = _cutoff_option->_cutoff_order_len + (_cutoff_option->_cutoff_imm_len == 0 ? 0 : 1);
+}
+
+void Strip::set_state(int state) { set_state(state == 0 ? false : true); }
+void Strip::set_state(bool state)
+{
+	_state = state;
+	if (!_state)
+	{
+		fill(Color(0, 0, 0));
+		show();
+	}
 }

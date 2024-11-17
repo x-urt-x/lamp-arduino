@@ -31,7 +31,12 @@
   </head>
   <body>
     <h1>Effect Configuration</h1>
-
+    <label for="state">State</label> 
+    <input type="checkbox" id="state" data-prefix="s" /> 
+    <br />
+    <label for="UDP">UDP</label>
+    <input type="checkbox" id="UDP" />
+    <br>
     <label for="effect-selector">Choose Effect:</label>
     <select id="effect-selector">
       <option value="m0">Single Color</option>
@@ -50,13 +55,34 @@
         document
           .getElementById("effect-selector")
           .addEventListener("change", handleEffectChange);
+        document
+          .getElementById("state")
+          .addEventListener("change", handleCheckBox);
+        document.getElementById("UDP").addEventListener("change", handleUDP);
       });
+
+      function handleUDP() {
+        const input = event.target;
+        fetch("/udp-state", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          body: input.checked ? "1" : "0",
+        });
+      }
 
       function loadEffectOptions() {
         fetch("/get-effect-option")
           .then((response) => response.json())
           .then((data) => {
             setEffectSelector(data.name);
+            const checkbox = document.getElementById("state");
+            if (data.state) {
+              checkbox.setAttribute("checked", "checked");
+            } else {
+              checkbox.removeAttribute("checked");
+            }
             generateForm(data.blocks);
           });
       }
@@ -119,16 +145,16 @@
             case "colorable":
               for (const [key, value] of Object.entries(block)) {
                 if (key === "block_name") continue;
-            
-                  blockDiv.insertAdjacentHTML(
-                    "beforeend",
-                    `
+
+                blockDiv.insertAdjacentHTML(
+                  "beforeend",
+                  `
             <div class="field">
                 <input type="color" value="${value["Color"]}" data-to-send="" data-prefix="c${key}" />
                 <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
             </div>
         `
-                  );
+                );
               }
               break;
             case "rainbowble":
@@ -142,7 +168,9 @@
                 <input type="checkbox" ${
                   value["State"] == 1 ? "checked" : ""
                 }  data-to-send="" data-prefix="rm${key}" />
-                <input type="number" value="${value["Step"]}" data-to-send="" data-prefix="rs${key}" />
+                <input type="number" value="${
+                  value["Step"]
+                }" data-to-send="" data-prefix="rs${key}" />
                 <input type="checkbox" title="Auto-send on change" data-auto-send-toggle="" />
             </div>
         `
@@ -152,14 +180,14 @@
             case "preseteble":
               for (const [key, value] of Object.entries(block)) {
                 if (key === "block_name") continue;
-                  blockDiv.insertAdjacentHTML(
-                    "beforeend",
-                    `
+                blockDiv.insertAdjacentHTML(
+                  "beforeend",
+                  `
             <div class="field">
                 <button data-prefix="ps" value="${key}" data-send-btn="">${value["Name"]}</button>
             </div>
         `
-                  );
+                );
               }
 
               break;
@@ -194,6 +222,11 @@
         const input = event.target;
         sendPostRequest(getEncodedString(input));
         loadEffectOptions();
+      }
+
+      function handleCheckBox(event) {
+        const input = event.target;
+        sendPostRequest(getEncodedString(input));
       }
 
       function handleEffectChange() {

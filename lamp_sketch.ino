@@ -15,13 +15,15 @@ const char* ssid = SSID;
 const char* password = PASS;
 const unsigned int localPort = 8888;
 
-IPAddress local_ip(192, 168, 1, 42);     // Статический IP, который вы хотите установить
-IPAddress gateway(192, 168, 1, 1);        // Шлюз (обычно это IP маршрутизатора)
-IPAddress subnet(255, 255, 255, 0);			// Маска подсети
+IPAddress local_ip(192, 168, 1, 42);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
 
 ESP8266WebServer server(80);
 WiFiUDP Udp;
 inline void handleUDP();
+
+bool udp_enable = false;
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 Strip strip(MATR_LEN, STRIP_PIN);
@@ -68,6 +70,7 @@ void setup() {
 	server.on("/", HTTP_GET, handleRoot);
 	server.on("/submit", HTTP_POST, handleCommand);
 	server.on("/get-effect-option", HTTP_GET, handleGetEffectOption);
+	server.on("/udp-state", HTTP_POST, handleSetUDP);
 
 	Udp.begin(localPort);
 	server.begin();
@@ -76,8 +79,8 @@ void setup() {
 
 	digitalWrite(RED_PIN, LOW);
 
-	strip.set_effect(0);
-	strip.set_br(100);
+	strip.parse("m 0");
+	strip.parse("eb 1000");
 	strip.tick(true);
 }
 
@@ -86,7 +89,10 @@ volatile bool is_enc = false;
 
 void loop() {
 	server.handleClient();
-	handleUDP();
+	if (udp_enable)
+	{
+		handleUDP();
+	}
 	encoder.tick();
 	if (encoder.turn()) {
 		if (encoder.pressing())
@@ -104,7 +110,7 @@ void loop() {
 		if (br < 0)
 			br = 0;
 		LOG_USB_ENC("%d\n", br);
-		strip.set_br(br);
+		strip.parse(("eb " + String(br)).c_str());
 		strip.tick(true);
 	}
 
@@ -120,7 +126,7 @@ inline void handleUDP() {
 	if (Udp.parsePacket()) {
 		byte inbytes[3];
 		Udp.read(inbytes, 3);
-		strip.set_color(Color_str(inbytes[0], inbytes[1], inbytes[2]), 0);
+		strip.udp_set_color(Color_str(inbytes[0], inbytes[1], inbytes[2]));
 		strip.tick(true);
 		LOG_USB_UPD("UDP Received Data: ");
 		LOG_USB_UPD("Color: %02X%02X%02X\n", inbytes[0], inbytes[1], inbytes[2]);
@@ -140,59 +146,8 @@ void handleRoot() {
 
 void handleGetEffectOption()
 {
-	JsonDocument doc;
-	doc["name"] = strip.get_effect_name();
-	JsonArray blocks = doc.createNestedArray("blocks");
-
-	JsonObject effectable = blocks.createNestedObject();
-	effectable["block_name"] = "effectable";
-	effectable["strip_update_delay_time"] = strip.get_strip_update_delay_time();
-	effectable["br"] = strip.get_br();
-	effectable["br_cutoff_bound"] = strip.get_br_cutoff_bound();
-
-	if (int len = strip.get_color_len())
-	{
-		JsonObject colorable = blocks.createNestedObject();
-		colorable["block_name"] = "colorable";
-		//colorable["color_len"] = String(len);
-		Color_str* colors = strip.get_colors();
-		char hex[8] = {};
-		for (int i = 0; i < len; i++)
-		{
-			JsonObject field = colorable.createNestedObject(String(i));
-			snprintf(hex, sizeof(hex), "#%02X%02X%02X", colors[i].r, colors[i].g, colors[i].b);
-			field["Color"] = String(hex);
-		}
-	}
-	if (int len = strip.get_preset_count())
-	{
-		JsonObject preseteble = blocks.createNestedObject();
-		preseteble["block_name"] = "preseteble";
-		//preseteble["preseteble_len"] = String(len);
-		const String* presets = strip.get_preset_names();
-		for (int i = 0; i < len; i++)
-		{
-			JsonObject field = preseteble.createNestedObject(String(i));
-			field["Name"] = String(presets[i]);
-		}
-	}
-	if (int len = strip.get_rainbow_len())
-	{
-		JsonObject rainbowble = blocks.createNestedObject();
-		rainbowble["block_name"] = "rainbowble";
-		//rainbowble["rainbow_len"] = String(len);
-		bool* states = strip.get_rainbow_states();
-		int* steps = strip.get_rainbow_steps();
-		for (int i = 0; i < len; i++)
-		{
-			JsonObject field = rainbowble.createNestedObject(String(i));
-			field["State"] = String(states[i]);
-			field["Step"] = String(steps[i]);
-		}
-	}
-
 	String output;
-	serializeJson(doc, output);
+	serializeJson(strip.getJSON(), output);
 	server.send(200, "application/json", output);
 }
 
@@ -211,4 +166,19 @@ void handleCommand()
 	strip.tick(true);
 	server.send(200, "text/plain", "Data received successfully");
 	//LOG_USB_HTTP("server.send\n");
+}
+
+void handleSetUDP()
+{
+	const char* data = server.arg("plain").c_str();
+	if (data[0] == '1')
+	{
+		udp_enable = true;
+	}
+	else
+	{
+		udp_enable = false;
+	}
+	LOG_USB_UPD("udp state = %d\n", udp_enable?1:0);
+	server.send(200, "text/plain", "Data received successfully");
 }

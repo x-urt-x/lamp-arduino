@@ -37,5 +37,4 @@
 #endif
 
 #define MATR_LEN (MATR_SIZE*MATR_SIZE)
-
 #endif

@@ -2,6 +2,7 @@
 #define STRIP_CLASS_H
 
 #include <Adafruit_NeoPixel.h>
+#include <ArduinoJson.h>
 #include "log.h"
 #include "Structures.h"
 #include "Effect_bases.h"
@@ -13,14 +14,19 @@ public:
 	Strip(uint16_t n, int16_t p = 6);
 
 	void begin();
-	String get_status();
-	void set_br(int br);
-	int get_br();
-	void set_effect(byte num);
 	void tick(bool now = false);
 
+	void udp_set_color(Color_str color);
 	void parse(const char* input_str);
+	JsonDocument getJSON();
 
+private:
+
+	int get_br();
+	void set_br(int br);
+	void set_effect(byte num);
+	void set_state(int state);
+	void set_state(bool state);
 	//Effectable
 	void set_effect_strip_update_delay_time(uint delay);
 	void set_effect_br_cutoff_bound(int br_cutoff_bound);
@@ -44,9 +50,11 @@ public:
 	bool* get_rainbow_states();
 	int* get_rainbow_steps();
 	int get_rainbow_len();
-private:
+
 	IEffect* effect;
 	void apply_br();
+
+	bool _state;
 
 	unsigned long _strip_update_prev_time = 0;
 	unsigned long _strip_update_cur_time = 0;
