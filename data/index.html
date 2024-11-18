@@ -37,9 +37,12 @@
     <label for="UDP">UDP</label>
     <input type="checkbox" id="UDP" />
     <br />
-    <button id="reset-option" data-prefix="er" value="">
-      Reset option
-    </button>
+    <button id="reset-option" data-prefix="er" value="">Reset option</button>
+    <br />
+    <div>
+      <input type="number" value="" data-to-send="" data-prefix="eb" id="br" />
+      <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
+    </div>
     <br />
     <label for="effect-selector">Choose Effect:</label>
     <select id="effect-selector">
@@ -65,6 +68,7 @@
         document
           .getElementById("reset-option")
           .addEventListener("click", handleBtnClick);
+          document.getElementById("br").addEventListener("input", handleInput);
       });
 
       function handleUDP() {
@@ -82,25 +86,33 @@
         fetch("/get-effect-option")
           .then((response) => response.json())
           .then((data) => {
-            setEffectSelector(data.name);
-            const checkbox = document.getElementById("state");
-            if (data.state) {
-              checkbox.setAttribute("checked", "checked");
-            } else {
-              checkbox.removeAttribute("checked");
-            }
+            setStaticFields(data);
             generateForm(data.blocks);
           });
       }
 
-      function setEffectSelector(selectedEffectName) {
+      function setStaticFields(data) {
         const effectSelector = document.getElementById("effect-selector");
         for (const option of effectSelector.options) {
-          if (option.textContent === selectedEffectName) {
+          if (option.textContent === data.name) {
             option.selected = true;
             break;
           }
         }
+        const stateCheckbox = document.getElementById("state");
+        if (data.state) {
+          stateCheckbox.setAttribute("checked", "checked");
+        } else {
+          stateCheckbox.removeAttribute("checked");
+        }
+        const UPDCheckbox = document.getElementById("UDP");
+        if (data.state) {
+          UPDCheckbox.setAttribute("checked", "checked");
+        } else {
+          UPDCheckbox.removeAttribute("checked");
+        }
+        const BrInput = document.getElementById("br");
+        BrInput.value = data.br;
       }
 
       function generateForm(blocks) {
@@ -129,8 +141,8 @@
                 blockDiv.insertAdjacentHTML(
                   "beforeend",
                   `
-          <div class="field">
-              <input type="number" value="${block["br"]}" data-to-send="" data-prefix="eb" />
+                    <div class="field">
+              <input type="number" value="${block["br_cutoff_bound"]}" data-to-send="" data-prefix="ec" />
               <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
           </div>
       `
@@ -140,8 +152,8 @@
                 blockDiv.insertAdjacentHTML(
                   "beforeend",
                   `
-          <div class="field">
-              <input type="number" value="${block["br_cutoff_bound"]}" data-to-send="" data-prefix="ec" />
+ <div class="field">
+              <input type="number" value="${block["effect_step"]}" data-to-send="" data-prefix="es" />
               <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
           </div>
       `
@@ -200,13 +212,13 @@
             default:
               break;
           }
-          const inputs = blockDiv.querySelectorAll("input[data-to-send]");
+          const inputs = blockDiv.querySelectorAll("div.field input[data-to-send]");
 
           inputs.forEach((input) => {
             input.addEventListener("input", handleInput);
           });
 
-          const buttons = blockDiv.querySelectorAll("button[data-send-btn]");
+          const buttons = blockDiv.querySelectorAll("div.field button[data-send-btn]");
           buttons.forEach((button) => {
             button.addEventListener("click", handleBtnClick);
           });

@@ -282,13 +282,14 @@ JsonDocument Strip::getJSON()
 	JsonDocument doc;
 	doc["state"] = String(_state);
 	doc["name"] = get_effect_name();
+	doc["br"] = get_br();
 	JsonArray blocks = doc.createNestedArray("blocks");
 
 	JsonObject effectable = blocks.createNestedObject();
 	effectable["block_name"] = "effectable";
 	effectable["strip_update_delay_time"] = get_strip_update_delay_time();
-	effectable["br"] = get_br();
 	effectable["br_cutoff_bound"] = get_br_cutoff_bound();
+	effectable["effect_step"] = get_effect_step();
 
 	if (int len = get_color_len())
 	{
