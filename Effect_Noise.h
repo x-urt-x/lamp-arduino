@@ -21,6 +21,8 @@ public:
 private:
 	Color_str* _leds_arr;
 
+	static bool _has_init;
+
 	static IEffect::ParentBaseIDs _parent_base_IDs;
 	IEffect::ParentBaseIDs* get_parent_base_ids() override;
 

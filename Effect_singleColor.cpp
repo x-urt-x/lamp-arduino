@@ -21,8 +21,15 @@ inline Rainbowble::Option_rainbow* Effect_singleColor::get_option_rainbow() { re
 Effectable::Option_effect Effect_singleColor::_option_effect{};
 inline Effectable::Option_effect* Effect_singleColor::get_option_effect() { return &_option_effect; }
 
-
-Effect_singleColor::Effect_singleColor(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
+bool Effect_singleColor::_has_init = false;
+Effect_singleColor::Effect_singleColor(Color_str* leds_arr) : _leds_arr(leds_arr)
+{
+	if (!_has_init)
+	{
+		apply_default_option();
+		_has_init = true;
+	}
+}
 
 String Effect_singleColor::get_effect_name() { return "Single Color"; }
 

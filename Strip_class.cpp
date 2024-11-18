@@ -148,7 +148,7 @@ void Strip::tick(bool now)
 			//Serial.printf("\n");
 
 			effect->make_frame();
-			apply_br();
+			apply_br(); 
 			show();
 		}
 	}
@@ -185,6 +185,9 @@ void Strip::parse(const char* input_str)
 			break;
 		case 's':
 			set_effect_step(atoi(input_str));
+			break;
+		case 'r':
+			apply_default_option();
 			break;
 		default:
 			break;

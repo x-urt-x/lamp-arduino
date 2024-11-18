@@ -17,8 +17,15 @@ inline Rainbowble::Option_rainbow* Effect_rainbowStrip::get_option_rainbow() { r
 Effectable::Option_effect Effect_rainbowStrip::_option_effect{};
 inline Effectable::Option_effect* Effect_rainbowStrip::get_option_effect() { return &_option_effect; }
 
-
-Effect_rainbowStrip::Effect_rainbowStrip(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
+bool Effect_rainbowStrip::_has_init = false;
+Effect_rainbowStrip::Effect_rainbowStrip(Color_str* leds_arr) : _leds_arr(leds_arr)
+{
+	if (!_has_init)
+	{
+		apply_default_option();
+		_has_init = true;
+	}
+}
 
 String Effect_rainbowStrip::get_effect_name() { return "Rainbow Wave"; }
 

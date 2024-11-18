@@ -18,13 +18,13 @@ PROGMEM static uint8_t const p[] = { 151,160,137,91,90,15,
    138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,151
 };
 
-//уменьшит i в 256/scale раз
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ i пїЅ 256/scale пїЅпїЅпїЅ
 __attribute__((always_inline)) static inline uint8_t scale8(uint8_t i, uint8_t scale)
 {
 	return (((uint16_t)i) * (1 + (uint16_t)(scale))) >> 8;
 }
 
-//что то похожее на кубическую функцию. вход и выход 0..255
+//пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ 0..255
 __attribute__((unused)) static inline uint8_t ease8InOutQuad(uint8_t i)
 {
 	uint8_t j = i;
@@ -39,13 +39,13 @@ __attribute__((unused)) static inline uint8_t ease8InOutQuad(uint8_t i)
 	return jj2;
 }
 
-//среднее значение. если i нечетное то добавить 1
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ i пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 1
 __attribute__((always_inline)) static inline int8_t avg7(int8_t i, int8_t j)
 {
 	return ((i + j) >> 1) + (i & 0x1);
 }
 
-//сложить и обрезать до 255
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 255
 __attribute__((always_inline)) static inline uint8_t qadd8(uint8_t i, uint8_t j)
 {
 	unsigned int t = i + j;
@@ -53,7 +53,7 @@ __attribute__((always_inline)) static inline uint8_t qadd8(uint8_t i, uint8_t j)
 	return t;
 }
 
-//если бит bitnumber в hash == 1 то вернуть a иначе b
+//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ bitnumber пїЅ hash == 1 пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ a пїЅпїЅпїЅпїЅпїЅ b
 static int8_t inline __attribute__((always_inline)) selectBasedOnHashBit(uint8_t hash, uint8_t bitnumber, int8_t a, int8_t b)
 {
 	return (hash & (1 << bitnumber)) ? a : b;
@@ -61,10 +61,10 @@ static int8_t inline __attribute__((always_inline)) selectBasedOnHashBit(uint8_t
 
 static int8_t  inline __attribute__((always_inline)) grad8(uint8_t hash, int8_t x, int8_t y, int8_t z)
 {
-	hash &= 0xF; //берем младшие 4 бита 
+	hash &= 0xF; //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ 4 пїЅпїЅпїЅпїЅ 
 	int8_t u, v;
-	u = selectBasedOnHashBit(hash, 3, y, x); //если 3 бит то u=y иначе u=x
-	v = hash < 4 ? y : hash == 12 || hash == 14 ? x : z; // если нет 3,4 то v=y. если 1110 или 1100 то x иначе z
+	u = selectBasedOnHashBit(hash, 3, y, x); //пїЅпїЅпїЅпїЅ 3 пїЅпїЅпїЅ пїЅпїЅ u=y пїЅпїЅпїЅпїЅпїЅ u=x
+	v = hash < 4 ? y : hash == 12 || hash == 14 ? x : z; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ 3,4 пїЅпїЅ v=y. пїЅпїЅпїЅпїЅ 1110 пїЅпїЅпїЅ 1100 пїЅпїЅ x пїЅпїЅпїЅпїЅпїЅ z
 	 
 	if (hash & 1) { u = -u; } 
 	if (hash & 2) { v = -v; }
@@ -72,7 +72,7 @@ static int8_t  inline __attribute__((always_inline)) grad8(uint8_t hash, int8_t 
 	return avg7(u, v);
 }
 
-//линейная интерполяция 
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
 static int8_t inline __attribute__((always_inline)) lerp7by8(int8_t a, int8_t b, uint8_t frac)
 {
 	int8_t result;

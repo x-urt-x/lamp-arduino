@@ -91,7 +91,15 @@ inline Colorable::Option_color* Effect_fire::get_option_color() { return &_optio
 Preseteble::Option_preset Effect_fire::_option_preset{ (new String[3]{"red fire","blue fire","green fire"}),3 };
 inline Preseteble::Option_preset* Effect_fire::get_option_preset() { return &_option_preset; }
 
-Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
+bool Effect_fire::_has_init = false;
+Effect_fire::Effect_fire(Color_str* leds_arr) : _leds_arr(leds_arr)
+{
+	if (!_has_init)
+	{
+		apply_default_option();
+		_has_init = true;
+	}
+}
 
 
 String Effect_fire::get_effect_name() { return "Fire"; }

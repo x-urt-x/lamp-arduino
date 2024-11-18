@@ -29,7 +29,6 @@ protected:
 		int effect_step;
 	};
 	inline virtual Option_effect* get_option_effect() = 0;
-
 	static Cutoff_str _cutoff_option;
 };
 

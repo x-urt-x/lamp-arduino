@@ -31,19 +31,22 @@
   </head>
   <body>
     <h1>Effect Configuration</h1>
-    <label for="state">State</label> 
-    <input type="checkbox" id="state" data-prefix="s" /> 
+    <label for="state">State</label>
+    <input type="checkbox" id="state" data-prefix="s" />
     <br />
     <label for="UDP">UDP</label>
     <input type="checkbox" id="UDP" />
-    <br>
+    <br />
+    <button id="reset-option" data-prefix="er" value="">
+      Reset option
+    </button>
+    <br />
     <label for="effect-selector">Choose Effect:</label>
     <select id="effect-selector">
       <option value="m0">Single Color</option>
       <option value="m1">Fire</option>
       <option value="m2">Rainbow</option>
       <option value="m3">Noise</option>
-      <!-- Add more effects here if needed -->
     </select>
 
     <div id="form-container"></div>
@@ -59,6 +62,9 @@
           .getElementById("state")
           .addEventListener("change", handleCheckBox);
         document.getElementById("UDP").addEventListener("change", handleUDP);
+        document
+          .getElementById("reset-option")
+          .addEventListener("click", handleBtnClick);
       });
 
       function handleUDP() {

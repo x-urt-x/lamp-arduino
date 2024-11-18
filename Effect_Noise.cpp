@@ -23,8 +23,15 @@ inline Rainbowble::Option_rainbow* Effect_Noise::get_option_rainbow() { return &
 Effectable::Option_effect Effect_Noise::_option_effect{};
 inline Effectable::Option_effect* Effect_Noise::get_option_effect() { return &_option_effect; }
 
-
-Effect_Noise::Effect_Noise(Color_str* leds_arr) : _leds_arr(leds_arr) { apply_default_option(); }
+bool Effect_Noise::_has_init = false;
+Effect_Noise::Effect_Noise(Color_str* leds_arr) : _leds_arr(leds_arr)
+{
+	if (!_has_init)
+	{
+		apply_default_option();
+		_has_init = true;
+	}
+}
 
 String Effect_Noise::get_effect_name() { return "Noise"; }
 
