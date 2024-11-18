@@ -29,7 +29,8 @@
 #define ENC_S2 D0
 #define ENC_KEY D7
 #define inbr_cur_PIN A0
-#define RED_PIN D8
+#define RED_PIN D4
+#define GREEN_PIN D3
 #define STRIP_PIN D6
 
 #define MATR_SIZE 16

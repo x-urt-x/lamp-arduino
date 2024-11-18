@@ -40,14 +40,14 @@ void setup() {
 	strip.show();
 #ifdef MATR10x10
 	pinMode(inbr_cur_PIN, INPUT);
-	pinMode(GREEN_PIN, OUTPUT);
-	digitalWrite(GREEN_PIN, LOW);
 	pinMode(ORNG_PIN, OUTPUT);
 	digitalWrite(ORNG_PIN, LOW);
 #endif // MATR10x10
 
 	pinMode(RED_PIN, OUTPUT);
 	digitalWrite(RED_PIN, LOW);
+	pinMode(GREEN_PIN, OUTPUT);
+	digitalWrite(GREEN_PIN, LOW);
 
 	WiFi.config(local_ip, gateway, subnet);
 	WiFi.mode(WIFI_STA);
