@@ -277,10 +277,11 @@ void Strip::parse(const char* input_str)
 	}
 }
 
-JsonDocument Strip::getJSON()
+JsonDocument Strip::getJSON(bool udp)
 {
 	JsonDocument doc;
 	doc["state"] = String(_state);
+	doc["UDP"] = String(udp);
 	doc["name"] = get_effect_name();
 	doc["br"] = get_br();
 	JsonArray blocks = doc.createNestedArray("blocks");

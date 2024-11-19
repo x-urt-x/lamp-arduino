@@ -18,7 +18,7 @@ public:
 
 	void udp_set_color(Color_str color);
 	void parse(const char* input_str);
-	JsonDocument getJSON();
+	JsonDocument getJSON(bool udp);
 
 private:
 

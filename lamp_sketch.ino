@@ -147,7 +147,7 @@ void handleRoot() {
 void handleGetEffectOption()
 {
 	String output;
-	serializeJson(strip.getJSON(), output);
+	serializeJson(strip.getJSON(udp_enable), output);
 	server.send(200, "application/json", output);
 }
 
