@@ -100,13 +100,13 @@
           }
         }
         const stateCheckbox = document.getElementById("state");
-        if (data.state) {
+        if (data.state==1) {
           stateCheckbox.setAttribute("checked", "checked");
         } else {
           stateCheckbox.removeAttribute("checked");
         }
         const UPDCheckbox = document.getElementById("UDP");
-        if (data.UDP) {
+        if (data.UDP==1) {
           UPDCheckbox.setAttribute("checked", "checked");
         } else {
           UPDCheckbox.removeAttribute("checked");

@@ -48,6 +48,8 @@ void setup() {
 	digitalWrite(RED_PIN, LOW);
 	pinMode(GREEN_PIN, OUTPUT);
 	digitalWrite(GREEN_PIN, LOW);
+	pinMode(MOSFET_PIN, OUTPUT);
+	digitalWrite(MOSFET_PIN, HIGH);
 
 	WiFi.config(local_ip, gateway, subnet);
 	WiFi.mode(WIFI_STA);

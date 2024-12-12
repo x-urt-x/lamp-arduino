@@ -372,7 +372,13 @@ void Strip::set_state(bool state)
 	_state = state;
 	if (!_state)
 	{
+		digitalWrite(MOSFET_PIN, LOW);
 		fill(Color(0, 0, 0));
 		show();
+	}
+	else
+	{
+		digitalWrite(MOSFET_PIN, HIGH);
+		tick(true);
 	}
 }
