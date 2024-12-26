@@ -5,8 +5,18 @@
 #include <ArduinoJson.h>
 #include "log.h"
 #include "Structures.h"
-#include "Effect_bases.h"
-#include "IEffect.h"
+
+#include "IEffectBlock.h"
+#include "BaseEffect.h"
+#include "PresetBlock.h"
+#include "ColorBlock.h"
+#include "RainbowBlock.h"
+
+#include "Effect_Noise.h"
+#include "Effect_singleColor.h"
+#include "Effect_fire.h"
+#include "Effect_rainbowStrip.h"
+
 
 class Strip : public Adafruit_NeoPixel
 {
@@ -51,7 +61,7 @@ private:
 	int* get_rainbow_steps();
 	int get_rainbow_len();
 
-	IEffect* effect;
+	BaseEffect* effect;
 	void apply_br();
 
 	bool _state;
@@ -60,10 +70,7 @@ private:
 	unsigned long _strip_update_cur_time = 0;
 	float _br_max_gain;
 	
-	Cutoff_str* _cutoff_option;
-	byte _cur_cutoff_units;
-
-	int _strip_update_delay_time = 0;
+	byte _cur;
 
 	uint8* _pixels;
 	byte _led_amount;

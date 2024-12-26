@@ -1,8 +1,5 @@
 #include "Strip_class.h"
-#include "Effect_Noise.h"
-#include "Effect_singleColor.h"
-#include "Effect_fire.h"
-#include "Effect_rainbowStrip.h"
+
 
 Strip::Strip(uint16_t n, int16_t p)
 	: Adafruit_NeoPixel(n, p),
@@ -14,123 +11,108 @@ Strip::Strip(uint16_t n, int16_t p)
 
 void Strip::begin()
 {
-	IEffect::BaseSize_arr[IEffect::BaseIDEnum::EffectableID] = Effectable::BaseSize;
-	IEffect::BaseSize_arr[IEffect::BaseIDEnum::ColorableID] = Colorable::BaseSize;
-	IEffect::BaseSize_arr[IEffect::BaseIDEnum::PresetebleID] = Preseteble::BaseSize;
-	IEffect::BaseSize_arr[IEffect::BaseIDEnum::RainbowbleID] = Rainbowble::BaseSize;
 	Adafruit_NeoPixel::begin();
 }
 
 //Effectable
 void Strip::set_effect_strip_update_delay_time(uint delay)
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		tmp->set_strip_update_delay_time(delay);
+	effect->set_strip_update_delay_time(delay);
 }
 void Strip::set_effect_br_cutoff_bound(int br_cutoff_bound)
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		tmp->set_br_cutoff_bound(br_cutoff_bound);
+	effect->set_br_cutoff_bound(br_cutoff_bound);
 }
 void Strip::set_effect_step(uint step)
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		tmp->set_effect_step(step);
+	effect->set_effect_step(step);
 }
 void Strip::apply_default_option()
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		tmp->apply_default_option();
+	effect->apply_default_option();
 }
 int Strip::get_strip_update_delay_time()
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		return tmp->get_strip_update_delay_time();
-	return -1;
+	return effect->get_strip_update_delay_time();
 }
 int Strip::get_br_cutoff_bound()
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		return tmp->get_br_cutoff_bound();
-	return -1;
+	return effect->get_br_cutoff_bound();
 }
 int Strip::get_effect_step()
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		return tmp->get_effect_step();
-	return -1;
+	return effect->get_effect_step();
 }
 String Strip::get_effect_name()
 {
-	if (Effectable* tmp = effect->castToBase<Effectable>())
-		return tmp->get_effect_name();
-	return String();
+	return effect->get_effect_name();
 }
 
-//Colorable
+//ColorBlock
 void Strip::set_color(Color_str color, int num)
 {
-	if (Colorable* tmp = effect->castToBase<Colorable>())
-		tmp->set_color(color, num);
+	if (ColorBlock* tmp = effect->get_block<ColorBlock>())
+			tmp->set_color(color, num);
+		return;
 }
 Color_str* Strip::get_colors()
 {
-	if (Colorable* tmp = effect->castToBase<Colorable>())
+	if (ColorBlock* tmp = effect->get_block<ColorBlock>())
 		return tmp->get_colors();
 	return nullptr;
 }
 int Strip::get_color_len()
 {
-	if (Colorable* tmp = effect->castToBase<Colorable>())
+	if (ColorBlock* tmp = effect->get_block<ColorBlock>())
 		return tmp->get_color_len();
 	return 0;
 }
 
-//Preseteble
+//PresetBlock
 void Strip::set_preset(int num)
 {
-	if (Preseteble* tmp = effect->castToBase<Preseteble>())
+	if (PresetBlock* tmp = effect->get_block<PresetBlock>())
 		tmp->set_preset(num);
 }
 int Strip::get_preset_count()
 {
-	if (Preseteble* tmp = effect->castToBase<Preseteble>())
+	if (PresetBlock* tmp = effect->get_block<PresetBlock>())
 		return tmp->get_preset_len();
 	return 0;
 }
 const String* Strip::get_preset_names()
 {
-	if (Preseteble* tmp = effect->castToBase<Preseteble>())
+	if (PresetBlock* tmp = effect->get_block<PresetBlock>())
 		return tmp->get_preset_names();
 	return nullptr;
 }
 
-//Rainbowble
+//RainbowBlock
 void Strip::set_rainbow_state(bool state, int num)
 {
-	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+	if (RainbowBlock* tmp = effect->get_block<RainbowBlock>())
 		tmp->set_rainbow_state(state, num);
 }
 void Strip::set_rainbow_step(int step, int num)
 {
-	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+	if (RainbowBlock* tmp = effect->get_block<RainbowBlock>())
 		tmp->set_rainbow_step(step, num);
 }
 bool* Strip::get_rainbow_states()
 {
-	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+	if (RainbowBlock* tmp = effect->get_block<RainbowBlock>())
 		return tmp->get_rainbow_states();
 	return nullptr;
 }
 int* Strip::get_rainbow_steps()
 {
-	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+	if (RainbowBlock* tmp = effect->get_block<RainbowBlock>())
 		return tmp->get_rainbow_steps();
 	return nullptr;
 }
 int Strip::get_rainbow_len()
 {
-	if (Rainbowble* tmp = effect->castToBase<Rainbowble>())
+	if (RainbowBlock* tmp = effect->get_block<RainbowBlock>())
 		return tmp->get_rainbow_len();
 	return 0;
 }
@@ -141,14 +123,13 @@ void Strip::tick(bool now)
 	if (_state)
 	{
 		_strip_update_cur_time = millis();
-		if ((_strip_update_cur_time - _strip_update_prev_time > _strip_update_delay_time) || now)
+		if ((_strip_update_cur_time - _strip_update_prev_time > effect->get_strip_update_delay_time()) || now)
 		{
 			_strip_update_prev_time = _strip_update_cur_time;
-			_strip_update_delay_time = reinterpret_cast<Effectable*>(effect)->get_strip_update_delay_time();
 			//Serial.printf("\n");
 
 			effect->make_frame();
-			apply_br(); 
+			apply_br();
 			show();
 		}
 	}
@@ -361,9 +342,7 @@ void Strip::set_effect(byte num)
 	}
 
 	effect->setup();
-
-	_cutoff_option = effect->get_cutoff_str();
-	_cur_cutoff_units = _cutoff_option->_cutoff_order_len + (_cutoff_option->_cutoff_imm_len == 0 ? 0 : 1);
+	//_cur_cutoff_units = _cutoff_option->_cutoff_order_len + (_cutoff_option->_cutoff_imm_len == 0 ? 0 : 1);
 }
 
 void Strip::set_state(int state) { set_state(state == 0 ? false : true); }

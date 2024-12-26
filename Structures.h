@@ -78,5 +78,6 @@ struct Cutoff_str
 	const int _cutoff_imm_len;
 	byte* _cutoff_order;
 	byte* _cutoff_imm;
+	byte _cutoff_units;
 };
 #endif

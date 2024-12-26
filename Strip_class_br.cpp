@@ -2,10 +2,10 @@
 
 void Strip::apply_br() {
 
-	float br_max = float(_br_vir) / _cur_cutoff_units; //базовая яркость, 
-	uint8_t br_cutoff_count = _cutoff_option->_cutoff_order_len - (_br_vir + _cutoff_option->_cutoff_order_len) % _cur_cutoff_units; //количество с яркостью br_max-1
-	int br_cutoff_bound = reinterpret_cast<Effectable*>(effect)->get_br_cutoff_bound();
-
+	float br_max = float(_br_vir) / effect->get_cutoff_str()->_cutoff_units; //базовая яркость, 
+	uint8_t br_cutoff_count = effect->get_cutoff_str()->_cutoff_order_len - (_br_vir + effect->get_cutoff_str()->_cutoff_order_len) % effect->get_cutoff_str()->_cutoff_units; //количество с яркостью br_max-1
+	int br_cutoff_bound = effect->get_br_cutoff_bound();
+	
 	LOG_USB_BR("apply_br - _main_color %02X%02X%02X\n", options->main_color.r, options->main_color.g, options->main_color.b);
 	LOG_USB_BR("apply_br - _br_vir %d\n", _br_vir);
 	LOG_USB_BR("apply_br - br_max %f\n", br_max);
@@ -16,11 +16,11 @@ void Strip::apply_br() {
 	LOG_USB_BR("apply_br - _cutoff_option->_cutoff_imm_len %d\n", _cutoff_option->_cutoff_imm_len);
 
 	float br_add = 0;
-	int to_process = _cutoff_option->_cutoff_order_len + _cutoff_option->_cutoff_imm_len; //счетчик необработанных светодиодов 
+	int to_process = effect->get_cutoff_str()->_cutoff_order_len + effect->get_cutoff_str()->_cutoff_imm_len; //счетчик необработанных светодиодов 
 	float br_avg_per = 0;
-	for (byte i = 0; i < _cutoff_option->_cutoff_order_len; i++)
+	for (byte i = 0; i < effect->get_cutoff_str()->_cutoff_order_len; i++)
 	{
-		Color_str* led = _leds_arr + _cutoff_option->_cutoff_order[i]; //текущий светодиод для обработки
+		Color_str* led = _leds_arr + effect->get_cutoff_str()->_cutoff_order[i]; //текущий светодиод для обработки
 		LOG_USB_BR("main  cyc i=%d\t", i);
 		if (br_cutoff_count > 0)
 			//уменьшаем яркость на 1 
@@ -53,11 +53,11 @@ void Strip::apply_br() {
 		LOG_USB_BR("|##| br_cutoff_count= %d br_add= %f br_avg_per= %f\n", br_cutoff_count, br_add, br_avg_per);
 	}
 
-	for (byte i = 0; i < _cutoff_option->_cutoff_imm_len; i++) //i - индекс текущего светодиода, порядок определен константой 
+	for (byte i = 0; i < effect->get_cutoff_str()->_cutoff_imm_len; i++) //i - индекс текущего светодиода, порядок определен константой 
 	{
 		LOG_USB_BR("centr cyc i=%d\t", i);
 		LOG_USB_BR("full\t");
-		_leds_arr[_cutoff_option->_cutoff_imm[i]].map((byte_round_up(br_max) + br_add));
+		_leds_arr[effect->get_cutoff_str()->_cutoff_imm[i]].map((byte_round_up(br_max) + br_add));
 		to_process--;
 		br_add += (br_add - int(br_add)) / to_process; //переносим дробную часть на оставшиеся
 		LOG_USB_BR("\n");
@@ -66,7 +66,7 @@ void Strip::apply_br() {
 
 void Strip::set_br(int br) {
 	LOG_USB_BR("set_br - br %d\n", br);
-	_br_vir = constrain(br, 0, 255 * _cur_cutoff_units);
+	_br_vir = constrain(br, 0, 255 * effect->get_cutoff_str()->_cutoff_units);
 }
 
 int Strip::get_br()
