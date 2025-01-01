@@ -1,16 +1,15 @@
 #include "Strip_class.h"
 
-
 Strip::Strip(uint16_t n, int16_t p)
 	: Adafruit_NeoPixel(n, p),
 	_leds_arr(reinterpret_cast<Color_str*>(getPixels())),
 	_pixels(getPixels()),
-	_led_amount(n),
-	_state(true)
+	_led_amount(n)
 {}
 
 void Strip::begin()
 {
+	//ParseBlock::setStrip(this);
 	Adafruit_NeoPixel::begin();
 }
 
@@ -52,8 +51,8 @@ String Strip::get_effect_name()
 void Strip::set_color(Color_str color, int num)
 {
 	if (ColorBlock* tmp = effect->get_block<ColorBlock>())
-			tmp->set_color(color, num);
-		return;
+		tmp->set_color(color, num);
+	return;
 }
 Color_str* Strip::get_colors()
 {
@@ -117,22 +116,11 @@ int Strip::get_rainbow_len()
 	return 0;
 }
 
-
-void Strip::tick(bool now)
+void Strip::tick()
 {
-	if (_state)
-	{
-		_strip_update_cur_time = millis();
-		if ((_strip_update_cur_time - _strip_update_prev_time > effect->get_strip_update_delay_time()) || now)
-		{
-			_strip_update_prev_time = _strip_update_cur_time;
-			//Serial.printf("\n");
-
-			effect->make_frame();
-			apply_br();
-			show();
-		}
-	}
+	effect->make_frame();
+	apply_br();
+	show();
 }
 
 void Strip::udp_set_color(Color_str color)
@@ -243,25 +231,51 @@ void Strip::parse(const char* input_str)
 		}
 		break;
 	}
-	case 's':
-	{
-		set_state(atoi(input_str));
-		break;
-	}
 	case 'm':
 	{
 		set_effect(atoi(input_str));
 		break;
 	}
+	//case 't':
+	//{
+	//	key = input_str[0];
+	//	input_str++;
+	//	LOG_USB_SWITCH("key1 - %t\n", key);
+	//	switch (key)
+	//	{
+	//	case 'd':
+	//	{
+	//		deleteTimer(atoi(input_str));
+	//		break;
+	//	}
+	//	case 'a':
+	//	{
+	//		unsigned long now = millis();
+	//		uint from_shift = atoi(input_str);
+	//		while (input_str[0] != ' ') input_str++;
+	//		uint to_shift = atoi(input_str);
+	//		while (input_str[0] != ' ') input_str++;
+	//		uint to_br = atoi(input_str);
+	//		while (input_str[0] != ' ') input_str++;
+	//		uint delay = atoi(input_str);
+	//		while (input_str[0] != ' ') input_str++;
+	//		addTimer(new BrEventTimer(now + from_shift, now + to_shift, to_br, delay, input_str));
+	//		break;
+	//	}
+	//	default:
+	//		break;
+	//	}
+	//	break;
+	//}
 	default:
 		break;
 	}
 }
 
-JsonDocument Strip::getJSON(bool udp)
+JsonDocument Strip::getJSON(bool udp, bool state)
 {
 	JsonDocument doc;
-	doc["state"] = String(_state);
+	doc["state"] = String(state);
 	doc["UDP"] = String(udp);
 	doc["name"] = get_effect_name();
 	doc["br"] = get_br();
@@ -343,21 +357,4 @@ void Strip::set_effect(byte num)
 
 	effect->setup();
 	//_cur_cutoff_units = _cutoff_option->_cutoff_order_len + (_cutoff_option->_cutoff_imm_len == 0 ? 0 : 1);
-}
-
-void Strip::set_state(int state) { set_state(state == 0 ? false : true); }
-void Strip::set_state(bool state)
-{
-	_state = state;
-	if (!_state)
-	{
-		digitalWrite(MOSFET_PIN, LOW);
-		fill(Color(0, 0, 0));
-		show();
-	}
-	else
-	{
-		digitalWrite(MOSFET_PIN, HIGH);
-		tick(true);
-	}
 }

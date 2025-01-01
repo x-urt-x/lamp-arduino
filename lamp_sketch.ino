@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "log.h"
 #include "Strip_class.h"
+#include "TimerHandler.h"
 
 #include <EncButton.h>
 
@@ -27,6 +28,7 @@ bool udp_enable = false;
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 Strip strip(MATR_LEN, STRIP_PIN);
+TimerHandler timerHandler;
 
 void setup() {
 	randomSeed(analogRead(0));
@@ -34,6 +36,7 @@ void setup() {
 	Serial.begin(115200);
 #endif // LOG_USB_ENABLE
 	LOG_USB_STARTUP("\nstart\n");
+	IEventTimer::obj = &strip;
 	strip.begin();
 	strip.fill(strip.Color(0, 0, 0));
 	delay(0);
@@ -80,10 +83,10 @@ void setup() {
 	LOG_USB_STARTUP("UDP server on port %d\n", localPort);
 
 	digitalWrite(RED_PIN, LOW);
-
+	timerHandler.addTimer(new EffectEventTimer());
 	strip.parse("m 0");
 	strip.parse("eb 1000");
-	strip.tick(true);
+	strip.tick();
 }
 
 int br = 5000;
@@ -113,15 +116,15 @@ void loop() {
 			br = 0;
 		LOG_USB_ENC("%d\n", br);
 		strip.parse(("eb " + String(br)).c_str());
-		strip.tick(true);
+		strip.tick();
 	}
 
 	while (Serial.available() > 0)
 	{
 		strip.parse(Serial.readStringUntil('\n').c_str());
-		strip.tick(true);
+		strip.tick();
 	}
-	strip.tick();
+	timerHandler.tickAll();
 }
 
 inline void handleUDP() {
@@ -129,7 +132,7 @@ inline void handleUDP() {
 		byte inbytes[3];
 		Udp.read(inbytes, 3);
 		strip.udp_set_color(Color_str(inbytes[0], inbytes[1], inbytes[2]));
-		strip.tick(true);
+		strip.tick();
 		LOG_USB_UPD("UDP Received Data: ");
 		LOG_USB_UPD("Color: %02X%02X%02X\n", inbytes[0], inbytes[1], inbytes[2]);
 	}
@@ -149,7 +152,7 @@ void handleRoot() {
 void handleGetEffectOption()
 {
 	String output;
-	serializeJson(strip.getJSON(udp_enable), output);
+	serializeJson(strip.getJSON(udp_enable, timerHandler.getState(0)), output);
 	server.send(200, "application/json", output);
 }
 
@@ -161,11 +164,55 @@ void handleCommand()
 	pch = strtok(data, "\n");
 	while (pch != NULL)
 	{
-		strip.parse(pch);
-		pch = strtok(NULL, "\n");
+		if (pch[0] == 't')
+		{
+			pch++;
+			char key = pch[0];
+			pch++;
+			switch (key)
+			{
+			case 's':
+			{
+				byte pos = atoi(pch);
+				while (pch[0] != ' ') pch++;
+				timerHandler.setState(atoi(pch), pos);
+				if (atoi(pch) == 0)
+				{
+					digitalWrite(MOSFET_PIN, LOW);
+					//WiFi.forceSleepBegin();
+				}
+				else
+				{
+					//WiFi.forceSleepWake();
+					digitalWrite(MOSFET_PIN, HIGH);
+					strip.tick();
+				}
+				break;
+			}
+			case 'd':
+			{
+				byte pos = atoi(pch);
+				if (pos == 0) break;
+				while (pch[0] != ' ') pch++;
+				timerHandler.deleteTimer(pos);
+				break;
+			}
+			case 'a':
+			{
+				timerHandler.addTimer(pch);
+				break;
+			}
+			default:
+				break;
+			}
+		}
+		else
+		{
+			strip.parse(pch);
+			pch = strtok(NULL, "\n");
+		}
 	}
-
-	strip.tick(true);
+	strip.tick();
 	server.send(200, "text/plain", "Data received successfully");
 	//LOG_USB_HTTP("server.send\n");
 }
@@ -181,6 +228,6 @@ void handleSetUDP()
 	{
 		udp_enable = false;
 	}
-	LOG_USB_UPD("udp state = %d\n", udp_enable?1:0);
+	LOG_USB_UPD("udp state = %d\n", udp_enable ? 1 : 0);
 	server.send(200, "text/plain", "Data received successfully");
 }

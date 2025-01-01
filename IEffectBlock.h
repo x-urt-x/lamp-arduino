@@ -10,6 +10,7 @@ public:
 		ColorBlockID,
 		PresetBlockID,
 		RainbowBlockID,
+		ParseBlockID,
 		BlocksCount
 	};
 };

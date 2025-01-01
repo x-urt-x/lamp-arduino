@@ -32,7 +32,7 @@
   <body>
     <h1>Effect Configuration</h1>
     <label for="state">State</label>
-    <input type="checkbox" id="state" data-prefix="s" />
+    <input type="checkbox" id="state" data-prefix="ts0" />
     <br />
     <label for="UDP">UDP</label>
     <input type="checkbox" id="UDP" />
@@ -54,6 +54,9 @@
 
     <div id="form-container"></div>
     <button class="apply-btn" onclick="applyChanges()">Apply All</button>
+    <br>
+    <input type="text" id="textInput" placeholder="send command">
+    <button onclick="directCommandBtnHandle()">send to /submit</button>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -70,6 +73,11 @@
           .addEventListener("click", handleBtnClick);
           document.getElementById("br").addEventListener("input", handleInput);
       });
+
+      function directCommandBtnHandle() {
+            const text = document.getElementById("textInput").value;
+            sendPostRequest(text);
+        }
 
       function handleUDP() {
         const input = event.target;

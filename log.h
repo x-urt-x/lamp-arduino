@@ -13,7 +13,7 @@
 //#define LOG_USB_SWITCH_ENABLE
 #define LOG_USB_UPD_ENABLE
 #define LOG_USB_HTTP_ENABLE
-
+#define LOG_USB_TIMER_ENABLE
 #endif // LOG_USB_ENABLE
 
 
@@ -94,5 +94,10 @@ for (int i = 0; i < MATR_SIZE; i++)							\
 #define LOG_USB_HTTP(format, ...) ;
 #endif
 
+#ifdef LOG_USB_TIMER_ENABLE
+#define LOG_USB_TIMER(format, ...) Serial.printf(format, ##__VA_ARGS__)
+#else
+#define LOG_USB_TIMER(format, ...) ;
+#endif
 
 #endif

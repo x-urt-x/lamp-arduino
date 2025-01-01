@@ -12,6 +12,8 @@
 #include "ColorBlock.h"
 #include "RainbowBlock.h"
 
+//#include "ParseBlock.h"
+
 #include "Effect_Noise.h"
 #include "Effect_singleColor.h"
 #include "Effect_fire.h"
@@ -24,19 +26,13 @@ public:
 	Strip(uint16_t n, int16_t p = 6);
 
 	void begin();
-	void tick(bool now = false);
-
 	void udp_set_color(Color_str color);
 	void parse(const char* input_str);
-	JsonDocument getJSON(bool udp);
-
-private:
+	JsonDocument getJSON(bool udp, bool state);
 
 	int get_br();
 	void set_br(int br);
 	void set_effect(byte num);
-	void set_state(int state);
-	void set_state(bool state);
 	//Effectable
 	void set_effect_strip_update_delay_time(uint delay);
 	void set_effect_br_cutoff_bound(int br_cutoff_bound);
@@ -61,13 +57,11 @@ private:
 	int* get_rainbow_steps();
 	int get_rainbow_len();
 
+	void tick();
+
+private:
 	BaseEffect* effect;
 	void apply_br();
-
-	bool _state;
-
-	unsigned long _strip_update_prev_time = 0;
-	unsigned long _strip_update_cur_time = 0;
 	float _br_max_gain;
 	
 	byte _cur;
