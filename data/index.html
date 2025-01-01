@@ -55,9 +55,33 @@
     <div id="form-container"></div>
     <button class="apply-btn" onclick="applyChanges()">Apply All</button>
     <br>
+    <div id="settings-block" style="padding: 10px; border: 1px solid #ccc; width: 300px; border-radius: 5px;">
+      <label for="interval">Через:</label>
+      <input type="number" id="interval" min="0" step="1" style="margin-bottom: 10px;"><br>
+  
+      <label for="duration">Длительность:</label>
+      <input type="number" id="duration" min="0" step="1" style="margin-bottom: 10px;"><br>
+  
+      <label for="step">Шаг:</label>
+      <input type="number" id="step" min="0" step="1" style="margin-bottom: 10px;"><br>
+  
+      <label for="brightness">Яркость:</label>
+      <input type="number" id="brightness" min="0" max="100" step="1" style="margin-bottom: 10px;"><br>
+      
+      <input type="checkbox" id="pre-set">
+      <label for="pre-set">Начальная установка</label><br><br>
+
+      <label for="start-brightness">Начальная яркость:</label>
+      <input type="number" id="start-brightness" min="0" max="100" step="1" style="margin-bottom: 10px;"><br>
+  
+      <input type="checkbox" id="auto-off">
+      <label for="auto-off">Выключить после</label><br><br>
+  
+      <button id="process-button" onclick="handleTimer()">Применить</button>
+  </div>
+    <br>
     <input type="text" id="textInput" placeholder="send command">
     <button onclick="directCommandBtnHandle()">send to /submit</button>
-
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         loadEffectOptions();
@@ -74,10 +98,79 @@
           document.getElementById("br").addEventListener("input", handleInput);
       });
 
+      function applyDarkTheme() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        * {
+            background-color: #121212 !important; /* Темно-серый фон */
+            color: #e0e0e0 !important; /* Светлый текст */
+            border-color: #444 !important; /* Темные границы */
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function applyLightTheme() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        * {
+            background-color: #ffffff !important; /* Светлый фон */
+            color: #000000 !important; /* Черный текст */
+            border-color: #ccc !important; /* Светлые границы */
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function syncWithSystemTheme() {
+    // Проверяем, какая тема установлена в системе
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        applyDarkTheme();  // Применяем тёмную тему
+    } else {
+        applyLightTheme();  // Применяем светлую тему
+    }
+}
+
+// Синхронизируем с темой браузера при загрузке страницы
+syncWithSystemTheme();
+
+// Обработчик изменений темы
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncWithSystemTheme);
+
+
       function directCommandBtnHandle() {
             const text = document.getElementById("textInput").value;
             sendPostRequest(text);
         }
+
+        function handleTimer() {
+        const interval = document.getElementById('interval').value;
+        const duration = document.getElementById('duration').value;
+        const step = document.getElementById('step').value;
+        const brightness = document.getElementById('brightness').value;
+        const startBrightness = document.getElementById('start-brightness').value;
+        const autoOff = document.getElementById('auto-off').checked;
+        const preset = document.getElementById('pre-set').checked;
+
+        if(preset)
+        {
+          sendPostRequest(`tac ${interval} 1 1 eb ${startBrightness}`);
+          setTimeout(()=>{sendPostRequest(`tas ${interval} 1`);}, 100);
+          setTimeout(()=>{sendPostRequest(`tab ${interval} ${duration} ${brightness} ${step}`);}, 200);
+          if(autoOff)
+        {
+          setTimeout(()=>{sendPostRequest(`tas ${interval+duration} 0`);}, 300);
+        }
+        }
+        else
+        {
+          sendPostRequest(`tab ${interval} ${duration} ${brightness} ${step}`);
+          if(autoOff)
+          {
+            setTimeout(()=>{sendPostRequest(`tas ${interval+duration} 0`);}, 100);
+          }
+        }
+    }
 
       function handleUDP() {
         const input = event.target;

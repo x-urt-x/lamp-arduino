@@ -171,16 +171,17 @@ void handleCommand()
 			byte pos = atoi(data);
 			while (data[0] != ' ') data++;
 			timerHandler.setState(atoi(data), pos);
-			if (atoi(data) == 0)
-			{
-				digitalWrite(MOSFET_PIN, LOW);
-				//WiFi.forceSleepBegin();
-			}
-			else
-			{
-				//WiFi.forceSleepWake();
-				digitalWrite(MOSFET_PIN, HIGH);
-			}
+			if (pos == 0)
+				if (atoi(data) == 0)
+				{
+					digitalWrite(MOSFET_PIN, LOW);
+					//WiFi.forceSleepBegin();
+				}
+				else
+				{
+					//WiFi.forceSleepWake();
+					digitalWrite(MOSFET_PIN, HIGH);
+				}
 			break;
 		}
 		case 'd':

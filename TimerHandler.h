@@ -1,8 +1,11 @@
 #ifndef TIMERHANDLER_H
 #define TIMERHANDLER_H
 #include "IEventTimer.h"
+
 #include "BrEventTimer.h"
 #include "EffectEventTimer.h"
+#include "OnOffTimer.h"
+#include "CommandTimer.h"
 
 class TimerHandler
 {

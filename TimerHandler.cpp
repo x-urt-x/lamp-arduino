@@ -64,25 +64,58 @@ void TimerHandler::addTimer(char* input_str)
 	{
 		input_str++;
 		unsigned long now = millis();
+
 		uint from_shift = atoi(input_str);
 		input_str++;
 		while (*input_str != ' ') input_str++;
+
 		uint to_shift = atoi(input_str);
 		input_str++;
 		while (*input_str != ' ') input_str++;
+
 		uint to_br = atoi(input_str);
 		input_str++;
 		while (*input_str != ' ') input_str++;
+
 		uint delay = atoi(input_str);
 		input_str++;
 		while (*input_str != ' ') input_str++;
+
 		LOG_USB_TIMER("from_shift = %d to_shift = %d to_br = %d delay = %d\n", from_shift, to_shift, to_br, delay);
-		addTimer(new BrEventTimer(now + from_shift*1000, now + from_shift * 1000 + to_shift*1000, to_br, delay));
+		addTimer(new BrEventTimer(now + from_shift * 1000, now + from_shift * 1000 + to_shift * 1000, to_br, delay));
+		break;
+	}
+	case 's':
+	{
+		input_str++;
+		unsigned long now = millis();
+
+		uint from_shift = atoi(input_str);
+		input_str++;
+		while (*input_str != ' ') input_str++;
+
+		addTimer(new OnOffTimer(&(timers[0]->_is_active), atoi(input_str), now + from_shift * 1000));
 		break;
 	}
 	case 'c':
 	{
+		input_str++;
+		unsigned long now = millis();
 
+		uint from_shift = atoi(input_str);
+		input_str++;
+		while (*input_str != ' ') input_str++;
+
+		uint delay = atoi(input_str);
+		input_str++;
+		while (*input_str != ' ') input_str++;
+
+		bool once = atoi(input_str);
+		input_str+=3;
+
+		LOG_USB_TIMER("from_shift = %d delay = %d once = %d comm =%s\n", from_shift, delay, once, input_str);
+		addTimer(new CommandTimer(now + from_shift * 1000, delay, input_str, once));
+		break;
 	}
 	default:
 		break;

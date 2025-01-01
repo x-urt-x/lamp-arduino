@@ -130,12 +130,12 @@ void Strip::udp_set_color(Color_str color)
 
 void Strip::parse(char* data)
 {
-	char* pch;
+	char* pch = NULL;
 	pch = strtok(data, "\n");
 	while (pch != NULL)
 	{
-			parse(pch);
-			pch = strtok(NULL, "\n");
+		parseSingle(pch);
+		pch = strtok(NULL, "\n");
 	}
 }
 
