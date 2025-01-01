@@ -84,8 +84,8 @@ void setup() {
 
 	digitalWrite(RED_PIN, LOW);
 	timerHandler.addTimer(new EffectEventTimer());
-	strip.parse("m 0");
-	strip.parse("eb 1000");
+	strip.parseSingle("m 0");
+	strip.parseSingle("eb 1000");
 	strip.tick();
 }
 
@@ -115,13 +115,13 @@ void loop() {
 		if (br < 0)
 			br = 0;
 		LOG_USB_ENC("%d\n", br);
-		strip.parse(("eb " + String(br)).c_str());
+		strip.parseSingle(("eb " + String(br)).c_str());
 		strip.tick();
 	}
 
 	while (Serial.available() > 0)
 	{
-		strip.parse(Serial.readStringUntil('\n').c_str());
+		strip.parseSingle(Serial.readStringUntil('\n').c_str());
 		strip.tick();
 	}
 	timerHandler.tickAll();
@@ -159,58 +159,50 @@ void handleGetEffectOption()
 void handleCommand()
 {
 	char* data = const_cast<char*>(server.arg("plain").c_str());
-	LOG_USB_HTTP("%s\n", data);
-	char* pch;
-	pch = strtok(data, "\n");
-	while (pch != NULL)
+	if (data[0] == 't')
 	{
-		if (pch[0] == 't')
+		data++;
+		char key = data[0];
+		data++;
+		switch (key)
 		{
-			pch++;
-			char key = pch[0];
-			pch++;
-			switch (key)
-			{
-			case 's':
-			{
-				byte pos = atoi(pch);
-				while (pch[0] != ' ') pch++;
-				timerHandler.setState(atoi(pch), pos);
-				if (atoi(pch) == 0)
-				{
-					digitalWrite(MOSFET_PIN, LOW);
-					//WiFi.forceSleepBegin();
-				}
-				else
-				{
-					//WiFi.forceSleepWake();
-					digitalWrite(MOSFET_PIN, HIGH);
-					strip.tick();
-				}
-				break;
-			}
-			case 'd':
-			{
-				byte pos = atoi(pch);
-				if (pos == 0) break;
-				while (pch[0] != ' ') pch++;
-				timerHandler.deleteTimer(pos);
-				break;
-			}
-			case 'a':
-			{
-				timerHandler.addTimer(pch);
-				break;
-			}
-			default:
-				break;
-			}
-		}
-		else
+		case 's':
 		{
-			strip.parse(pch);
-			pch = strtok(NULL, "\n");
+			byte pos = atoi(data);
+			while (data[0] != ' ') data++;
+			timerHandler.setState(atoi(data), pos);
+			if (atoi(data) == 0)
+			{
+				digitalWrite(MOSFET_PIN, LOW);
+				//WiFi.forceSleepBegin();
+			}
+			else
+			{
+				//WiFi.forceSleepWake();
+				digitalWrite(MOSFET_PIN, HIGH);
+			}
+			break;
 		}
+		case 'd':
+		{
+			byte pos = atoi(data);
+			if (pos == 0) break;
+			while (data[0] != ' ') data++;
+			timerHandler.deleteTimer(pos);
+			break;
+		}
+		case 'a':
+		{
+			timerHandler.addTimer(data);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	else
+	{
+		strip.parse(data);
 	}
 	strip.tick();
 	server.send(200, "text/plain", "Data received successfully");

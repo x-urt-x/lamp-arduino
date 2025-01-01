@@ -27,7 +27,8 @@ public:
 
 	void begin();
 	void udp_set_color(Color_str color);
-	void parse(const char* input_str);
+	void parse(char* input_str);
+	void parseSingle(const char* input_str);
 	JsonDocument getJSON(bool udp, bool state);
 
 	int get_br();

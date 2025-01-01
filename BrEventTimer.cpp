@@ -11,17 +11,13 @@ bool BrEventTimer::action()
     if (_step_counter <= 0)
     {
         LOG_USB_TIMER("end\n");
-        //obj->parse("s 0");
         return true;
     }
     return false;
 }
 
-BrEventTimer::BrEventTimer(unsigned long from_time, unsigned long to_time, int to_br, uint delay) : _to_br(to_br)
+BrEventTimer::BrEventTimer(unsigned long from_time, unsigned long to_time, int to_br, uint delay) : _to_br(to_br), IEventTimer(delay, true, from_time)
 {
-    _prev_time = from_time;
     _step_counter = float(to_time - from_time) / delay + 1;
-    _delay = delay;
     LOG_USB_TIMER("create BrEventTimer: now = %d from_time = %d to_time = %d to_br = %d delay = %d _step_counter = %d\n", millis(), from_time, to_time, to_br, delay, _step_counter);
-   // if (!obj->get_br()) obj->parse("s 1");
 }
