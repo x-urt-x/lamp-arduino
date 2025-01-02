@@ -15,8 +15,14 @@
 const char* ssid = SSID;
 const char* password = PASS;
 const unsigned int localPort = 8888;
-
+#ifdef MATR16x16
 IPAddress local_ip(192, 168, 1, 42);
+#else
+#ifdef MATR10x10
+IPAddress local_ip(192, 168, 1, 41);
+#endif // MATR10x10
+#endif
+
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
@@ -38,7 +44,7 @@ void setup() {
 	LOG_USB_STARTUP("\nstart\n");
 	IEventTimer::obj = &strip;
 	strip.begin();
-	strip.fill(strip.Color(0, 0, 0));
+	strip.fill(strip.Color(0,0,0));
 	delay(0);
 	strip.show();
 #ifdef MATR10x10
@@ -51,8 +57,10 @@ void setup() {
 	digitalWrite(RED_PIN, LOW);
 	pinMode(GREEN_PIN, OUTPUT);
 	digitalWrite(GREEN_PIN, LOW);
+#ifdef MATR16x16
 	pinMode(MOSFET_PIN, OUTPUT);
 	digitalWrite(MOSFET_PIN, HIGH);
+#endif
 
 	WiFi.config(local_ip, gateway, subnet);
 	WiFi.mode(WIFI_STA);
@@ -152,7 +160,7 @@ void handleRoot() {
 void handleGetEffectOption()
 {
 	String output;
-	serializeJson(strip.getJSON(udp_enable, timerHandler.getState(0)), output);
+	serializeJson(strip.getJSON(udp_enable, timerHandler.getState(0), timerHandler.getTimerCount()), output);
 	server.send(200, "application/json", output);
 }
 
@@ -174,13 +182,23 @@ void handleCommand()
 			if (pos == 0)
 				if (atoi(data) == 0)
 				{
+#ifdef MATR16x16
 					digitalWrite(MOSFET_PIN, LOW);
+#endif
+#ifdef MATR10x10
+					strip.fill(strip.Color(0, 0, 0));
+					delay(0);
+					strip.show();
+					return;
+#endif 
 					//WiFi.forceSleepBegin();
 				}
 				else
 				{
 					//WiFi.forceSleepWake();
+#ifdef MATR16x16
 					digitalWrite(MOSFET_PIN, HIGH);
+#endif
 				}
 			break;
 		}

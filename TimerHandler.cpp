@@ -49,6 +49,11 @@ bool TimerHandler::getState(int num)
 	return timers[num]->_is_active;
 }
 
+int TimerHandler::getTimerCount()
+{
+	return _timers_count;
+}
+
 TimerHandler::TimerHandler()
 {
 	timers = new IEventTimer * [_timers_cap];

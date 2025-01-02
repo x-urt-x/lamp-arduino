@@ -20,6 +20,7 @@ public:
 
 	void setState(bool state, int num);
 	bool getState(int num);
+	int getTimerCount();
 private:
 	IEventTimer** timers;
 	byte _timers_count = 0;

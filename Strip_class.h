@@ -29,7 +29,7 @@ public:
 	void udp_set_color(Color_str color);
 	void parse(char* input_str);
 	void parseSingle(const char* input_str);
-	JsonDocument getJSON(bool udp, bool state);
+	JsonDocument getJSON(bool udp, bool state, int timerCount);
 
 	int get_br();
 	void set_br(int br);
