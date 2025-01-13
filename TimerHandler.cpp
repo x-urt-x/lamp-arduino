@@ -37,7 +37,18 @@ void TimerHandler::deleteTimer(byte num)
 	_timers_count--;
 }
 
-void TimerHandler::loadAll()
+void TimerHandler::createAll()
+{
+	IDataHolderArr dataArr;
+	loadAll(dataArr);
+	for (byte i = 0; i < dataArr.len; i++)
+	{
+		addTimer(dataArr.arr[i]->create());
+	}
+	dataArr.free();
+}
+
+IDataHolderArr TimerHandler::loadAll(IDataHolderArr &dataArr)
 {
 	byte obj_data_count = EEPROM.read(0);
 	for (byte i = 0; i < obj_data_count; i++)
@@ -46,43 +57,91 @@ void TimerHandler::loadAll()
 		EEPROM.get(1 + i * 2, adrr);
 		if ((adrr & 0xF000) == 0x2000)
 		{
-			loadTimer(adrr & 0x0FFF);
+			dataArr.len++;
 		}
 	}
+	LOG_USB_TIMER("%d mem timers to load\n", dataArr.len);
+	dataArr.arr = new IDataHolder * [dataArr.len];
+	byte j = 0;
+	for (byte i = 0; i < obj_data_count; i++)
+	{
+		uint16_t adrr;
+		EEPROM.get(1 + i * 2, adrr);
+		if ((adrr & 0xF000) == 0x2000)
+		{
+			IDataHolder* dataHolder = loadTimer(adrr & 0x0FFF);
+			if (!dataHolder)
+			{
+				LOG_USB_TIMER("bad timer id\n");
+				dataArr.len--;
+				continue;
+			}
+			dataArr.arr[j] = dataHolder; 
+			j++;
+		}
+	}
+	LOG_USB_TIMER("%d mem timers have been loaded\n", dataArr.len);
+	LOG_USB_TIMER("end load\n");
+	return dataArr;
 }
 
-void TimerHandler::loadTimer(uint16_t addr)
+IDataHolder* TimerHandler::loadTimer(uint16_t addr)
 {
-	LOG_USB_TIMER("load timer on %d", addr);
 	byte timerID = EEPROM.read(addr);
 
+	LOG_USB_TIMER("load timer on %d\t timerID = %d\n", addr, timerID);
 
 	switch (timerID)
 	{
 	case IEventTimer::TimerIDEnum::BrEventTimer:
 	{
-		BrEventTimerDataHolder dataHolder;
-		dataHolder.load(addr);
-		addTimer(dataHolder.create());
-		break;
+		LOG_USB_TIMER("load BrEventTimerDataHolder\n");
+		BrEventTimerDataHolder* dataHolder = new BrEventTimerDataHolder();
+		dataHolder->load(addr);
+		return dataHolder;
 	}
 	case IEventTimer::TimerIDEnum::OnOffTimer:
 	{
-		OnOffTimerDataHolder dataHolder;
-		dataHolder.load(addr);
-		addTimer(dataHolder.create());
-		break;
+		LOG_USB_TIMER("load OnOffTimerDataHolder\n");
+		OnOffTimerDataHolder* dataHolder = new OnOffTimerDataHolder();
+		dataHolder->load(addr);
+		return dataHolder;
 	}
 	case IEventTimer::TimerIDEnum::CommandTimer:
 	{
-		CommandTimerDataHolder dataHolder;
-		dataHolder.load(addr);
-		addTimer(dataHolder.create());
-		break;
+		LOG_USB_TIMER("load CommandTimerDataHolder\n");
+		CommandTimerDataHolder* dataHolder = new CommandTimerDataHolder();
+		dataHolder->load(addr);
+		return dataHolder;
 	}
 	default:
 		break;
 	}
+	return nullptr;
+}
+
+//void TimerHandler::getMemJsonOne(JsonObject& doc, byte num)
+//{
+//
+//}
+
+JsonDocument TimerHandler::getMemJsonAll()
+{
+	JsonDocument doc;
+	JsonArray memTimers = doc.createNestedArray("memTimers");
+	IDataHolderArr dataArr;
+	loadAll(dataArr);
+	for (byte i = 0; i < dataArr.len; i++)
+	{
+		LOG_USB_TIMER("json for %d mem timer start\n", i);
+		JsonObject memTimer = memTimers.createNestedObject();
+		if(dataArr.arr[i] == nullptr) LOG_USB_TIMER("nullptr\n");
+		memTimer["id"] = String(dataArr.arr[i]->getId());
+		dataArr.arr[i]->getJson(memTimer);
+	}
+	dataArr.free();
+	LOG_USB_TIMER("json create end\n");
+	return doc;
 }
 
 void TimerHandler::setState(bool state, int num)
@@ -131,6 +190,23 @@ void TimerHandler::parseTimer(char* input_str)
 
 		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
 		if (save) dataholder.save();
+
+		addTimer(dataholder.create());
+		break;
+	}
+	case 'g':
+	{
+		BrEventTimerDataHolder dataholder;
+
+		dataholder._repInfo = (byte)0x12;
+		dataholder._timer_time_raw = 0x1234'5678;
+		dataholder._dur = 0x1234'5678;
+		dataholder._to_br = 0x1234;
+		dataholder._delay = 0x1234'5678;
+
+
+		LOG_USB_TIMER("_repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n",dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
+		dataholder.save();
 
 		addTimer(dataholder.create());
 		break;

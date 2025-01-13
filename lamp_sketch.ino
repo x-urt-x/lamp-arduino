@@ -100,6 +100,7 @@ void setup() {
 	server.on("/", HTTP_GET, handleRoot);
 	server.on("/submit", HTTP_POST, handleCommand);
 	server.on("/get-effect-option", HTTP_GET, handleGetEffectOption);
+	server.on("/get-mem-timers", HTTP_GET, handleMemTimers);
 	server.on("/udp-state", HTTP_POST, handleSetUDP);
 
 	Udp.begin(localPort);
@@ -276,36 +277,9 @@ void handleSetUDP()
 	server.send(200, "text/plain", "Data received successfully");
 }
 
-//
-//struct Base 
-//{
-//	byte id;
-//	byte rep;
-//	long time;
-//};
-//
-//class Obj1
-//{
-//	Obj1(int arg1, int arg2) {}
-//};
-//
-//class Obj2
-//{
-//	Obj2(float arg1, float arg2) {}
-//};
-//
-//void newObj()
-//{
-//
-//}
-//
-//void parseFromMem(Base base, uint16_t addr)
-//{
-//
-//}
-//
-//void parseFromStr(Base base, String str)
-//{
-//
-//}
-
+void handleMemTimers()
+{
+	String output;
+	serializeJson(timerHandler.getMemJsonAll(), output);
+	server.send(200, "application/json", output);
+}

@@ -30,13 +30,13 @@ IEventTimer* BrEventTimerDataHolder::create()
 void BrEventTimerDataHolder::save()
 {
 	_addr = reservAddr(sizeof(_dur) + sizeof(_to_br) + sizeof(_delay));
-
-	saveCommon(_addr, IEventTimer::TimerIDEnum::BrEventTimer);
-	EEPROM.put(_addr, _dur);
-	_addr += sizeof(_dur);
-	EEPROM.put(_addr, _to_br);
-	_addr += sizeof(_to_br);
-	EEPROM.put(_addr, _delay);
+	uint16_t addr = _addr;
+	saveCommon(addr, IEventTimer::TimerIDEnum::BrEventTimer);
+	EEPROM.put(addr, _dur);
+	addr += sizeof(_dur);
+	EEPROM.put(addr, _to_br);
+	addr += sizeof(_to_br);
+	EEPROM.put(addr, _delay);
 	EEPROM.commit();
 }
 
@@ -44,11 +44,27 @@ void BrEventTimerDataHolder::load(uint16_t addr)
 {
 	_addr = addr;
 	addr++; //skip id
-
 	loadCommon(addr);
-	EEPROM.get(_addr, _dur);
-	_addr += sizeof(_dur);
-	EEPROM.get(_addr, _to_br);
-	_addr += sizeof(_to_br);
-	EEPROM.get(_addr, _delay);
+	EEPROM.get(addr, _dur);
+	addr += sizeof(_dur);
+	EEPROM.get(addr, _to_br);
+	addr += sizeof(_to_br);
+	EEPROM.get(addr, _delay);
+}
+
+void BrEventTimerDataHolder::getJson(JsonObject& doc)
+{
+	//LOG_USB_TIMER("BrEventTimerDataHolder::getJson start\n");
+	getJsonCommon(doc);
+	//LOG_USB_TIMER("BrEventTimerDataHolder::getJson after Common\n");
+	doc["dur"] = String(_dur);
+	doc["to_br"] = String(_to_br);
+	doc["delay"] = String(_delay);
+	//LOG_USB_TIMER("BrEventTimerDataHolder::getJson end\n");
+}
+
+byte BrEventTimerDataHolder::getId()
+{
+	//LOG_USB_TIMER("BrEventTimerDataHolder::getId\n");
+	return IEventTimer::TimerIDEnum::BrEventTimer;
 }

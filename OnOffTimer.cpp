@@ -49,11 +49,11 @@ IEventTimer* OnOffTimerDataHolder::create()
 void OnOffTimerDataHolder::save()
 {
 	_addr = reservAddr(sizeof(_to_set) + sizeof(_target));
-
-	saveCommon(_addr, IEventTimer::TimerIDEnum::OnOffTimer);
-	EEPROM.put(_addr, _to_set);
-	_addr += sizeof(_to_set);
-	EEPROM.put(_addr, _target);
+	uint16_t addr = _addr;
+	saveCommon(addr, IEventTimer::TimerIDEnum::OnOffTimer);
+	EEPROM.put(addr, _to_set);
+	addr += sizeof(_to_set);
+	EEPROM.put(addr, _target);
 	EEPROM.commit();
 }
 
@@ -63,7 +63,18 @@ void OnOffTimerDataHolder::load(uint16_t addr)
 	addr++; //skip id
 
 	loadCommon(addr);
-	EEPROM.get(_addr, _to_set);
-	_addr += sizeof(_to_set);
-	EEPROM.get(_addr, _target);
+	EEPROM.get(addr, _to_set);
+	addr += sizeof(_to_set);
+	EEPROM.get(addr, _target);
+}
+
+void OnOffTimerDataHolder::getJson(JsonObject& doc)
+{
+	getJsonCommon(doc);
+	doc["to_set"] = String(_to_set);
+}
+
+byte OnOffTimerDataHolder::getId()
+{
+	return IEventTimer::TimerIDEnum::OnOffTimer;
 }

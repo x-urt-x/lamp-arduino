@@ -19,6 +19,8 @@ struct OnOffTimerDataHolder : public IDataHolder
 	virtual IEventTimer* create() override;
 	virtual void save() override;
 	virtual void load(uint16_t addr) override;
+	virtual void getJson(JsonObject& doc) override;
+	virtual byte getId() override;
 
 	bool _to_set;
 	bool* _target;

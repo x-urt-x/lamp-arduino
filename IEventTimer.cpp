@@ -19,12 +19,14 @@ unsigned long IDataHolder::calcTime()
 	{
 		byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 8640UL;
 		unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 8640UL;
+		LOG_USB_TIMER("calcTime with rep 1: now_weekday = %d now_daytime = %d\n", now_weekday, now_daytime);
 		for (byte i = now_weekday; i < 7; i++)
 		{
 			if ((_repInfo >> i) & 0b1)
 			{
 				if (_timer_time_raw < now_daytime)
 					continue;
+				LOG_USB_TIMER("calcTime with rep 1: i = %d\n", i);
 				return now_millis_time + (8640UL * (i - now_weekday) + _timer_time_raw - now_daytime) * 1000UL + 1;
 			}
 		}
@@ -34,6 +36,7 @@ unsigned long IDataHolder::calcTime()
 			{
 				if (_timer_time_raw < now_daytime)
 					continue;
+				LOG_USB_TIMER("calcTime with rep 2: i = %d\n", i);
 				return now_millis_time + (8640UL * (7 - now_weekday + i) + _timer_time_raw - now_daytime) * 1000UL + 1;
 
 			}
@@ -66,7 +69,7 @@ uint16_t IDataHolder::reservAddr(uint16_t uniquePartSize)
 	}
 	EEPROM.put(obj_data_count * 2 + 1, addr | 0x2000); // uppdate id; 0x200 - obj id for timers
 	obj_data_count++;
-	EEPROM.write(0, obj_data_count | EEPROM.read(0) & 0b0111'1111);
+	EEPROM.write(0, obj_data_count | EEPROM.read(0) & 0b1000'0000);
 	LOG_USB_TIMER("next addr on %d\n", addr + 6 + uniquePartSize);
 	EEPROM.put(obj_data_count * 2 + 1, addr + 6 + uniquePartSize);
 	EEPROM.commit();
@@ -91,6 +94,12 @@ void IDataHolder::loadCommon(uint16_t& paddr)
 	paddr += 4;
 }
 
+void IDataHolder::getJsonCommon(JsonObject& doc)
+{
+	doc["repInfo"] = String(_repInfo);
+	doc["timer_time_raw"] = String(_timer_time_raw);
+}
+
 
 bool IEventTimer::tick(unsigned long cur_time)
 {
@@ -110,4 +119,15 @@ IEventTimer::IEventTimer(const uint _delay, bool _is_active, unsigned long _prev
 
 IEventTimer::IEventTimer() : _delay(100), _is_active(true), _prev_time(0)
 {
+}
+
+void IDataHolderArr::free()
+{
+	if (arr) {
+		for (int i = 0; i < len; i++)
+			delete arr[i];
+		delete[] arr;
+		arr = nullptr;
+	}
+	len = 0;
 }

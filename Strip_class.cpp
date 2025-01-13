@@ -280,13 +280,16 @@ void Strip::parseSingle(const char* input_str)
 				EEPROM.get(1 + i * 2, addr);
 				Serial.printf("%d-%d|",addr >> 12, addr & 0x0FFF);
 			}
-
-			//int val =  - OBJ_DATA_CAP * 2 - 1;
+			Serial.print('\n');
 
 			for (int i = (OBJ_DATA_CAP+1) * 2 + 1; i < 64 * 64; i++)
 			{
-				if(i%64==0) Serial.print('\n');
-				Serial.print(EEPROM.read(i), HEX);
+				if((i - (OBJ_DATA_CAP + 1) * 2 + 1 )%64==0) Serial.print('\n');
+				byte value = EEPROM.read(i);
+				if (value < 0x10)
+					Serial.print("0");
+				Serial.print(value, HEX);
+				Serial.print(" ");
 			}
 			Serial.print('\n');
 			break;

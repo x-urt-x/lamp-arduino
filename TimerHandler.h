@@ -18,9 +18,13 @@ public:
 	void addTimer(IEventTimer* timerDataHolder);
 	void deleteTimer(byte num);
 
-	void loadAll();
-	void loadTimer(uint16_t adrr);
-	//uint16_t saveTimer(bool is_active, byte repeat_info, unsigned long timer_time, IEventTimer* timer);
+	void createAll();
+
+	IDataHolderArr loadAll(IDataHolderArr &dataArr);
+	IDataHolder* loadTimer(uint16_t adrr);
+	
+	//void getMemJsonOne(JsonObject& doc, byte num);
+	JsonDocument getMemJsonAll();
 
 	void setState(bool state, int num);
 	bool getState(int num);

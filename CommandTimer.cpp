@@ -20,13 +20,13 @@ IEventTimer* CommandTimerDataHolder::create()
 void CommandTimerDataHolder::save()
 {
 	_addr = reservAddr(_command.length()+1 + sizeof(_once) + sizeof(_delay));
-
-	saveCommon(_addr, IEventTimer::TimerIDEnum::CommandTimer);
-	EEPROM.put(_addr, _once);
-	_addr += sizeof(_once);
-	EEPROM.put(_addr, _delay);
-	_addr += sizeof(_delay);
-	EEPROM.put(_addr, _command.c_str());
+	uint16_t addr = _addr;
+	saveCommon(addr, IEventTimer::TimerIDEnum::CommandTimer);
+	EEPROM.put(addr, _once);
+	addr += sizeof(_once);
+	EEPROM.put(addr, _delay);
+	addr += sizeof(_delay);
+	EEPROM.put(addr, _command.c_str());
 	EEPROM.commit();
 }
 
@@ -36,10 +36,10 @@ void CommandTimerDataHolder::load(uint16_t addr)
 	addr++; //skip id
 
 	loadCommon(addr);
-	EEPROM.get(_addr, _once);
-	_addr += sizeof(_once);
-	EEPROM.get(_addr, _delay);
-	_addr += sizeof(_delay);
+	EEPROM.get(addr, _once);
+	addr += sizeof(_once);
+	EEPROM.get(addr, _delay);
+	addr += sizeof(_delay);
 
     char ch;
     _command.clear();
@@ -49,4 +49,17 @@ void CommandTimerDataHolder::load(uint16_t addr)
         if (ch == '\0') break;
         _command += ch;
     }
+}
+
+void CommandTimerDataHolder::getJson(JsonObject& doc)
+{
+	getJsonCommon(doc);
+	doc["once"] = String(_once);
+	doc["delay"] = String(_delay);
+	doc["command"] = _command;
+}
+
+byte CommandTimerDataHolder::getId()
+{
+	return IEventTimer::TimerIDEnum::CommandTimer;
 }

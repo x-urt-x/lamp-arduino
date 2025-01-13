@@ -1,6 +1,7 @@
 #ifndef IEVENTTIMER_H
 #define IEVENTTIMER_H
 #include "Strip_class.h"
+#include <ArduinoJson.h>
 #include "StartTimeInfo.h"
 
 class IEventTimer
@@ -32,6 +33,8 @@ struct IDataHolder
 	virtual IEventTimer* create() = 0;
 	virtual void save() = 0;
 	virtual void load(uint16_t addr) = 0;
+	virtual void getJson(JsonObject& doc) = 0;
+	virtual byte getId() = 0;
 	void setTime(unsigned long time, bool epoch);
 	byte _repInfo;
 	unsigned long _timer_time_raw;
@@ -41,5 +44,13 @@ protected:
 	uint16_t reservAddr(uint16_t size);
 	void saveCommon(uint16_t& paddr, IEventTimer::TimerIDEnum id);
 	void loadCommon(uint16_t& paddr);
+	void getJsonCommon(JsonObject& doc);
+};
+
+struct IDataHolderArr
+{
+	void free();
+	byte len = 0;
+	IDataHolder** arr = nullptr;
 };
 #endif

@@ -19,6 +19,8 @@ struct BrEventTimerDataHolder : public IDataHolder
 	virtual IEventTimer* create() override;
 	virtual void save() override;
 	virtual void load(uint16_t addr) override;
+	virtual void getJson(JsonObject& doc) override;
+	virtual byte getId() override;
 
 	unsigned long _dur;
 	uint16_t _to_br;
