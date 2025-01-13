@@ -120,11 +120,6 @@ IDataHolder* TimerHandler::loadTimer(uint16_t addr)
 	return nullptr;
 }
 
-//void TimerHandler::getMemJsonOne(JsonObject& doc, byte num)
-//{
-//
-//}
-
 JsonDocument TimerHandler::getMemJsonAll()
 {
 	JsonDocument doc;
@@ -140,7 +135,23 @@ JsonDocument TimerHandler::getMemJsonAll()
 		dataArr.arr[i]->getJson(memTimer);
 	}
 	dataArr.free();
-	LOG_USB_TIMER("json create end\n");
+	LOG_USB_TIMER("mem json create end\n");
+	return doc;
+}
+
+JsonDocument TimerHandler::getActiveJsonAll()
+{
+	JsonDocument doc;
+	JsonArray actimeTimers = doc.createNestedArray("activeTimers");
+	for (int i = 0; i < _timers_count; i++)
+	{
+		LOG_USB_TIMER("json for %d active timer start\n", i);
+		JsonObject activeTimer = actimeTimers.createNestedObject();
+		if (timers[i] == nullptr) LOG_USB_TIMER("nullptr\n");
+		activeTimer["id"] = String(timers[i]->getId());
+		timers[i]->getJson(activeTimer);
+	}
+	LOG_USB_TIMER("active json create end\n");
 	return doc;
 }
 

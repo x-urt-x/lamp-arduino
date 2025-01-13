@@ -16,6 +16,18 @@ bool BrEventTimer::action()
 	return false;
 }
 
+void BrEventTimer::getJson(JsonObject& doc)
+{
+	getJsonCommon(doc);
+	doc["step_counter"] = String(_step_counter);
+	doc["to_br"] = String(_to_br);
+}
+
+byte BrEventTimer::getId()
+{
+	return IEventTimer::TimerIDEnum::BrEventTimer;
+}
+
 BrEventTimer::BrEventTimer(unsigned long from_time, unsigned long dur, uint16_t to_br, uint delay, uint16_t addr) : _to_br(to_br), IEventTimer(delay, true, from_time, addr)
 {
 	_step_counter = float(dur*1000) / delay + 1;
@@ -54,17 +66,13 @@ void BrEventTimerDataHolder::load(uint16_t addr)
 
 void BrEventTimerDataHolder::getJson(JsonObject& doc)
 {
-	//LOG_USB_TIMER("BrEventTimerDataHolder::getJson start\n");
 	getJsonCommon(doc);
-	//LOG_USB_TIMER("BrEventTimerDataHolder::getJson after Common\n");
 	doc["dur"] = String(_dur);
 	doc["to_br"] = String(_to_br);
 	doc["delay"] = String(_delay);
-	//LOG_USB_TIMER("BrEventTimerDataHolder::getJson end\n");
 }
 
 byte BrEventTimerDataHolder::getId()
 {
-	//LOG_USB_TIMER("BrEventTimerDataHolder::getId\n");
 	return IEventTimer::TimerIDEnum::BrEventTimer;
 }

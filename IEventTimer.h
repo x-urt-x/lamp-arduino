@@ -18,12 +18,14 @@ public:
 	IEventTimer(const uint _delay, bool _is_active, unsigned long _prev_time, uint16_t addr = 0);
 	IEventTimer();
 	virtual bool tick(unsigned long cur_time);
-	//virtual uint16_t save(uint16_t addr) = 0; //return next free adrr 
+	virtual void getJson(JsonObject& doc) = 0;
+	virtual byte getId() = 0;
 	uint _delay;
 	bool _is_active;
 	uint16_t _addr = 0;
 	static Strip* obj;
 protected:
+	void getJsonCommon(JsonObject& doc);
 	virtual bool action() = 0;
 	unsigned long _prev_time;
 };

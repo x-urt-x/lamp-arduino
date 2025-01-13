@@ -9,5 +9,9 @@ public:
 	bool tick(unsigned long cur_time) override;
 protected:
 	virtual bool action() override;
+
+	// Унаследовано через IEventTimer
+	virtual void getJson(JsonObject& doc) override;
+	virtual byte getId() override;
 };
 #endif

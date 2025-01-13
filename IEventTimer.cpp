@@ -111,6 +111,14 @@ bool IEventTimer::tick(unsigned long cur_time)
 	}
 	return false;
 }
+void IEventTimer::getJsonCommon(JsonObject& doc)
+{
+	doc["prev_time"] = String(_prev_time);
+	doc["delay"] = String(_delay);
+	doc["is_active"] = String(_is_active);
+	doc["addr"] = String(_addr);
+}
+
 Strip* IEventTimer::obj = nullptr;
 
 IEventTimer::IEventTimer(const uint _delay, bool _is_active, unsigned long _prev_time, uint16_t addr ) : _delay(_delay), _is_active(_is_active), _prev_time(_prev_time), _addr(addr)

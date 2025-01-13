@@ -12,6 +12,19 @@ bool CommandTimer::action()
 	return false;
 }
 
+void CommandTimer::getJson(JsonObject& doc)
+{
+	getJsonCommon(doc);
+	doc["once"] = String(_once);
+	doc["command"] = _command;
+
+}
+
+byte CommandTimer::getId()
+{
+	return IEventTimer::TimerIDEnum::CommandTimer;
+}
+
 IEventTimer* CommandTimerDataHolder::create()
 {
 	return new CommandTimer(calcTime(), _delay, _command, _once, _addr);

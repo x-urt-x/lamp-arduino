@@ -40,6 +40,17 @@ bool OnOffTimer::action()
 	return true;
 }
 
+void OnOffTimer::getJson(JsonObject& doc)
+{
+	getJsonCommon(doc);
+	doc["to_set"] = String(_to_set);
+}
+
+byte OnOffTimer::getId()
+{
+	return IEventTimer::TimerIDEnum::OnOffTimer;
+}
+
 
 IEventTimer* OnOffTimerDataHolder::create()
 {

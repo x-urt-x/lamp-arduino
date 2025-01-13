@@ -101,6 +101,7 @@ void setup() {
 	server.on("/submit", HTTP_POST, handleCommand);
 	server.on("/get-effect-option", HTTP_GET, handleGetEffectOption);
 	server.on("/get-mem-timers", HTTP_GET, handleMemTimers);
+	server.on("/get-active-timers", HTTP_GET, handleActiveTimers);
 	server.on("/udp-state", HTTP_POST, handleSetUDP);
 
 	Udp.begin(localPort);
@@ -281,5 +282,12 @@ void handleMemTimers()
 {
 	String output;
 	serializeJson(timerHandler.getMemJsonAll(), output);
+	server.send(200, "application/json", output);
+}
+
+void handleActiveTimers() 
+{
+	String output;
+	serializeJson(timerHandler.getActiveJsonAll(), output);
 	server.send(200, "application/json", output);
 }

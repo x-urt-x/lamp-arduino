@@ -6,6 +6,16 @@ bool EffectEventTimer::action()
 	return false;
 }
 
+void EffectEventTimer::getJson(JsonObject& doc)
+{
+	getJsonCommon(doc);
+}
+
+byte EffectEventTimer::getId()
+{
+	return IEventTimer::TimerIDEnum::EffectEventTimer;
+}
+
 bool EffectEventTimer::tick(unsigned long cur_time)
 {
 	//LOG_USB_TIMER("EffectEventTimer::tick\n");

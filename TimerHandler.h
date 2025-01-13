@@ -23,8 +23,8 @@ public:
 	IDataHolderArr loadAll(IDataHolderArr &dataArr);
 	IDataHolder* loadTimer(uint16_t adrr);
 	
-	//void getMemJsonOne(JsonObject& doc, byte num);
 	JsonDocument getMemJsonAll();
+	JsonDocument getActiveJsonAll();
 
 	void setState(bool state, int num);
 	bool getState(int num);
