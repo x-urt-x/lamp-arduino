@@ -12,11 +12,15 @@ class TimerHandler
 public:
 	TimerHandler();
 	
-	void addTimer(char* input_str);
+	void parseTimer(char* input_str);
 
 	void tickAll();
-	void addTimer(IEventTimer* timer);
+	void addTimer(IEventTimer* timerDataHolder);
 	void deleteTimer(byte num);
+
+	void loadAll();
+	void loadTimer(uint16_t adrr);
+	//uint16_t saveTimer(bool is_active, byte repeat_info, unsigned long timer_time, IEventTimer* timer);
 
 	void setState(bool state, int num);
 	bool getState(int num);

@@ -5,11 +5,21 @@
 class OnOffTimer : public IEventTimer
 {
 public:
-	OnOffTimer(bool* target, bool to_set, unsigned long time);
+	OnOffTimer(unsigned long time, bool* target, bool to_set, uint16_t addr = 0);
 	bool tick(unsigned long cur_time) override;
 protected:
 	virtual bool action() override;
 private:
+	bool _to_set;
+	bool* _target;
+};
+
+struct OnOffTimerDataHolder : public IDataHolder
+{
+	virtual IEventTimer* create() override;
+	virtual void save() override;
+	virtual void load(uint16_t addr) override;
+
 	bool _to_set;
 	bool* _target;
 };

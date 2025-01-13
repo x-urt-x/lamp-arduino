@@ -248,37 +248,54 @@ void Strip::parseSingle(const char* input_str)
 		set_effect(atoi(input_str));
 		break;
 	}
-	//case 't':
-	//{
-	//	key = input_str[0];
-	//	input_str++;
-	//	LOG_USB_SWITCH("key1 - %t\n", key);
-	//	switch (key)
-	//	{
-	//	case 'd':
-	//	{
-	//		deleteTimer(atoi(input_str));
-	//		break;
-	//	}
-	//	case 'a':
-	//	{
-	//		unsigned long now = millis();
-	//		uint from_shift = atoi(input_str);
-	//		while (input_str[0] != ' ') input_str++;
-	//		uint to_shift = atoi(input_str);
-	//		while (input_str[0] != ' ') input_str++;
-	//		uint to_br = atoi(input_str);
-	//		while (input_str[0] != ' ') input_str++;
-	//		uint delay = atoi(input_str);
-	//		while (input_str[0] != ' ') input_str++;
-	//		addTimer(new BrEventTimer(now + from_shift, now + to_shift, to_br, delay, input_str));
-	//		break;
-	//	}
-	//	default:
-	//		break;
-	//	}
-	//	break;
-	//}
+	case 'x':
+	{
+		key = input_str[0];
+		input_str++;
+		LOG_USB_SWITCH("key1 - %t\n", key);
+		switch (key)
+		{
+		case 'r':
+		{
+			LOG_USB_STARTUP("reset\n");
+			ESP.restart();
+			break;
+		}
+		case 'f':
+		{
+			LOG_USB_STARTUP("full reset\n");
+			EEPROM.write(0, 0x80);
+			EEPROM.commit();
+			ESP.restart();
+			break;
+		}
+		case 'p':
+		{
+			Serial.println("print mem");
+			Serial.printf("init bit: %d\n", EEPROM.read(0) >> 7);
+			Serial.printf("obj data count: %d\n", EEPROM.read(0) & 0b0111'1111);
+			for (int i = 0; i < OBJ_DATA_CAP; i++)
+			{
+				uint16_t addr;
+				EEPROM.get(1 + i * 2, addr);
+				Serial.printf("%d-%d|",addr >> 12, addr & 0x0FFF);
+			}
+
+			//int val =  - OBJ_DATA_CAP * 2 - 1;
+
+			for (int i = (OBJ_DATA_CAP+1) * 2 + 1; i < 64 * 64; i++)
+			{
+				if(i%64==0) Serial.print('\n');
+				Serial.print(EEPROM.read(i), HEX);
+			}
+			Serial.print('\n');
+			break;
+		}
+		default:
+			break;
+		}
+		break;
+	}
 	default:
 		break;
 	}

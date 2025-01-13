@@ -3,6 +3,8 @@
 
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
+#include <EEPROM.h>
+
 #include "log.h"
 #include "Structures.h"
 

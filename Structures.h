@@ -8,7 +8,12 @@
 #define byte_d(val) ((val) < 0 ? 0 : (val))
 #define byte_round_up(val) ((val)==byte(val)?(val):byte(val+1)) 
 
-struct Color_str 
+#define parseIn_int(val)				\
+(val) = atoi(input_str);				\
+input_str++;							\
+while (*input_str != ' ') input_str++;	\
+
+struct Color_str
 {
 	byte g, r, b; //внутренний массив библиотеки имеет формат grb 
 	Color_str() : r(0), g(0), b(0) {}
@@ -58,13 +63,13 @@ struct Color_str
 		res.b = from.b * coef + to.b * (1 - coef);
 		return res;
 	}
-	static Color_str cyc_lerp(Color_str from, Color_str to, int coef){ return cyc_lerp(from, to, float(coef / 256*256-1)); }
+	static Color_str cyc_lerp(Color_str from, Color_str to, int coef) { return cyc_lerp(from, to, float(coef / 256 * 256 - 1)); }
 	static Color_str cyc_lerp(Color_str from, Color_str to, float coef)
 	{
 		if (coef < 0.5)
 			return lerp(from, to, coef * 2);
 		else
-			return lerp(to, from, float((coef-0.5) * 2));
+			return lerp(to, from, float((coef - 0.5) * 2));
 	}
 	static inline Color_str ColorHSV(int hue)
 	{

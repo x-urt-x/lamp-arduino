@@ -1,17 +1,22 @@
+#include <Adafruit_NeoPixel.h>
 #include "Config.h"
 #include "log.h"
+#include "StartTimeInfo.h"
 #include "Strip_class.h"
 #include "TimerHandler.h"
 
 #include <EncButton.h>
 
+#include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <NTPClient.h>
 #include <FS.h>
 #include <WiFiUdp.h>
 #include <ArduinoJson.h>
 #include "Pass.h" //  define in this file SSID and PASS of ur wifi
 
+const char* geoApiUrl = "http://ip-api.com/json/";
 const char* ssid = SSID;
 const char* password = PASS;
 const unsigned int localPort = 8888;
@@ -30,6 +35,9 @@ ESP8266WebServer server(80);
 WiFiUDP Udp;
 inline void handleUDP();
 
+WiFiUDP NtpUdp;
+NTPClient timeClient(NtpUdp, "pool.ntp.org", GTMOFFSET);
+
 bool udp_enable = false;
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
@@ -44,7 +52,7 @@ void setup() {
 	LOG_USB_STARTUP("\nstart\n");
 	IEventTimer::obj = &strip;
 	strip.begin();
-	strip.fill(strip.Color(0,0,0));
+	strip.fill(strip.Color(0, 0, 0));
 	delay(0);
 	strip.show();
 #ifdef MATR10x10
@@ -62,6 +70,20 @@ void setup() {
 	digitalWrite(MOSFET_PIN, HIGH);
 #endif
 
+	EEPROM.begin(4096);
+
+	LOG_USB_STARTUP("eeprom[0] = %d\n", EEPROM.read(0));
+	if (EEPROM.read(0) & 0b1000'0000)
+	{
+		LOG_USB_STARTUP("first start\n %d\n", EEPROM.read(0) & 0b0111'1111);
+		for (int i = 0; i < OBJ_DATA_CAP*2+1; i++)
+		{
+			EEPROM.write(i, (byte)0x00);
+		}
+		EEPROM.put(1, (OBJ_DATA_CAP + 1) * 2 + 1);
+		EEPROM.commit();
+	}
+
 	WiFi.config(local_ip, gateway, subnet);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
@@ -75,20 +97,29 @@ void setup() {
 	}
 	LOG_USB_STARTUP("Connected! IP address: %s\n", WiFi.localIP().toString().c_str());
 
-	if (!SPIFFS.begin()) {
-		LOG_USB_STARTUP("Failed to mount file system\n");
-		return;
-	}
-
 	server.on("/", HTTP_GET, handleRoot);
 	server.on("/submit", HTTP_POST, handleCommand);
 	server.on("/get-effect-option", HTTP_GET, handleGetEffectOption);
 	server.on("/udp-state", HTTP_POST, handleSetUDP);
 
 	Udp.begin(localPort);
+	LOG_USB_STARTUP("UDP server on port %d\n", localPort);
+
 	server.begin();
 
-	LOG_USB_STARTUP("UDP server on port %d\n", localPort);
+	timeClient.begin();
+	timeClient.forceUpdate();
+	StartTimeInfo::start_millis_time = millis();
+	StartTimeInfo::start_epoch_time = timeClient.getEpochTime();
+	StartTimeInfo::start_weekday = timeClient.getDay();
+	StartTimeInfo::start_day_time = timeClient.getSeconds() + timeClient.getMinutes() * 60 + timeClient.getHours() * 3600;
+	timeClient.end();
+
+	if (!SPIFFS.begin()) {
+		LOG_USB_STARTUP("Failed to mount file system\n");
+		return;
+	}
+
 
 	digitalWrite(RED_PIN, LOW);
 	timerHandler.addTimer(new EffectEventTimer());
@@ -167,6 +198,8 @@ void handleGetEffectOption()
 void handleCommand()
 {
 	char* data = const_cast<char*>(server.arg("plain").c_str());
+	LOG_USB_HTTP(data);
+	LOG_USB_HTTP("\n");
 	if (data[0] == 't')
 	{
 		data++;
@@ -212,7 +245,7 @@ void handleCommand()
 		}
 		case 'a':
 		{
-			timerHandler.addTimer(data);
+			timerHandler.parseTimer(data);
 			break;
 		}
 		default:
@@ -242,3 +275,37 @@ void handleSetUDP()
 	LOG_USB_UPD("udp state = %d\n", udp_enable ? 1 : 0);
 	server.send(200, "text/plain", "Data received successfully");
 }
+
+//
+//struct Base 
+//{
+//	byte id;
+//	byte rep;
+//	long time;
+//};
+//
+//class Obj1
+//{
+//	Obj1(int arg1, int arg2) {}
+//};
+//
+//class Obj2
+//{
+//	Obj2(float arg1, float arg2) {}
+//};
+//
+//void newObj()
+//{
+//
+//}
+//
+//void parseFromMem(Base base, uint16_t addr)
+//{
+//
+//}
+//
+//void parseFromStr(Base base, String str)
+//{
+//
+//}
+

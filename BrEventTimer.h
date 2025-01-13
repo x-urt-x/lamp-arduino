@@ -6,11 +6,23 @@
 class BrEventTimer : public IEventTimer
 {
 public:
-	BrEventTimer(unsigned long from_time, unsigned long to_time, int to_br, uint delay);
+	BrEventTimer(unsigned long from_time, unsigned long dur, uint16_t to_br, uint delay, uint16_t addr = 0);
 protected:
 	virtual bool action() override;
 private:
 	int _step_counter;
-	int _to_br;
+	uint16_t _to_br;
 };
+
+struct BrEventTimerDataHolder : public IDataHolder
+{
+	virtual IEventTimer* create() override;
+	virtual void save() override;
+	virtual void load(uint16_t addr) override;
+
+	unsigned long _dur;
+	uint16_t _to_br;
+	uint _delay;
+};
+
 #endif

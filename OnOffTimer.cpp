@@ -1,6 +1,6 @@
 #include "OnOffTimer.h"
 
-OnOffTimer::OnOffTimer(bool* target, bool to_set, unsigned long time) :_target(target), _to_set(to_set), IEventTimer(0, true, time)
+OnOffTimer::OnOffTimer(unsigned long time, bool* target, bool to_set, uint16_t addr) :_target(target), _to_set(to_set), IEventTimer(0, true, time, addr)
 {
 }
 
@@ -38,4 +38,32 @@ bool OnOffTimer::action()
 #endif
 	}
 	return true;
+}
+
+
+IEventTimer* OnOffTimerDataHolder::create()
+{
+	return new OnOffTimer(calcTime(), _target, _to_set);
+}
+
+void OnOffTimerDataHolder::save()
+{
+	_addr = reservAddr(sizeof(_to_set) + sizeof(_target));
+
+	saveCommon(_addr, IEventTimer::TimerIDEnum::OnOffTimer);
+	EEPROM.put(_addr, _to_set);
+	_addr += sizeof(_to_set);
+	EEPROM.put(_addr, _target);
+	EEPROM.commit();
+}
+
+void OnOffTimerDataHolder::load(uint16_t addr)
+{
+	_addr = addr;
+	addr++; //skip id
+
+	loadCommon(addr);
+	EEPROM.get(_addr, _to_set);
+	_addr += sizeof(_to_set);
+	EEPROM.get(_addr, _target);
 }

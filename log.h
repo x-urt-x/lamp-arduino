@@ -14,6 +14,7 @@
 #define LOG_USB_UPD_ENABLE
 #define LOG_USB_HTTP_ENABLE
 #define LOG_USB_TIMER_ENABLE
+#define LOG_USB_REALTIME_ENABLE
 #endif // LOG_USB_ENABLE
 
 
@@ -22,9 +23,9 @@
 #define LOG_USB_MATR(matr)						\
 {												\
 	Serial.printf("%s\n", #matr);				\
-	for (int i = 0; i < MATR_SIZE; i++)				\
+	for (int i = 0; i < MATR_SIZE; i++)			\
 	{											\
-		for (int j = 0; j < MATR_SIZE; j++)			\
+		for (int j = 0; j < MATR_SIZE; j++)		\
 			Serial.printf("%d ", matr[j][i]);	\
 		Serial.printf("\n");					\
 	}											\
@@ -98,6 +99,12 @@ for (int i = 0; i < MATR_SIZE; i++)							\
 #define LOG_USB_TIMER(format, ...) Serial.printf(format, ##__VA_ARGS__)
 #else
 #define LOG_USB_TIMER(format, ...) ;
+#endif
+
+#ifdef LOG_USB_REALTIME_ENABLE
+#define LOG_USB_REALTIME(format, ...) Serial.printf(format, ##__VA_ARGS__)
+#else
+#define LOG_USB_REALTIME(format, ...) ;
 #endif
 
 #endif

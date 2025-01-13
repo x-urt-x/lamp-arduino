@@ -9,6 +9,10 @@
 #define EB_STEP_TIME 200   // ������� ����������� ��������� (������)
 #define EB_FAST_TIME 30    // ������� �������� �������� (�������)
 
+#define GTMOFFSET 3600
+
+#define OBJ_DATA_CAP 30
+#define OBJ_DATA_MAX_ADDR 3000
 //#define MATR10x10
 #define MATR16x16
 

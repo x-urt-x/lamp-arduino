@@ -25,6 +25,7 @@ void TimerHandler::addTimer(IEventTimer* timer)
 	LOG_USB_TIMER("TimerHandler: end add timer\t count = %d\n", _timers_count);
 }
 
+
 void TimerHandler::deleteTimer(byte num)
 {
 	LOG_USB_TIMER("TimerHandler: delete timer %d\n", num);
@@ -34,6 +35,54 @@ void TimerHandler::deleteTimer(byte num)
 		timers[i - 1] = timers[i];
 	}
 	_timers_count--;
+}
+
+void TimerHandler::loadAll()
+{
+	byte obj_data_count = EEPROM.read(0);
+	for (byte i = 0; i < obj_data_count; i++)
+	{
+		uint16_t adrr;
+		EEPROM.get(1 + i * 2, adrr);
+		if ((adrr & 0xF000) == 0x2000)
+		{
+			loadTimer(adrr & 0x0FFF);
+		}
+	}
+}
+
+void TimerHandler::loadTimer(uint16_t addr)
+{
+	LOG_USB_TIMER("load timer on %d", addr);
+	byte timerID = EEPROM.read(addr);
+
+
+	switch (timerID)
+	{
+	case IEventTimer::TimerIDEnum::BrEventTimer:
+	{
+		BrEventTimerDataHolder dataHolder;
+		dataHolder.load(addr);
+		addTimer(dataHolder.create());
+		break;
+	}
+	case IEventTimer::TimerIDEnum::OnOffTimer:
+	{
+		OnOffTimerDataHolder dataHolder;
+		dataHolder.load(addr);
+		addTimer(dataHolder.create());
+		break;
+	}
+	case IEventTimer::TimerIDEnum::CommandTimer:
+	{
+		CommandTimerDataHolder dataHolder;
+		dataHolder.load(addr);
+		addTimer(dataHolder.create());
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 void TimerHandler::setState(bool state, int num)
@@ -59,7 +108,7 @@ TimerHandler::TimerHandler()
 	timers = new IEventTimer * [_timers_cap];
 }
 
-void TimerHandler::addTimer(char* input_str)
+void TimerHandler::parseTimer(char* input_str)
 {
 	char key = input_str[0];
 	input_str++;
@@ -68,58 +117,61 @@ void TimerHandler::addTimer(char* input_str)
 	case 'b':
 	{
 		input_str++;
-		unsigned long now = millis();
+		BrEventTimerDataHolder dataholder;
 
-		uint from_shift = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
+		bool save;
+		parseIn_int(save);
+		parseIn_int(dataholder._repInfo);
+		parseIn_int(dataholder._timer_time_raw);
+		dataholder.setTime(dataholder._timer_time_raw, !dataholder._repInfo);
+		parseIn_int(dataholder._dur);
+		parseIn_int(dataholder._to_br);
+		parseIn_int(dataholder._delay);
 
-		uint to_shift = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
 
-		uint to_br = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
+		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
+		if (save) dataholder.save();
 
-		uint delay = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
-
-		LOG_USB_TIMER("from_shift = %d to_shift = %d to_br = %d delay = %d\n", from_shift, to_shift, to_br, delay);
-		addTimer(new BrEventTimer(now + from_shift * 1000, now + from_shift * 1000 + to_shift * 1000, to_br, delay));
+		addTimer(dataholder.create());
 		break;
 	}
 	case 's':
 	{
 		input_str++;
-		unsigned long now = millis();
+		OnOffTimerDataHolder dataholder;
 
-		uint from_shift = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
+		bool save;
+		parseIn_int(save);
+		parseIn_int(dataholder._repInfo);
+		parseIn_int(dataholder._timer_time_raw);
+		dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
+		parseIn_int(dataholder._to_set);
+		dataholder._target = &(timers[0]->_is_active);
 
-		addTimer(new OnOffTimer(&(timers[0]->_is_active), atoi(input_str), now + from_shift * 1000));
+		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _to_set = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._to_set);
+		if (save) dataholder.save();
+
+		addTimer(dataholder.create());
 		break;
 	}
 	case 'c':
 	{
 		input_str++;
-		unsigned long now = millis();
+		CommandTimerDataHolder dataholder;
 
-		uint from_shift = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
+		bool save;
+		parseIn_int(save);
+		parseIn_int(dataholder._repInfo);
+		parseIn_int(dataholder._timer_time_raw);
+		dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
+		parseIn_int(dataholder._delay);
+		parseIn_int(dataholder._once);
+		input_str += 2;
+		dataholder._command = input_str;
 
-		uint delay = atoi(input_str);
-		input_str++;
-		while (*input_str != ' ') input_str++;
+		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _delay = %d _once = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._delay, dataholder._once);
 
-		bool once = atoi(input_str);
-		input_str+=3;
-
-		LOG_USB_TIMER("from_shift = %d delay = %d once = %d comm =%s\n", from_shift, delay, once, input_str);
-		addTimer(new CommandTimer(now + from_shift * 1000, delay, input_str, once));
+		addTimer(dataholder.create());
 		break;
 	}
 	default:
@@ -139,3 +191,5 @@ void TimerHandler::tickAll()
 		}
 	}
 }
+
+
