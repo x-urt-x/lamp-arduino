@@ -6,6 +6,14 @@
 
 #define BLOCK(blockName) _blocks[blockName._id] = &blockName
 
+enum EffectIDEnum : byte
+{
+	singleColor = 0,
+	fire,
+	rainbowStrip,
+	Noise
+};
+
 class BaseEffect
 {
 public:

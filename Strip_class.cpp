@@ -371,16 +371,16 @@ void Strip::set_effect(byte num)
 	}
 	switch (num)
 	{
-	case 0:
+	case EffectIDEnum::singleColor:
 		effect = new Effect_singleColor(_leds_arr);
 		break;
-	case 1:
+	case EffectIDEnum::fire:
 		effect = new Effect_fire(_leds_arr);
 		break;
-	case 2:
+	case EffectIDEnum::rainbowStrip:
 		effect = new Effect_rainbowStrip(_leds_arr);
 		break;
-	case 3:
+	case EffectIDEnum::Noise:
 		effect = new Effect_Noise(_leds_arr);
 		break;
 	default:
