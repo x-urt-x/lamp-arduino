@@ -1,8 +1,9 @@
 #ifndef IEVENTTIMER_H
 #define IEVENTTIMER_H
-#include "Strip_class.h"
 #include <ArduinoJson.h>
+#include "MemManager.h"
 #include "StartTimeInfo.h"
+#include "Strip_class.h"
 
 class IEventTimer
 {
@@ -20,6 +21,7 @@ public:
 	virtual bool tick(unsigned long cur_time);
 	virtual void getJson(JsonObject& doc) = 0;
 	virtual byte getId() = 0;
+	static String getIdString(byte id);
 	uint _delay;
 	bool _is_active;
 	uint16_t _addr = 0;
@@ -43,7 +45,7 @@ struct IDataHolder
 protected:
 	uint16_t _addr = 0;
 	unsigned long calcTime();
-	uint16_t reservAddr(uint16_t size);
+	uint16_t reservAddr(uint16_t uniquePartSize);
 	void saveCommon(uint16_t& paddr, IEventTimer::TimerIDEnum id);
 	void loadCommon(uint16_t& paddr);
 	void getJsonCommon(JsonObject& doc);
@@ -51,8 +53,13 @@ protected:
 
 struct IDataHolderArr
 {
-	void free();
+	IDataHolderArr(byte len);
+	IDataHolderArr(const IDataHolderArr& obj);
+	~IDataHolderArr();
+
 	byte len = 0;
 	IDataHolder** arr = nullptr;
+private:
+	static unsigned int count;
 };
 #endif

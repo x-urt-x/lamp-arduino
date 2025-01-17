@@ -1,5 +1,6 @@
 #ifndef TIMERHANDLER_H
 #define TIMERHANDLER_H
+#include "MemManager.h"
 #include "IEventTimer.h"
 
 #include "BrEventTimer.h"
@@ -15,19 +16,21 @@ public:
 	void parseTimer(char* input_str);
 
 	void tickAll();
-	void addTimer(IEventTimer* timerDataHolder);
-	void deleteTimer(byte num);
+	void addActiveTimer(IEventTimer* timerDataHolder);
 
-	void createAll();
+	void addActiveAllFromMem();
 
-	IDataHolderArr loadAll(IDataHolderArr &dataArr);
-	IDataHolder* loadTimer(uint16_t adrr);
+	void deleteActiveTimer(byte num);
+	void deleteMemTimer(byte num);
+
+	IDataHolderArr getMemDataAll();
+	IDataHolder* getMemData(uint16_t adrr);
 	
 	JsonDocument getMemJsonAll();
 	JsonDocument getActiveJsonAll();
 
-	void setState(bool state, int num);
-	bool getState(int num);
+	void setActiveState(bool state, int num);
+	bool getActiveState(int num);
 	int getTimerCount();
 private:
 	IEventTimer** timers;

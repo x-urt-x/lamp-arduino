@@ -1,6 +1,6 @@
 #include "TimerHandler.h"
 
-void TimerHandler::addTimer(IEventTimer* timer)
+void TimerHandler::addActiveTimer(IEventTimer* timer)
 {
 	LOG_USB_TIMER("TimerHandler: start add timer\n");
 	if (!IEventTimer::obj)
@@ -26,7 +26,7 @@ void TimerHandler::addTimer(IEventTimer* timer)
 }
 
 
-void TimerHandler::deleteTimer(byte num)
+void TimerHandler::deleteActiveTimer(byte num)
 {
 	LOG_USB_TIMER("TimerHandler: delete timer %d\n", num);
 	delete timers[num];
@@ -37,55 +37,41 @@ void TimerHandler::deleteTimer(byte num)
 	_timers_count--;
 }
 
-void TimerHandler::createAll()
+void TimerHandler::addActiveAllFromMem()
 {
-	IDataHolderArr dataArr;
-	loadAll(dataArr);
+	IDataHolderArr dataArr = getMemDataAll();
 	for (byte i = 0; i < dataArr.len; i++)
 	{
-		addTimer(dataArr.arr[i]->create());
+		addActiveTimer(dataArr.arr[i]->create());
 	}
-	dataArr.free();
 }
 
-IDataHolderArr TimerHandler::loadAll(IDataHolderArr &dataArr)
+void TimerHandler::deleteMemTimer(byte num)
 {
-	byte obj_data_count = EEPROM.read(0);
-	for (byte i = 0; i < obj_data_count; i++)
+	DataObjAddrArr timersDataAddrArr = MemManager::getAllById(DataObjectIDEnum::Timer);
+	MemManager::deleteAddr(timersDataAddrArr.posArr[num]);
+}
+
+IDataHolderArr TimerHandler::getMemDataAll()
+{
+	DataObjAddrArr timersDataAddrArr = MemManager::getAllById(DataObjectIDEnum::Timer);
+	LOG_USB_TIMER("%d mem timers to load\n", timersDataAddrArr.len);
+	IDataHolderArr dataArr(timersDataAddrArr.len);
+	for (byte i = 0; i < timersDataAddrArr.len; i++)
 	{
-		uint16_t adrr;
-		EEPROM.get(1 + i * 2, adrr);
-		if ((adrr & 0xF000) == 0x2000)
+		IDataHolder* dataHolder = getMemData(timersDataAddrArr.addrArr[i]);
+		if (!dataHolder)
 		{
-			dataArr.len++;
+			LOG_USB_TIMER("bad timer id\n");
+			dataArr.len--;
+			continue;
 		}
+		dataArr.arr[i] = dataHolder;
 	}
-	LOG_USB_TIMER("%d mem timers to load\n", dataArr.len);
-	dataArr.arr = new IDataHolder * [dataArr.len];
-	byte j = 0;
-	for (byte i = 0; i < obj_data_count; i++)
-	{
-		uint16_t adrr;
-		EEPROM.get(1 + i * 2, adrr);
-		if ((adrr & 0xF000) == 0x2000)
-		{
-			IDataHolder* dataHolder = loadTimer(adrr & 0x0FFF);
-			if (!dataHolder)
-			{
-				LOG_USB_TIMER("bad timer id\n");
-				dataArr.len--;
-				continue;
-			}
-			dataArr.arr[j] = dataHolder; 
-			j++;
-		}
-	}
-	LOG_USB_TIMER("%d mem timers have been loaded\n", dataArr.len);
-	LOG_USB_TIMER("end load\n");
 	return dataArr;
 }
 
-IDataHolder* TimerHandler::loadTimer(uint16_t addr)
+IDataHolder* TimerHandler::getMemData(uint16_t addr)
 {
 	byte timerID = EEPROM.read(addr);
 
@@ -124,17 +110,15 @@ JsonDocument TimerHandler::getMemJsonAll()
 {
 	JsonDocument doc;
 	JsonArray memTimers = doc.createNestedArray("memTimers");
-	IDataHolderArr dataArr;
-	loadAll(dataArr);
+	IDataHolderArr dataArr = getMemDataAll();
 	for (byte i = 0; i < dataArr.len; i++)
 	{
 		LOG_USB_TIMER("json for %d mem timer start\n", i);
 		JsonObject memTimer = memTimers.createNestedObject();
 		if(dataArr.arr[i] == nullptr) LOG_USB_TIMER("nullptr\n");
-		memTimer["id"] = String(dataArr.arr[i]->getId());
+		memTimer["id"] = IEventTimer::getIdString(dataArr.arr[i]->getId());
 		dataArr.arr[i]->getJson(memTimer);
 	}
-	dataArr.free();
 	LOG_USB_TIMER("mem json create end\n");
 	return doc;
 }
@@ -148,21 +132,21 @@ JsonDocument TimerHandler::getActiveJsonAll()
 		LOG_USB_TIMER("json for %d active timer start\n", i);
 		JsonObject activeTimer = actimeTimers.createNestedObject();
 		if (timers[i] == nullptr) LOG_USB_TIMER("nullptr\n");
-		activeTimer["id"] = String(timers[i]->getId());
+		activeTimer["id"] = IEventTimer::getIdString(timers[i]->getId());
 		timers[i]->getJson(activeTimer);
 	}
 	LOG_USB_TIMER("active json create end\n");
 	return doc;
 }
 
-void TimerHandler::setState(bool state, int num)
+void TimerHandler::setActiveState(bool state, int num)
 {
 	LOG_USB_TIMER("TimerHandler::setState %d %d\n", state, num);
 	if (num >= _timers_count) return;
 	timers[num]->_is_active = state;
 }
 
-bool TimerHandler::getState(int num)
+bool TimerHandler::getActiveState(int num)
 {
 	if (num >= _timers_count) return false;
 	return timers[num]->_is_active;
@@ -202,7 +186,7 @@ void TimerHandler::parseTimer(char* input_str)
 		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
 		if (save) dataholder.save();
 
-		addTimer(dataholder.create());
+		addActiveTimer(dataholder.create());
 		break;
 	}
 	case 'g':
@@ -219,7 +203,7 @@ void TimerHandler::parseTimer(char* input_str)
 		LOG_USB_TIMER("_repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n",dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
 		dataholder.save();
 
-		addTimer(dataholder.create());
+		addActiveTimer(dataholder.create());
 		break;
 	}
 	case 's':
@@ -238,7 +222,7 @@ void TimerHandler::parseTimer(char* input_str)
 		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _to_set = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._to_set);
 		if (save) dataholder.save();
 
-		addTimer(dataholder.create());
+		addActiveTimer(dataholder.create());
 		break;
 	}
 	case 'c':
@@ -253,12 +237,13 @@ void TimerHandler::parseTimer(char* input_str)
 		dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
 		parseIn_int(dataholder._delay);
 		parseIn_int(dataholder._once);
-		input_str += 2;
+		input_str += 1;
 		dataholder._command = input_str;
 
 		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _delay = %d _once = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._delay, dataholder._once);
+		if (save) dataholder.save();
 
-		addTimer(dataholder.create());
+		addActiveTimer(dataholder.create());
 		break;
 	}
 	default:
@@ -274,7 +259,7 @@ void TimerHandler::tickAll()
 		if (timers[i]->_is_active)
 		{
 			//LOG_USB_TIMER("tick %d timer\n", i);
-			if (timers[i]->tick(cur_time)) deleteTimer(i);
+			if (timers[i]->tick(cur_time)) deleteActiveTimer(i);
 		}
 	}
 }

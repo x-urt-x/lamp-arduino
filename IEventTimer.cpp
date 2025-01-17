@@ -51,29 +51,7 @@ unsigned long IDataHolder::calcTime()
 
 uint16_t IDataHolder::reservAddr(uint16_t uniquePartSize)
 {
-	byte obj_data_count = EEPROM.read(0) & 0b0111'1111;
-	if (obj_data_count >= OBJ_DATA_CAP)
-	{
-		LOG_USB_TIMER("max ref\n");
-		return 0;
-	}
-	uint16_t addr = 0;
-	EEPROM.get(obj_data_count * 2 + 1, addr); // first byte for counter
-	addr &= 0x0FFF; //first 4 bits for obj type id
-	//addr += OBJ_DATA_CAP * 2 + 1; // array of uint16 refs to data plus counter
-	LOG_USB_TIMER("reserv on %d\n", addr);
-	if (addr >= OBJ_DATA_MAX_ADDR - 6 - uniquePartSize)
-	{
-		LOG_USB_TIMER("max data\n");
-		return 0;
-	}
-	EEPROM.put(obj_data_count * 2 + 1, addr | 0x2000); // uppdate id; 0x200 - obj id for timers
-	obj_data_count++;
-	EEPROM.write(0, obj_data_count | EEPROM.read(0) & 0b1000'0000);
-	LOG_USB_TIMER("next addr on %d\n", addr + 6 + uniquePartSize);
-	EEPROM.put(obj_data_count * 2 + 1, addr + 6 + uniquePartSize);
-	EEPROM.commit();
-	return addr;
+	return MemManager::reservAddr(uniquePartSize + 6, DataObjectIDEnum::Timer);
 }
 
 void IDataHolder::saveCommon(uint16_t &paddr, IEventTimer::TimerIDEnum id)
@@ -111,6 +89,23 @@ bool IEventTimer::tick(unsigned long cur_time)
 	}
 	return false;
 }
+String IEventTimer::getIdString(byte id)
+{
+	switch (id)
+	{
+	case IEventTimer::TimerIDEnum::BrEventTimer:
+		return "Brightness timer";
+	case IEventTimer::TimerIDEnum::CommandTimer:
+		return "Command timer";
+	case IEventTimer::TimerIDEnum::EffectEventTimer:
+		return "Main timer";
+	case IEventTimer::TimerIDEnum::OnOffTimer:
+		return "OnOff timer";
+	default:
+		break;
+	}
+	return String();
+}
 void IEventTimer::getJsonCommon(JsonObject& doc)
 {
 	doc["prev_time"] = String(_prev_time);
@@ -129,13 +124,33 @@ IEventTimer::IEventTimer() : _delay(100), _is_active(true), _prev_time(0)
 {
 }
 
-void IDataHolderArr::free()
+IDataHolderArr::IDataHolderArr(byte len)
 {
-	if (arr) {
-		for (int i = 0; i < len; i++)
-			delete arr[i];
-		delete[] arr;
-		arr = nullptr;
-	}
-	len = 0;
+	this->len = len;
+	arr = new IDataHolder * [len];
+	count++;
 }
+
+IDataHolderArr::IDataHolderArr(const IDataHolderArr& obj)
+{
+	len = obj.len;
+	arr = obj.arr;
+	count++;
+}
+
+IDataHolderArr::~IDataHolderArr()
+{
+	count--;
+	if (count == 0)
+	{
+		if (arr) {
+			for (int i = 0; i < len; i++)
+				delete arr[i];
+			delete[] arr;
+			arr = nullptr;
+		}
+		len = 0;
+	}
+}
+
+unsigned int IDataHolderArr::count = 0;

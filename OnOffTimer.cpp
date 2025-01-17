@@ -59,8 +59,9 @@ IEventTimer* OnOffTimerDataHolder::create()
 
 void OnOffTimerDataHolder::save()
 {
-	_addr = reservAddr(sizeof(_to_set) + sizeof(_target));
-	uint16_t addr = _addr;
+	uint16_t addr = reservAddr(sizeof(_to_set) + sizeof(_target));
+	if (!addr) return;
+	_addr = addr;
 	saveCommon(addr, IEventTimer::TimerIDEnum::OnOffTimer);
 	EEPROM.put(addr, _to_set);
 	addr += sizeof(_to_set);

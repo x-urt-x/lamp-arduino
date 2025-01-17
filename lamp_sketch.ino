@@ -76,7 +76,7 @@ void setup() {
 	if (EEPROM.read(0) & 0b1000'0000)
 	{
 		LOG_USB_STARTUP("first start\n %d\n", EEPROM.read(0) & 0b0111'1111);
-		for (int i = 0; i < OBJ_DATA_CAP*2+1; i++)
+		for (int i = 0; i < OBJ_DATA_CAP * 2 + 1; i++)
 		{
 			EEPROM.write(i, (byte)0x00);
 		}
@@ -124,7 +124,8 @@ void setup() {
 
 
 	digitalWrite(RED_PIN, LOW);
-	timerHandler.addTimer(new EffectEventTimer());
+	timerHandler.addActiveTimer(new EffectEventTimer());
+	timerHandler.addActiveAllFromMem();
 	strip.parseSingle("m 0");
 	strip.parseSingle("eb 1000");
 	strip.tick();
@@ -193,7 +194,7 @@ void handleRoot() {
 void handleGetEffectOption()
 {
 	String output;
-	serializeJson(strip.getJSON(udp_enable, timerHandler.getState(0), timerHandler.getTimerCount()), output);
+	serializeJson(strip.getJSON(udp_enable, timerHandler.getActiveState(0), timerHandler.getTimerCount()), output);
 	server.send(200, "application/json", output);
 }
 
@@ -213,7 +214,7 @@ void handleCommand()
 		{
 			byte pos = atoi(data);
 			while (data[0] != ' ') data++;
-			timerHandler.setState(atoi(data), pos);
+			timerHandler.setActiveState(atoi(data), pos);
 			if (pos == 0)
 				if (atoi(data) == 0)
 				{
@@ -239,11 +240,29 @@ void handleCommand()
 		}
 		case 'd':
 		{
-			byte pos = atoi(data);
-			if (pos == 0) break;
-			while (data[0] != ' ') data++;
-			timerHandler.deleteTimer(pos);
-			break;
+			key = data[0];
+			data++;
+			switch (key)
+			{
+			case 'a':
+			{
+				byte pos = atoi(data);
+				if (pos == 0) break;
+				while (data[0] != ' ') data++;
+				timerHandler.deleteActiveTimer(pos);
+				break;
+			}
+			case 'm':
+			{
+				byte pos = atoi(data);
+				if (pos == 0) break;
+				while (data[0] != ' ') data++;
+				timerHandler.deleteMemTimer(pos);
+				break;
+			}
+			default:
+				break;
+			}
 		}
 		case 'a':
 		{
@@ -285,7 +304,7 @@ void handleMemTimers()
 	server.send(200, "application/json", output);
 }
 
-void handleActiveTimers() 
+void handleActiveTimers()
 {
 	String output;
 	serializeJson(timerHandler.getActiveJsonAll(), output);

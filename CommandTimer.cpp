@@ -32,14 +32,20 @@ IEventTimer* CommandTimerDataHolder::create()
 
 void CommandTimerDataHolder::save()
 {
-	_addr = reservAddr(_command.length()+1 + sizeof(_once) + sizeof(_delay));
-	uint16_t addr = _addr;
+	uint16_t addr = reservAddr(_command.length()+1 + sizeof(_once) + sizeof(_delay));
+	if (!addr) return;
+	_addr = addr;
 	saveCommon(addr, IEventTimer::TimerIDEnum::CommandTimer);
 	EEPROM.put(addr, _once);
 	addr += sizeof(_once);
 	EEPROM.put(addr, _delay);
 	addr += sizeof(_delay);
-	EEPROM.put(addr, _command.c_str());
+	const char* command = _command.c_str();
+	for (int i = 0 ;; i++)
+	{
+		EEPROM.write(addr++, command[i]);
+		if (command[i] == '\0') break;
+	}
 	EEPROM.commit();
 }
 

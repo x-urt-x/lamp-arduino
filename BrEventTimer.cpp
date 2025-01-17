@@ -41,8 +41,9 @@ IEventTimer* BrEventTimerDataHolder::create()
 
 void BrEventTimerDataHolder::save()
 {
-	_addr = reservAddr(sizeof(_dur) + sizeof(_to_br) + sizeof(_delay));
-	uint16_t addr = _addr;
+	uint16_t addr = reservAddr(sizeof(_dur) + sizeof(_to_br) + sizeof(_delay));
+	if (!addr) return;
+	_addr = addr;
 	saveCommon(addr, IEventTimer::TimerIDEnum::BrEventTimer);
 	EEPROM.put(addr, _dur);
 	addr += sizeof(_dur);

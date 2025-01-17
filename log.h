@@ -15,6 +15,7 @@
 #define LOG_USB_HTTP_ENABLE
 #define LOG_USB_TIMER_ENABLE
 #define LOG_USB_REALTIME_ENABLE
+#define LOG_USB_MEM_ENABLE
 #endif // LOG_USB_ENABLE
 
 
@@ -105,6 +106,12 @@ for (int i = 0; i < MATR_SIZE; i++)							\
 #define LOG_USB_REALTIME(format, ...) Serial.printf(format, ##__VA_ARGS__)
 #else
 #define LOG_USB_REALTIME(format, ...) ;
+#endif
+
+#ifdef LOG_USB_MEM_ENABLE
+#define LOG_USB_MEM(format, ...) Serial.printf(format, ##__VA_ARGS__)
+#else
+#define LOG_USB_MEM(format, ...) ;
 #endif
 
 #endif
