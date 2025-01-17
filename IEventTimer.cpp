@@ -17,9 +17,9 @@ unsigned long IDataHolder::calcTime()
 	unsigned long now_millis_time = millis();
 	if (_repInfo)
 	{
-		byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 8640UL;
-		unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 8640UL;
-		LOG_USB_TIMER("calcTime with rep 1: now_weekday = %d now_daytime = %d\n", now_weekday, now_daytime);
+		byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 86400UL - 1;
+		unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 86400UL;
+		LOG_USB_TIMER("calcTime with rep: now_weekday = %d now_daytime = %d\n", now_weekday, now_daytime);
 		for (byte i = now_weekday; i < 7; i++)
 		{
 			if ((_repInfo >> i) & 0b1)

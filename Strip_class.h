@@ -7,6 +7,7 @@
 
 #include "log.h"
 #include "Structures.h"
+#include "StartTimeInfo.h"
 
 #include "IEffectBlock.h"
 #include "BaseEffect.h"

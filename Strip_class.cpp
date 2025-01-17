@@ -269,6 +269,23 @@ void Strip::parseSingle(const char* input_str)
 			ESP.restart();
 			break;
 		}
+		case 't':
+		{
+			unsigned long now_millis_time = millis();
+			byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 86400UL;
+			unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 86400UL;
+
+
+			Serial.printf("start_day_time: %lu\n ", StartTimeInfo::start_day_time);
+			Serial.printf("start_epoch_time: %lu\n ", StartTimeInfo::start_epoch_time);
+			Serial.printf("start_millis_time: %lu\n ", StartTimeInfo::start_millis_time);
+			Serial.printf("start_weekday: %d\n ", StartTimeInfo::start_weekday);
+			Serial.printf("now_millis_time: %lu\n ", now_millis_time);
+			Serial.printf("now_weekday: %d\n ", now_weekday);
+			Serial.printf("now_daytime: %lu\n ", now_daytime);
+
+			break;
+		}
 		case 'p':
 		{
 			Serial.println("print mem");

@@ -30,6 +30,8 @@ IPAddress local_ip(192, 168, 1, 41);
 
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
+IPAddress primaryDNS(8, 8, 8, 8);
+IPAddress secondaryDNS(8, 8, 4, 4);
 
 ESP8266WebServer server(80);
 WiFiUDP Udp;
@@ -84,7 +86,7 @@ void setup() {
 		EEPROM.commit();
 	}
 
-	WiFi.config(local_ip, gateway, subnet);
+	WiFi.config(local_ip, gateway, subnet, primaryDNS, secondaryDNS);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 
