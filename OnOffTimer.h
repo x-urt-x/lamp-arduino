@@ -9,11 +9,11 @@ public:
 	bool tick(unsigned long cur_time) override;
 	virtual void getJson(JsonObject& doc) override;
 	virtual byte getId() override;
+	bool* _target;
 protected:
 	virtual bool action() override;
 private:
 	bool _to_set;
-	bool* _target;
 };
 
 struct OnOffTimerDataHolder : public IDataHolder

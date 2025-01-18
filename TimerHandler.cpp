@@ -42,7 +42,17 @@ void TimerHandler::addActiveAllFromMem()
 	IDataHolderArr dataArr = getMemDataAll();
 	for (byte i = 0; i < dataArr.len; i++)
 	{
-		addActiveTimer(dataArr.arr[i]->create());
+		if (dataArr.arr[i]->getId() == IEventTimer::TimerIDEnum::OnOffTimer)
+		{
+			//update ref
+			OnOffTimer* timer = static_cast<OnOffTimer*>(dataArr.arr[i]->create());
+			timer->_target = &(timers[0]->_is_active);
+			addActiveTimer(timer);
+		}
+		else
+		{
+			addActiveTimer(dataArr.arr[i]->create());
+		}
 	}
 }
 
@@ -246,7 +256,7 @@ void TimerHandler::tickAll()
 		{
 			if (timers[i]->tick(cur_time))
 			{
-				LOG_USB_TIMER("delete timer %d\n",i);
+				LOG_USB_TIMER("delete timer %d\n", i);
 				if (timers[i]->_addr)
 				{
 					IDataHolder* timerdata = getMemData(timers[i]->_addr);
