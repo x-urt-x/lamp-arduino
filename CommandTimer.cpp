@@ -1,6 +1,6 @@
 #include "CommandTimer.h"
 
-CommandTimer::CommandTimer(unsigned long from_time, uint delay, String command, bool once, uint16_t addr) : _command(command), _once(once), IEventTimer(delay, true, from_time, addr)
+CommandTimer::CommandTimer(unsigned long from_time, bool is_active, uint delay, String command, bool once, uint16_t addr) : _command(command), _once(once), IEventTimer(delay, is_active, from_time, addr)
 {
 }
 
@@ -27,7 +27,7 @@ byte CommandTimer::getId()
 
 IEventTimer* CommandTimerDataHolder::create()
 {
-	return new CommandTimer(calcTime(), _delay, _command, _once, _addr);
+	return new CommandTimer(calcTime(), _is_active, _delay, _command, _once, _addr);
 }
 
 void CommandTimerDataHolder::save()

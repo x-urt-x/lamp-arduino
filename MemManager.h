@@ -28,6 +28,7 @@ struct MemManager
 	static uint16_t reservAddr(uint16_t size, DataObjectIDEnum id);
 	static void deleteAddr(byte pos);
 	static DataObjAddrArr getAllById(DataObjectIDEnum id);
+	static void deleteAllAddrOnDelitedDataObj();
 private:
 	static void shiftLeft(byte posTo, byte shift);
 	static bool shiftRight(byte posFrom, byte shift);

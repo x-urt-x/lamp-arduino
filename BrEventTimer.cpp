@@ -28,7 +28,7 @@ byte BrEventTimer::getId()
 	return IEventTimer::TimerIDEnum::BrEventTimer;
 }
 
-BrEventTimer::BrEventTimer(unsigned long from_time, unsigned long dur, uint16_t to_br, uint delay, uint16_t addr) : _to_br(to_br), IEventTimer(delay, true, from_time, addr)
+BrEventTimer::BrEventTimer(unsigned long from_time, bool is_active, unsigned long dur, uint16_t to_br, uint delay, uint16_t addr) : _to_br(to_br), IEventTimer(delay, is_active, from_time, addr)
 {
 	_step_counter = float(dur*1000) / delay + 1;
 	LOG_USB_TIMER("create BrEventTimer: now = %d from_time = %d dur = %d to_br = %d delay = %d _step_counter = %d\n", millis(), _prev_time, dur, to_br, delay, _step_counter);
@@ -36,7 +36,7 @@ BrEventTimer::BrEventTimer(unsigned long from_time, unsigned long dur, uint16_t 
 
 IEventTimer* BrEventTimerDataHolder::create()
 {
-	return new BrEventTimer(calcTime(), _dur, _to_br, _delay, _addr);
+	return new BrEventTimer(calcTime(), _is_active, _dur, _to_br, _delay, _addr);
 }
 
 void BrEventTimerDataHolder::save()

@@ -1,6 +1,6 @@
 #include "OnOffTimer.h"
 
-OnOffTimer::OnOffTimer(unsigned long time, bool* target, bool to_set, uint16_t addr) :_target(target), _to_set(to_set), IEventTimer(0, true, time, addr)
+OnOffTimer::OnOffTimer(unsigned long time, bool is_active, bool* target, bool to_set, uint16_t addr) :_target(target), _to_set(to_set), IEventTimer(0, is_active, time, addr)
 {
 }
 
@@ -54,7 +54,7 @@ byte OnOffTimer::getId()
 
 IEventTimer* OnOffTimerDataHolder::create()
 {
-	return new OnOffTimer(calcTime(), _target, _to_set);
+	return new OnOffTimer(calcTime(), _is_active, _target, _to_set);
 }
 
 void OnOffTimerDataHolder::save()

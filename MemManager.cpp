@@ -119,6 +119,8 @@ void MemManager::deleteAddr(byte pos)
 	uint16_t addr = 0;
 	EEPROM.get(pos * 2 + 1, addr); // first byte for counter
 	addr &= 0x0FFF; //first 4 bits for obj type id
+	LOG_USB_MEM("delete mem obj pos = %d with addr = %d\n", pos, addr);
+	EEPROM.write(addr, 0x00); //delited
 	EEPROM.put(pos * 2 + 1, addr);
 	EEPROM.commit();
 }
@@ -147,6 +149,18 @@ DataObjAddrArr MemManager::getAllById(DataObjectIDEnum id)
 		}
 	}
 	return dataObjectAddrArr;
+}
+
+void MemManager::deleteAllAddrOnDelitedDataObj()
+{
+	byte obj_data_count = EEPROM.read(0) & 0b0111'1111;
+	uint16_t addr = 0;
+	for (byte i = 0; i < obj_data_count; i++)
+	{
+		EEPROM.get(i * 2 + 1, addr);
+		LOG_USB_MEM("clear deleted mem obj pos = %d with addr = %d obj id = %d\n", i, (addr & 0x0FFF), EEPROM.read(addr & 0x0FFF));
+		if (EEPROM.read(addr & 0x0FFF) == 0x00) deleteAddr(i);
+	}
 }
 
 void MemManager::shiftLeft(byte posTo, byte shift)

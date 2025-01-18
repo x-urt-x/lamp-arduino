@@ -115,7 +115,7 @@ JsonDocument TimerHandler::getMemJsonAll()
 	{
 		LOG_USB_TIMER("json for %d mem timer start\n", i);
 		JsonObject memTimer = memTimers.createNestedObject();
-		if(dataArr.arr[i] == nullptr) LOG_USB_TIMER("nullptr\n");
+		if (dataArr.arr[i] == nullptr) LOG_USB_TIMER("nullptr\n");
 		memTimer["id"] = IEventTimer::getIdString(dataArr.arr[i]->getId());
 		dataArr.arr[i]->getJson(memTimer);
 	}
@@ -175,6 +175,7 @@ void TimerHandler::parseTimer(char* input_str)
 
 		bool save;
 		parseIn_int(save);
+		parseIn_int(dataholder._is_active);
 		parseIn_int(dataholder._repInfo);
 		parseIn_int(dataholder._timer_time_raw);
 		dataholder.setTime(dataholder._timer_time_raw, !dataholder._repInfo);
@@ -183,25 +184,8 @@ void TimerHandler::parseTimer(char* input_str)
 		parseIn_int(dataholder._delay);
 
 
-		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
+		LOG_USB_TIMER("save = %d _is_active = %d _repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n", save, dataholder._is_active, dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
 		if (save) dataholder.save();
-
-		addActiveTimer(dataholder.create());
-		break;
-	}
-	case 'g':
-	{
-		BrEventTimerDataHolder dataholder;
-
-		dataholder._repInfo = (byte)0x12;
-		dataholder._timer_time_raw = 0x1234'5678;
-		dataholder._dur = 0x1234'5678;
-		dataholder._to_br = 0x1234;
-		dataholder._delay = 0x1234'5678;
-
-
-		LOG_USB_TIMER("_repInfo = %d _timer_time_raw = %d _dur = %d _to_br = %d _delay = %d \n",dataholder._repInfo, dataholder._timer_time_raw, dataholder._dur, dataholder._to_br, dataholder._delay);
-		dataholder.save();
 
 		addActiveTimer(dataholder.create());
 		break;
@@ -213,13 +197,14 @@ void TimerHandler::parseTimer(char* input_str)
 
 		bool save;
 		parseIn_int(save);
+		parseIn_int(dataholder._is_active);
 		parseIn_int(dataholder._repInfo);
 		parseIn_int(dataholder._timer_time_raw);
 		dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
 		parseIn_int(dataholder._to_set);
 		dataholder._target = &(timers[0]->_is_active);
 
-		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _to_set = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._to_set);
+		LOG_USB_TIMER("save = %d _is_active = %d _repInfo = %d _timer_time_raw = %d _to_set = %d \n", save, dataholder._is_active, dataholder._repInfo, dataholder._timer_time_raw, dataholder._to_set);
 		if (save) dataholder.save();
 
 		addActiveTimer(dataholder.create());
@@ -232,6 +217,7 @@ void TimerHandler::parseTimer(char* input_str)
 
 		bool save;
 		parseIn_int(save);
+		parseIn_int(dataholder._is_active);
 		parseIn_int(dataholder._repInfo);
 		parseIn_int(dataholder._timer_time_raw);
 		dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
@@ -240,7 +226,7 @@ void TimerHandler::parseTimer(char* input_str)
 		input_str += 1;
 		dataholder._command = input_str;
 
-		LOG_USB_TIMER("save = %d _repInfo = %d _timer_time_raw = %d _delay = %d _once = %d \n", save, dataholder._repInfo, dataholder._timer_time_raw, dataholder._delay, dataholder._once);
+		LOG_USB_TIMER("save = %d _is_active = %d _repInfo = %d _timer_time_raw = %d _delay = %d _once = %d \n", save, dataholder._is_active, dataholder._repInfo, dataholder._timer_time_raw, dataholder._delay, dataholder._once);
 		if (save) dataholder.save();
 
 		addActiveTimer(dataholder.create());
@@ -258,8 +244,26 @@ void TimerHandler::tickAll()
 	{
 		if (timers[i]->_is_active)
 		{
-			//LOG_USB_TIMER("tick %d timer\n", i);
-			if (timers[i]->tick(cur_time)) deleteActiveTimer(i);
+			if (timers[i]->tick(cur_time))
+			{
+				LOG_USB_TIMER("delete timer %d\n",i);
+				if (timers[i]->_addr)
+				{
+					IDataHolder* timerdata = getMemData(timers[i]->_addr);
+					LOG_USB_TIMER("timer %d with rep = %d on addr %d\n", i, timerdata->_repInfo, timers[i]->_addr);
+					if (timerdata->_repInfo)
+					{
+						addActiveTimer(timerdata->create());
+					}
+					else
+					{
+						LOG_USB_TIMER("no rep, delete form mem\n");
+						timerdata->deleteMem();
+						MemManager::deleteAllAddrOnDelitedDataObj();
+					}
+				}
+				deleteActiveTimer(i);
+			}
 		}
 	}
 }

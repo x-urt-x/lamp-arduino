@@ -5,7 +5,7 @@
 class OnOffTimer : public IEventTimer
 {
 public:
-	OnOffTimer(unsigned long time, bool* target, bool to_set, uint16_t addr = 0);
+	OnOffTimer(unsigned long time, bool is_active, bool* target, bool to_set, uint16_t addr = 0);
 	bool tick(unsigned long cur_time) override;
 	virtual void getJson(JsonObject& doc) override;
 	virtual byte getId() override;

@@ -249,7 +249,11 @@ void handleCommand()
 			case 'a':
 			{
 				byte pos = atoi(data);
-				if (pos == 0) break;
+				if (pos == 0)
+				{
+					LOG_USB_TIMER("cancel delete main timer\n");
+					break;
+				}
 				while (data[0] != ' ') data++;
 				timerHandler.deleteActiveTimer(pos);
 				break;
@@ -257,7 +261,6 @@ void handleCommand()
 			case 'm':
 			{
 				byte pos = atoi(data);
-				if (pos == 0) break;
 				while (data[0] != ' ') data++;
 				timerHandler.deleteMemTimer(pos);
 				break;

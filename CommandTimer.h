@@ -5,7 +5,7 @@
 class CommandTimer : public IEventTimer
 {
 public:
-	CommandTimer(unsigned long from_time, uint delay, String command, bool once = true, uint16_t addr = 0);
+	CommandTimer(unsigned long from_time, bool is_active, uint delay, String command, bool once = true, uint16_t addr = 0);
 	virtual void getJson(JsonObject& doc) override;
 	virtual byte getId() override;
 protected:

@@ -6,7 +6,7 @@
 class BrEventTimer : public IEventTimer
 {
 public:
-	BrEventTimer(unsigned long from_time, unsigned long dur, uint16_t to_br, uint delay, uint16_t addr = 0);
+	BrEventTimer(unsigned long from_time, bool is_active, unsigned long dur, uint16_t to_br, uint delay, uint16_t addr = 0);
 	virtual void getJson(JsonObject& doc) override;
 	virtual byte getId() override;
 protected:

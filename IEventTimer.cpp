@@ -12,6 +12,11 @@ void IDataHolder::setTime(unsigned long time, bool epoch)
 	}
 }
 
+void IDataHolder::deleteMem()
+{
+	if (_addr) EEPROM.write(_addr, IEventTimer::TimerIDEnum::Delited);
+}
+
 unsigned long IDataHolder::calcTime()
 {
 	unsigned long now_millis_time = millis();
@@ -27,18 +32,15 @@ unsigned long IDataHolder::calcTime()
 				if (_timer_time_raw < now_daytime)
 					continue;
 				LOG_USB_TIMER("calcTime with rep 1: i = %d\n", i);
-				return now_millis_time + (8640UL * (i - now_weekday) + _timer_time_raw - now_daytime) * 1000UL + 1;
+				return now_millis_time + (86400UL * (i - now_weekday) + _timer_time_raw - now_daytime) * 1000UL + 1;
 			}
 		}
-		for (byte i = 0; i < now_weekday; i++)
+		for (byte i = 0; i <= now_weekday; i++)
 		{
 			if ((_repInfo >> i) & 0b1)
 			{
-				if (_timer_time_raw < now_daytime)
-					continue;
 				LOG_USB_TIMER("calcTime with rep 2: i = %d\n", i);
-				return now_millis_time + (8640UL * (7 - now_weekday + i) + _timer_time_raw - now_daytime) * 1000UL + 1;
-
+				return now_millis_time + (86400UL * (7 - now_weekday + i) + _timer_time_raw - now_daytime) * 1000UL + 1;
 			}
 		}
 	}
@@ -58,7 +60,7 @@ void IDataHolder::saveCommon(uint16_t &paddr, IEventTimer::TimerIDEnum id)
 {
 	EEPROM.write(paddr, id);
 	paddr++;
-	EEPROM.write(paddr, _repInfo);
+	EEPROM.write(paddr, _repInfo | _is_active << 7);
 	paddr++;
 	EEPROM.put(paddr, _timer_time_raw);
 	paddr += 4;
@@ -67,6 +69,8 @@ void IDataHolder::saveCommon(uint16_t &paddr, IEventTimer::TimerIDEnum id)
 void IDataHolder::loadCommon(uint16_t& paddr)
 {
 	_repInfo = EEPROM.read(paddr);
+	_is_active = _repInfo >> 7;
+	_repInfo &= 0b0111'1111;
 	paddr++;
 	EEPROM.get(paddr, _timer_time_raw);
 	paddr += 4;
@@ -74,6 +78,7 @@ void IDataHolder::loadCommon(uint16_t& paddr)
 
 void IDataHolder::getJsonCommon(JsonObject& doc)
 {
+	doc["is_active"] = String(_is_active);
 	doc["repInfo"] = String(_repInfo);
 	doc["timer_time_raw"] = String(_timer_time_raw);
 }

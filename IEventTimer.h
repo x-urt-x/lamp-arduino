@@ -10,7 +10,8 @@ class IEventTimer
 public:
 	enum TimerIDEnum : byte
 	{
-		BrEventTimer = 0,
+		Delited = 0,
+		BrEventTimer,
 		CommandTimer,
 		EffectEventTimer,
 		OnOffTimer
@@ -39,8 +40,10 @@ struct IDataHolder
 	virtual void load(uint16_t addr) = 0;
 	virtual void getJson(JsonObject& doc) = 0;
 	virtual byte getId() = 0;
+	void deleteMem();
 	void setTime(unsigned long time, bool epoch);
 	byte _repInfo;
+	bool _is_active;
 	unsigned long _timer_time_raw;
 protected:
 	uint16_t _addr = 0;
