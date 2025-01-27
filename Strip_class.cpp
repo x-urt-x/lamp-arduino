@@ -142,19 +142,7 @@ void Strip::udp_set_color(Color_str color)
 	set_color(color, 0);
 }
 
-void Strip::parse(char* data)
-{
-	char* pch = NULL;
-	pch = strtok(data, "\n");
-	while (pch != NULL)
-	{
-		parseSingle(pch);
-		pch = strtok(NULL, "\n");
-	}
-}
-
-
-void Strip::parseSingle(const char* input_str)
+void Strip::parse(const char* input_str)
 {
 	char key = input_str[0];
 	input_str++;

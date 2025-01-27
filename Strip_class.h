@@ -31,8 +31,7 @@ public:
 
 	void begin();
 	void udp_set_color(Color_str color);
-	void parse(char* input_str);
-	void parseSingle(const char* input_str);
+	void parse(const char* input_str);
 	void getEffectJSON(JsonArray& blocks);
 
 	int get_max_br();

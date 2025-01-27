@@ -13,7 +13,7 @@ class TimerHandler
 public:
 	TimerHandler();
 	
-	void parse(char* input_str);
+	void parse(const char* input_str);
 
 	void tickAll();
 	void addActiveTimer(IEventTimer* timerDataHolder);

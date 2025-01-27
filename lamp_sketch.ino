@@ -183,7 +183,7 @@ void loop() {
 #ifdef LOG_USB_ENABLE
 	while (Serial.available() > 0)
 	{
-		strip.parseSingle(Serial.readStringUntil('\n').c_str());
+		strip.parse(Serial.readStringUntil('\n').c_str());
 		strip.tick();
 	}
 #endif
@@ -226,7 +226,7 @@ void parseCommand(String commands)
 		strip.fill(strip.Color(0, 0, 0));
 		delay(0);
 		strip.show();
-		parseSingleCommand(const_cast<char*>(commands.substring(0, 6).c_str()));
+		parseSingleCommand(commands.substring(0, 6).c_str());
 		return;
 	}
 #endif 
@@ -236,17 +236,17 @@ void parseCommand(String commands)
 		int index = commands.indexOf('\n');
 		if (index == -1)
 		{
-			parseSingleCommand(const_cast<char*>(commands.c_str()));
+			parseSingleCommand(commands.c_str());
 			strip.tick();
 			break;
 		}
-		parseSingleCommand(const_cast<char*>(commands.substring(0, index).c_str()));
+		parseSingleCommand(commands.substring(0, index).c_str());
 		strip.tick();
 		commands = commands.substring(index + 1);
 	}
 }
 
-void parseSingleCommand(char* input_str)
+void parseSingleCommand(const char* input_str)
 {
 	LOG_USB_SWITCH("parse: %s\n", input_str);
 	char key = input_str[0];

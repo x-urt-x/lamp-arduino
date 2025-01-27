@@ -1,7 +1,7 @@
 #ifndef LOG_CFG_H
 #define LOG_CFG_H
 
-//#define LOG_USB_ENABLE
+#define LOG_USB_ENABLE
 
 #ifdef LOG_USB_ENABLE
 

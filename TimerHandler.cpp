@@ -169,7 +169,7 @@ TimerHandler::TimerHandler()
 	timers = new IEventTimer * [_timers_cap];
 }
 
-void TimerHandler::parse(char* input_str)
+void TimerHandler::parse(const char* input_str)
 {
 	char key = input_str[0];
 	input_str++;
