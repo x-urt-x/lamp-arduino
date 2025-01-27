@@ -189,12 +189,6 @@ void TimerHandler::parse(char* input_str)
 #ifdef MATR16x16
 				digitalWrite(MOSFET_PIN, LOW);
 #endif
-#ifdef MATR10x10
-				strip.fill(strip.Color(0, 0, 0));
-				delay(0);
-				strip.show();
-				return;
-#endif 
 				//WiFi.forceSleepBegin();
 			}
 			else

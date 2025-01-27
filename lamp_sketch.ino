@@ -56,9 +56,7 @@ IRAM_ATTR void enc_click() {
 
 void setup() {
 	randomSeed(analogRead(0));
-#ifdef LOG_USB_ENABLE
 	Serial.begin(115200);
-#endif // LOG_USB_ENABLE
 	LOG_USB_STARTUP("\nstart\n");
 	IEventTimer::obj = &strip;
 	strip.begin();
@@ -79,7 +77,7 @@ void setup() {
 	pinMode(MOSFET_PIN, OUTPUT);
 	digitalWrite(MOSFET_PIN, HIGH);
 #endif
-	attachInterrupt(ENC_S1, enc_click, CHANGE);
+	attachInterrupt(ENC_S2, enc_click, CHANGE);
 	EEPROM.begin(4096);
 
 	LOG_USB_STARTUP("eeprom[0] = %d\n", EEPROM.read(0));
@@ -153,7 +151,7 @@ void loop() {
 		if (encoder.hold())
 			if (timerHandler.getActiveState(0))
 			{
-				timerHandler.parse("s 0 0");
+				parseCommand("ts 0 0");
 			}
 			else
 			{
@@ -215,24 +213,39 @@ void handleRoot() {
 
 void handleCommand()
 {
-	String commands = server.arg("plain");
+	parseCommand(server.arg("plain"));
+	server.send(200, "text/plain", "Data received successfully");
+}
+
+void parseCommand(String commands)
+{
+#ifdef MATR10x10
+	if (commands.substring(0, 6).equals("ts 0 0"))
+	{
+		strip.fill(strip.Color(0, 0, 0));
+		delay(0);
+		strip.show();
+		parseSingleCommand(const_cast<char*>(commands.substring(0, 6).c_str()));
+		return;
+	}
+#endif 
+
 	while (commands.length() > 0)
 	{
 		int index = commands.indexOf('\n');
 		if (index == -1)
 		{
-			parseCommand(const_cast<char*>(commands.c_str()));
+			parseSingleCommand(const_cast<char*>(commands.c_str()));
 			strip.tick();
 			break;
 		}
-		parseCommand(const_cast<char*>(commands.substring(0, index).c_str()));
+		parseSingleCommand(const_cast<char*>(commands.substring(0, index).c_str()));
 		strip.tick();
 		commands = commands.substring(index + 1);
 	}
-	server.send(200, "text/plain", "Data received successfully");
 }
 
-void parseCommand(char* input_str)
+void parseSingleCommand(char* input_str)
 {
 	LOG_USB_SWITCH("parse: %s\n", input_str);
 	char key = input_str[0];

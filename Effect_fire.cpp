@@ -1,6 +1,14 @@
 #include "Effect_fire.h"
 
+#ifdef MATR10x10
+#define led_m(x,y) _leds_arr[(y*MATR_SIZE+(y%2==0?x:MATR_SIZE-x-1))]
+#endif // MATR10x10
+
+#ifdef MATR16x16
 #define led_m(x,y) _leds_arr[255-(y*MATR_SIZE+(y%2==0?x:MATR_SIZE-x-1))]
+#endif // MATR16x16
+
+
 
 #define FRAMES 40
 #define SIDE_CENTER 10
