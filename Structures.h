@@ -45,7 +45,6 @@ struct Color_str
 	void map(uint8_t br_in)
 	{
 		float br = br_in / 255.0;
-		//Serial.printf("map1 - br %f r %d g %d b %d\n",br,r,g,b);
 		r = r * br;
 		if (r > 255) r = 255;
 		g = g * br;

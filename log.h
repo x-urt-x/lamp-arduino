@@ -5,6 +5,7 @@
 
 #ifdef LOG_USB_ENABLE
 
+#define LOG_USB_X_ENABLE
 #define LOG_USB_STARTUP_ENABLE
 //#define LOG_USB_BR_ENABLE
 //#define LOG_USB_COLOR_MAP_ENABLE
@@ -19,8 +20,7 @@
 #endif // LOG_USB_ENABLE
 
 
-
-//use only in this file
+#ifdef LOG_USB_ENABLE
 #define LOG_USB_MATR(matr)						\
 {												\
 	Serial.printf("%s\n", #matr);				\
@@ -31,8 +31,13 @@
 		Serial.printf("\n");					\
 	}											\
 }
+#endif
 
-
+#ifdef LOG_USB_X_ENABLE
+#define LOG_USB_X(format, ...) Serial.printf(format, ##__VA_ARGS__)
+#else
+#define LOG_USB_X(format, ...) ;
+#endif
 
 #ifdef LOG_USB_STARTUP_ENABLE
 #define LOG_USB_STARTUP(format, ...) Serial.printf(format, ##__VA_ARGS__)

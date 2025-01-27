@@ -56,7 +56,9 @@ IRAM_ATTR void enc_click() {
 
 void setup() {
 	randomSeed(analogRead(0));
+#ifdef LOG_USB_ENABLE
 	Serial.begin(115200);
+#endif
 	LOG_USB_STARTUP("\nstart\n");
 	IEventTimer::obj = &strip;
 	strip.begin();
@@ -131,9 +133,7 @@ void setup() {
 
 	digitalWrite(RED_PIN, LOW);
 	timerHandler.addActiveTimer(new EffectEventTimer());
-	Serial.println("after addActiveTimer");
 	timerHandler.addActiveAllFromMem();
-	Serial.println("after addActiveAllFromMem");
 	strip.set_effect(0);
 	strip.set_br(br);
 	strip.tick();
@@ -180,12 +180,13 @@ void loop() {
 			digitalWrite(RED_PIN, LOW);
 		}
 	}
-
+#ifdef LOG_USB_ENABLE
 	while (Serial.available() > 0)
 	{
 		strip.parseSingle(Serial.readStringUntil('\n').c_str());
 		strip.tick();
 	}
+#endif
 	timerHandler.tickAll();
 }
 
@@ -309,27 +310,26 @@ void parseSingleCommand(char* input_str)
 		}
 		case 'p':
 		{
-			Serial.println("print mem");
-			Serial.printf("init bit: %d\n", EEPROM.read(0) >> 7);
-			Serial.printf("obj data count: %d\n", EEPROM.read(0) & 0b0111'1111);
+			LOG_USB_X("print mem\n");
+			LOG_USB_X("init bit: %d\n", EEPROM.read(0) >> 7);
+			LOG_USB_X("obj data count: %d\n", EEPROM.read(0) & 0b0111'1111);
 			for (int i = 0; i < OBJ_DATA_CAP; i++)
 			{
 				uint16_t addr;
 				EEPROM.get(1 + i * 2, addr);
-				Serial.printf("%d-%d|", addr >> 12, addr & 0x0FFF);
+				LOG_USB_X("%d-%d|", addr >> 12, addr & 0x0FFF);
 			}
-			Serial.print('\n');
+			LOG_USB_X("\n");
 
 			for (int i = (OBJ_DATA_CAP + 1) * 2 + 1; i < 64 * 64; i++)
 			{
-				if ((i - (OBJ_DATA_CAP + 1) * 2 + 1) % 64 == 0) Serial.print('\n');
+				if ((i - (OBJ_DATA_CAP + 1) * 2 + 1) % 64 == 0) LOG_USB_X("\n");
 				byte value = EEPROM.read(i);
 				if (value < 0x10)
-					Serial.print("0");
-				Serial.print(value, HEX);
-				Serial.print(" ");
+					LOG_USB_X("0");
+				LOG_USB_X("0x%X ", value);
 			}
-			Serial.print('\n');
+			LOG_USB_X("\n");
 			break;
 		}
 		case 't':
@@ -337,13 +337,13 @@ void parseSingleCommand(char* input_str)
 			unsigned long now_millis_time = millis();
 			byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 86400UL;
 			unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 86400UL;
-			Serial.printf("start_day_time: %lu\n ", StartTimeInfo::start_day_time);
-			Serial.printf("start_epoch_time: %lu\n ", StartTimeInfo::start_epoch_time);
-			Serial.printf("start_millis_time: %lu\n ", StartTimeInfo::start_millis_time);
-			Serial.printf("start_weekday: %d\n ", StartTimeInfo::start_weekday);
-			Serial.printf("now_millis_time: %lu\n ", now_millis_time);
-			Serial.printf("now_weekday: %d\n ", now_weekday);
-			Serial.printf("now_daytime: %lu\n ", now_daytime);
+			LOG_USB_X("start_day_time: %lu\n ", StartTimeInfo::start_day_time);
+			LOG_USB_X("start_epoch_time: %lu\n ", StartTimeInfo::start_epoch_time);
+			LOG_USB_X("start_millis_time: %lu\n ", StartTimeInfo::start_millis_time);
+			LOG_USB_X("start_weekday: %d\n ", StartTimeInfo::start_weekday);
+			LOG_USB_X("now_millis_time: %lu\n ", now_millis_time);
+			LOG_USB_X("now_weekday: %d\n ", now_weekday);
+			LOG_USB_X("now_daytime: %lu\n ", now_daytime);
 			break;
 		}
 		default:
