@@ -24,12 +24,12 @@ unsigned long IDataHolder::calcTime()
 	{
 		byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 86400UL - 1;
 		unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 86400UL;
-		LOG_USB_TIMER("calcTime with rep: now_weekday = %d now_daytime = %d\n", now_weekday, now_daytime);
+		LOG_USB_TIMER("calcTime with rep: now_weekday = %d now_daytime = %d repInfo = %d time = %lu\n", now_weekday, now_daytime, _repInfo, _timer_time_raw);
 		for (byte i = now_weekday; i < 7; i++)
 		{
 			if ((_repInfo >> i) & 0b1)
 			{
-				if (_timer_time_raw < now_daytime)
+				if (_timer_time_raw < now_daytime && i == now_weekday)
 					continue;
 				LOG_USB_TIMER("calcTime with rep 1: i = %d\n", i);
 				return now_millis_time + (86400UL * (i - now_weekday) + _timer_time_raw - now_daytime) * 1000UL + 1;
