@@ -41,10 +41,18 @@ WiFiUDP NtpUdp;
 NTPClient timeClient(NtpUdp, "pool.ntp.org", GTMOFFSET);
 
 bool udp_state = false;
+int br = 1000;
+volatile bool is_enc = false;
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 Strip strip(MATR_LEN, STRIP_PIN);
 TimerHandler timerHandler;
+
+IRAM_ATTR void enc_click() {
+	is_enc = true;
+	br = strip.get_br();
+	digitalWrite(RED_PIN, HIGH);
+}
 
 void setup() {
 	randomSeed(analogRead(0));
@@ -71,7 +79,7 @@ void setup() {
 	pinMode(MOSFET_PIN, OUTPUT);
 	digitalWrite(MOSFET_PIN, HIGH);
 #endif
-
+	attachInterrupt(ENC_S1, enc_click, CHANGE);
 	EEPROM.begin(4096);
 
 	LOG_USB_STARTUP("eeprom[0] = %d\n", EEPROM.read(0));
@@ -129,12 +137,9 @@ void setup() {
 	timerHandler.addActiveAllFromMem();
 	Serial.println("after addActiveAllFromMem");
 	strip.set_effect(0);
-	strip.set_br(1000);
+	strip.set_br(br);
 	strip.tick();
 }
-
-int br = 5000;
-volatile bool is_enc = false;
 
 void loop() {
 	server.handleClient();
@@ -142,25 +147,40 @@ void loop() {
 	{
 		handleUDP();
 	}
-	encoder.tick();
-	if (encoder.turn()) {
-		if (encoder.pressing())
-		{
-			br += (encoder.fast() ? 500 : 100) * encoder.dir();
+	if (is_enc)
+	{
+		encoder.tick();
+		if (encoder.hold())
+			if (timerHandler.getActiveState(0))
+			{
+				timerHandler.parse("s 0 0");
+			}
+			else
+			{
+				timerHandler.parse("s 0 1");
+			}
+		if (encoder.turn()) {
+			if (encoder.pressing())
+			{
+				br += (encoder.fast() ? 500 : 100) * encoder.dir();
+			}
+			else
+			{
+				br += (encoder.fast() ? 25 : 1) * encoder.dir();
+			}
+			if (br > strip.get_max_br())
+				br = strip.get_max_br();
+			if (br < 0)
+				br = 0;
+			LOG_USB_ENC("%d\n", br);
+			strip.set_br(br);
+			strip.tick();
 		}
-		else
+		if (encoder.timeout(5000))
 		{
-			br += (encoder.fast() ? 25 : 1) * encoder.dir();
+			is_enc = false;
+			digitalWrite(RED_PIN, LOW);
 		}
-		//inbr_mid += (encoder.pressing() ? 5 : 1) * encoder.dir();
-
-		if (br > 247335)
-			br = 247335;
-		if (br < 0)
-			br = 0;
-		LOG_USB_ENC("%d\n", br);
-		strip.parseSingle(("eb " + String(br)).c_str());
-		strip.tick();
 	}
 
 	while (Serial.available() > 0)
@@ -196,10 +216,10 @@ void handleRoot() {
 void handleCommand()
 {
 	String commands = server.arg("plain");
-	while (commands.length()>0)
+	while (commands.length() > 0)
 	{
 		int index = commands.indexOf('\n');
-		if (index == -1) 
+		if (index == -1)
 		{
 			parseCommand(const_cast<char*>(commands.c_str()));
 			strip.tick();
@@ -207,7 +227,7 @@ void handleCommand()
 		}
 		parseCommand(const_cast<char*>(commands.substring(0, index).c_str()));
 		strip.tick();
-		commands = commands.substring(index+1);
+		commands = commands.substring(index + 1);
 	}
 	server.send(200, "text/plain", "Data received successfully");
 }
