@@ -500,6 +500,7 @@ nbbuild.xml
 nbproject
 
 .vscode/*
+.vscode
 
 Pass.h
 .cd

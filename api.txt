@@ -1,0 +1,39 @@
+POST on /submit
+m
+	d => md 		- set default effect setting
+	b => mb {num br}	 - br
+	e => me # 		- set effect #
+	u => mu {bool state} 	- set udp state
+e
+	b
+		d => ebd {num delay ms} 	- delay
+		h => ebh {num step} 		- effect shift
+		c => ebc {num cutoff} 		- cutoff bound
+	c => ec # {hex color} 			- set color in pos #
+	r
+		h => erh # {step} 	- rainbow shift on pos #
+		s => ers # {state} 	- raibow state on pos #
+	p => ep # - set preset #
+x
+	r => xr 	- restart
+	f => xf 	- reset mem
+	p => xp 	- print all mem
+	t => xt 	- print time
+t
+	s => ts # {state} 	- set is_active to timer on pos #
+	d 
+		m => tdm # 		- delete mem timer on pos #; timer 0 protected
+		a => tdm # 		- delete active timer on pos #; timer 0 protected
+	a - add timer. rep is bitset of 7 low bits. 6 is mon 0 is sun. if rep is null time is shift from now, else daytime from 00:00. 
+		b => tab {bool save} {bool is active} {byte of flags rep info} {num time sec} {num delay ms} {num dur sec} {num to br}		- change br to {to br} in {delay} sec. guaranteed final set to {to br}
+		s => tas {bool save} {bool is active} {byte of flags rep info} {num time sec} {bool to set} 					- set state of the main timer to {to set}
+		c => tac {bool save} {bool is active} {byte of flags rep info} {num time sec} {num delay ms} {bool once} {string command}	- execute {command} every {delay} sec. if {once} delete after first execute
+
+
+timers id
+	Brightness timer
+	Command timer
+	Main timer
+	OnOff timer
+
+bool -> 1/0

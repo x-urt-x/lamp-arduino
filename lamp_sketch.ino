@@ -40,7 +40,7 @@ inline void handleUDP();
 WiFiUDP NtpUdp;
 NTPClient timeClient(NtpUdp, "pool.ntp.org", GTMOFFSET);
 
-bool udp_enable = false;
+bool udp_state = false;
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 Strip strip(MATR_LEN, STRIP_PIN);
@@ -102,9 +102,7 @@ void setup() {
 	server.on("/", HTTP_GET, handleRoot);
 	server.on("/submit", HTTP_POST, handleCommand);
 	server.on("/get-effect-option", HTTP_GET, handleGetEffectOption);
-	server.on("/get-mem-timers", HTTP_GET, handleMemTimers);
-	server.on("/get-active-timers", HTTP_GET, handleActiveTimers);
-	server.on("/udp-state", HTTP_POST, handleSetUDP);
+	server.on("/get-timers", HTTP_GET, handleGetTimers);
 
 	Udp.begin(localPort);
 	LOG_USB_STARTUP("UDP server on port %d\n", localPort);
@@ -127,9 +125,11 @@ void setup() {
 
 	digitalWrite(RED_PIN, LOW);
 	timerHandler.addActiveTimer(new EffectEventTimer());
+	Serial.println("after addActiveTimer");
 	timerHandler.addActiveAllFromMem();
-	strip.parseSingle("m 0");
-	strip.parseSingle("eb 1000");
+	Serial.println("after addActiveAllFromMem");
+	strip.set_effect(0);
+	strip.set_br(1000);
 	strip.tick();
 }
 
@@ -138,7 +138,7 @@ volatile bool is_enc = false;
 
 void loop() {
 	server.handleClient();
-	if (udp_enable)
+	if (udp_state)
 	{
 		handleUDP();
 	}
@@ -193,125 +193,171 @@ void handleRoot() {
 	}
 }
 
-void handleGetEffectOption()
-{
-	String output;
-	serializeJson(strip.getJSON(udp_enable, timerHandler.getActiveState(0), timerHandler.getTimerCount()), output);
-	server.send(200, "application/json", output);
-}
-
 void handleCommand()
 {
-	char* data = const_cast<char*>(server.arg("plain").c_str());
-	LOG_USB_HTTP(data);
-	LOG_USB_HTTP("\n");
-	if (data[0] == 't')
+	String commands = server.arg("plain");
+	while (commands.length()>0)
 	{
-		data++;
-		char key = data[0];
-		data++;
-		switch (key)
+		int index = commands.indexOf('\n');
+		if (index == -1) 
 		{
-		case 's':
-		{
-			byte pos = atoi(data);
-			while (data[0] != ' ') data++;
-			timerHandler.setActiveState(atoi(data), pos);
-			if (pos == 0)
-				if (atoi(data) == 0)
-				{
-#ifdef MATR16x16
-					digitalWrite(MOSFET_PIN, LOW);
-#endif
-#ifdef MATR10x10
-					strip.fill(strip.Color(0, 0, 0));
-					delay(0);
-					strip.show();
-					return;
-#endif 
-					//WiFi.forceSleepBegin();
-				}
-				else
-				{
-					//WiFi.forceSleepWake();
-#ifdef MATR16x16
-					digitalWrite(MOSFET_PIN, HIGH);
-#endif
-				}
+			parseCommand(const_cast<char*>(commands.c_str()));
+			strip.tick();
 			break;
 		}
+		parseCommand(const_cast<char*>(commands.substring(0, index).c_str()));
+		strip.tick();
+		commands = commands.substring(index+1);
+	}
+	server.send(200, "text/plain", "Data received successfully");
+}
+
+void parseCommand(char* input_str)
+{
+	LOG_USB_SWITCH("parse: %s\n", input_str);
+	char key = input_str[0];
+	input_str++;
+	switch (key)
+	{
+	case 'm':
+	{
+		key = input_str[0];
+		input_str++;
+		switch (key)
+		{
 		case 'd':
 		{
-			key = data[0];
-			data++;
-			switch (key)
-			{
-			case 'a':
-			{
-				byte pos = atoi(data);
-				if (pos == 0)
-				{
-					LOG_USB_TIMER("cancel delete main timer\n");
-					break;
-				}
-				while (data[0] != ' ') data++;
-				timerHandler.deleteActiveTimer(pos);
-				break;
-			}
-			case 'm':
-			{
-				byte pos = atoi(data);
-				while (data[0] != ' ') data++;
-				timerHandler.deleteMemTimer(pos);
-				break;
-			}
-			default:
-				break;
-			}
+			strip.apply_default_option();
+			break;
 		}
-		case 'a':
+		case 'b':
 		{
-			timerHandler.parseTimer(data);
+			int br;
+			parseIn_int(br);
+			strip.set_br(br);
+			break;
+		}
+		case 'e':
+		{
+			byte pos;
+			parseIn_int(pos);
+			strip.set_effect(pos);
+			break;
+		}
+		case 'u':
+		{
+			parseIn_int(udp_state);
 			break;
 		}
 		default:
 			break;
 		}
+		break;
 	}
-	else
+	case 'x':
 	{
-		strip.parse(data);
+		key = input_str[0];
+		input_str++;
+		switch (key)
+		{
+		case 'r':
+		{
+			LOG_USB_STARTUP("reset\n");
+			ESP.restart();
+			break;
+		}
+		case 'f':
+		{
+			LOG_USB_STARTUP("full reset\n");
+			EEPROM.write(0, 0x80);
+			EEPROM.commit();
+			ESP.restart();
+			break;
+		}
+		case 'p':
+		{
+			Serial.println("print mem");
+			Serial.printf("init bit: %d\n", EEPROM.read(0) >> 7);
+			Serial.printf("obj data count: %d\n", EEPROM.read(0) & 0b0111'1111);
+			for (int i = 0; i < OBJ_DATA_CAP; i++)
+			{
+				uint16_t addr;
+				EEPROM.get(1 + i * 2, addr);
+				Serial.printf("%d-%d|", addr >> 12, addr & 0x0FFF);
+			}
+			Serial.print('\n');
+
+			for (int i = (OBJ_DATA_CAP + 1) * 2 + 1; i < 64 * 64; i++)
+			{
+				if ((i - (OBJ_DATA_CAP + 1) * 2 + 1) % 64 == 0) Serial.print('\n');
+				byte value = EEPROM.read(i);
+				if (value < 0x10)
+					Serial.print("0");
+				Serial.print(value, HEX);
+				Serial.print(" ");
+			}
+			Serial.print('\n');
+			break;
+		}
+		case 't':
+		{
+			unsigned long now_millis_time = millis();
+			byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 86400UL;
+			unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 86400UL;
+			Serial.printf("start_day_time: %lu\n ", StartTimeInfo::start_day_time);
+			Serial.printf("start_epoch_time: %lu\n ", StartTimeInfo::start_epoch_time);
+			Serial.printf("start_millis_time: %lu\n ", StartTimeInfo::start_millis_time);
+			Serial.printf("start_weekday: %d\n ", StartTimeInfo::start_weekday);
+			Serial.printf("now_millis_time: %lu\n ", now_millis_time);
+			Serial.printf("now_weekday: %d\n ", now_weekday);
+			Serial.printf("now_daytime: %lu\n ", now_daytime);
+			break;
+		}
+		default:
+			break;
+		}
+		break;
 	}
-	strip.tick();
-	server.send(200, "text/plain", "Data received successfully");
-	//LOG_USB_HTTP("server.send\n");
+	case 'e':
+	{
+		strip.parse(input_str);
+		break;
+	}
+	case 't':
+	{
+		timerHandler.parse(input_str);
+		break;
+	}
+	default:
+		break;
+	}
 }
 
-void handleSetUDP()
-{
-	const char* data = server.arg("plain").c_str();
-	if (data[0] == '1')
-	{
-		udp_enable = true;
-	}
-	else
-	{
-		udp_enable = false;
-	}
-	LOG_USB_UPD("udp state = %d\n", udp_enable ? 1 : 0);
-	server.send(200, "text/plain", "Data received successfully");
-}
-
-void handleMemTimers()
+void handleGetTimers()
 {
 	String output;
-	serializeJson(timerHandler.getMemJsonAll(), output);
+	JsonDocument doc;
+	JsonArray memTimers = doc.createNestedArray("memTimers");
+	timerHandler.getMemJsonAll(memTimers);
+	JsonArray activeTimers = doc.createNestedArray("activeTimers");
+	timerHandler.getActiveJsonAll(activeTimers);
+	doc["millisNow"] = String(millis());
+	serializeJson(doc, output);
 	server.send(200, "application/json", output);
 }
 
-void handleActiveTimers()
+void handleGetEffectOption()
 {
 	String output;
-	serializeJson(timerHandler.getActiveJsonAll(), output);
+	JsonDocument doc;
+	JsonObject staticFields = doc.createNestedObject("staticFields");
+	staticFields["state"] = String(timerHandler.getActiveState(0));
+	staticFields["UDP"] = String(udp_state);
+	staticFields["name"] = strip.get_effect_name();
+	staticFields["br"] = strip.get_br();
+	staticFields["maxBr"] = strip.get_max_br();
+	JsonArray blocks = doc.createNestedArray("effectBlocks");
+	strip.getEffectJSON(blocks);
+	serializeJson(doc, output);
 	server.send(200, "application/json", output);
 }

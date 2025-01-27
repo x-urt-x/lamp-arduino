@@ -1,114 +1,826 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Effect Settings</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=420, initial-scale=1"> 
+    <title>Lamp control</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-      }
-      .block {
-        margin: 20px 0;
-        padding: 10px;
-        border: 1px solid #ccc;
-      }
-      .block h3 {
-        margin-top: 0;
-      }
-      .field {
-        display: flex;
-        align-items: center;
-        margin: 10px 0;
-      }
-      .field input[type="text"] {
-        margin-right: 10px;
-      }
-      .apply-btn {
-        margin-top: 20px;
-      }
+        *:before, *:after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+        }
+        .l {
+            font-size: 2em;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 0.75em;
+            box-shadow: 0.125em 0.125em 0 0.125em rgba(0,0,0,0.3) inset;
+            color: #fdea7b;
+            display: inline-flex;
+            align-items: center;
+            margin: auto;
+            padding: 0.15em;
+            width: 3em;
+            height: 1.5em;
+            transition: background-color 0.1s 0.3s ease-out, box-shadow 0.1s 0.3s ease-out;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        .l:before, .l:after {
+            content: "";
+            display: block;
+        }
+        .l:before {
+            background-color: #d7d7d7;
+            border-radius: 50%;
+            width: 1.2em;
+            height: 1.2em;
+            transition: background-color 0.1s 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 1;
+        }
+        .l:after {
+            background:
+                linear-gradient(transparent 50%, rgba(0,0,0,0.15) 0) 0 50% / 50% 100%,
+                repeating-linear-gradient(90deg,#bbb 0,#bbb,#bbb 20%,#999 20%,#999 40%) 0 50% / 50% 100%,
+                radial-gradient(circle at 50% 50%,#888 25%, transparent 26%);
+            background-repeat: no-repeat;
+            border: 0.25em solid transparent;
+            border-left: 0.4em solid #d8d8d8;
+            border-right: 0 solid transparent;
+            transition: border-left-color 0.1s 0.3s ease-out, transform 0.3s ease-out;
+            transform: translateX(-22.5%);
+            transform-origin: 25% 50%;
+            width: 1.2em;
+            height: 1em;
+        }
+        .l:checked {
+            background-color: rgba(0,0,0,0.45);
+            box-shadow: 0.125em 0.125em 0 0.125em rgba(0,0,0,0.1) inset;
+        }
+        .l:checked:before {
+            background-color: currentColor;
+            transform: translateX(125%)
+        }
+        .l:checked:after {
+            border-left-color: currentColor;
+            transform: translateX(-2.5%) rotateY(180deg);
+        }
+        .on-off-container{
+            display: inline-block;
+        }
+        body {
+            width: 400px;
+            margin: 10px;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        main{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 400px;
+        }
+        .auto-send-block {
+            display: block; 
+        }
+        .effect-block,
+        .mem-timer-block,
+        .active-timer-block{
+            border-style: solid;
+            border-width: 1px;
+            border-color: black;
+            border-radius: 3px;
+            width: 384px;
+            padding: 7px;
+            margin-bottom: 2px;
+            margin-top: 2px;
+        }
+        .effect-block .name,
+        .mem-timer-block .name,
+        .active-timer-block .name{
+            text-align: center;
+            margin: 1px;
+        }
+        .input-fields div{
+            display: flex;
+            justify-content:space-between;
+        }
+        .mark {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            font: bold 150% monospace;
+            color: black;
+            background-color: transparent;
+        }
+        .br-knob {
+            width: 100%;
+            height: 100%;
+            margin: auto;
+            display: block;
+            border-radius: 100%;
+        }
+        .br-knob::part(rotator) {
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            border-style: dashed;
+            border-width: 2px;
+            border-color: black;
+            border-radius: 100%;
+        }
+        .br-input{
+            z-index: 2;
+            text-align: center;
+            position: absolute;
+            width: 100px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .br-container{
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 10px;
+        }
+        .br-input::-webkit-outer-spin-button,
+        .br-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+        }
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .globalContentBnt {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            background-color: #949494;
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: 0.2s;
+            margin: 2px;
+        }
+        .globalContentBnt:hover {
+            background-color: #606060;
+        }
+        .hide {
+            display: none;
+        }
+        .non-editable input{
+            pointer-events: none;
+            user-select: text;
+        }
+        .day-of-week{
+            display: flex;
+        }
+        .globalContentDiv {
+            width: 400px;
+        }
     </style>
   </head>
   <body>
-    <h1>Effect Configuration</h1>
-    <label for="state">State</label>
-    <input type="checkbox" id="state" data-prefix="ts0" />
-    <br />
-    <label for="UDP">UDP</label>
-    <input type="checkbox" id="UDP" />
-    <br />
-    <button id="reset-option" data-prefix="er" value="">Reset option</button>
-    <br />
+    <main>
+        <div>
+            <label for="UDP">UDP</label>
+            <input type="checkbox" id="UDP" class="to-send" command="mu"/>
+        </div>
+        <div class="on-off-container">
+            <input class="l to-send" type="checkbox" command="ts 0" value="" id="state-toggle"/>
+        </div>
+        <div class="br-container" id="brContainer">
+                <input-knob value="50" scale="1000" min="0" max="64515", class="br-knob", id="brKnob"><div class="mark">&#x25B2;</div></input-knob>
+                <input type="number" min="0" max="64515" class="br-input to-send" value="50" id="brInput" command="mb">
+        </div>
+        <div class="buttons-container">
+            <button class="globalContentBnt" onclick="showContent('effectContainer')">Effect options</button>
+            <button class="globalContentBnt" onclick="showContent('memTimersContainer')">Mem timers</button>
+            <button class="globalContentBnt" onclick="showContent('activeTimersContainer')">Active timers</button>
+            <button class="globalContentBnt" onclick="showContent('createTimerContainer')">Create timer</button>
+        </div>
+
+        <div id="effectContainer" class="globalContentDiv">
+            <div>
+                <label for="effect-selector">Choose Effect:</label>
+                <select id="effect-selector" class="to-send" command="me" value="">
+                    <option value="0">Single Color</option>
+                    <option value="1">Fire</option>
+                    <option value="2">Rainbow</option>
+                    <option value="3">Noise</option>
+                </select>
+            </div>
+            <div style="margin-top: 4px; margin-bottom: 2px; display: grid; grid-template-columns: 1fr 1fr 25px; width: 400px;">
+                <button command="md" onclick="processCommand(this)">Reset option</button>
+                <button onclick="handleApplyAll()">Apply all</button>
+                <button onclick="loadEffectOptions()">&#128472;</button>
+            </div>
+            <div id="currentEffect"></div>
+        </div>
+        <div id="memTimersContainer" class="globalContentDiv hide">
+            <button onclick="loadTimers()">&#128472;</button>
+            <div id="memTimers"  class="non-editable"></div>
+        </div>
+        <div id="activeTimersContainer" class="globalContentDiv hide">
+            <button onclick="loadTimers()">&#128472;</button>
+            <div id="activeTimers"  class="non-editable"></div>
+        </div>
+        <div id="createTimerContainer" class="globalContentDiv hide">
+            <div id="createTimer"></div>
+        </div>
+
+    </main>
+
+
+
+<section id="effect-templates">
+    <template id="auto-send-block">
+        <div>
+            <input type="checkbox" name="auto-send" class="auto-send-toggle" />
+            auto send
+      </div>
+    </template>
+
+    <template id="color-input-row">
+        <div style="display: grid; grid-template-columns: 180px 1fr">
+            <label for="color">color</label>
+            <input value="" type="color" name="color" num="" command="ec" class="to-send"/>
+        </div>
+    </template>
+    
+    <template id="rainbow-input-row">
+        <div style="display: grid; grid-template-columns: 100px 50px 1fr">
+            <label for="rainbow">toggle | step</label>
+            <input value="" type="checkbox" name="rainbow-check" num="" command="ers" class="to-send">
+            <input value="" type="number" name="rainbow" num="" command="erh" class="to-send"/>
+        </div>
+    </template>
+    
+    <template id="preset-button">
+        <div >
+            <button num="" name="preset-button" command="ep" onclick="processCommand(this)">preset #</button>
+        </div>
+    </template>
+
+    <template id="effect-base">
+        <div class="effect-block">
+            <p class="name">Base</p>
+            <div insert-list="auto-send-block"></div>
+            <div class="input-fields">
+                <div>
+                    <label for="strip_update_delay_time">actuation delay (ms)</label>
+                    <input type="number" value="" name="strip_update_delay_time" command="ebd" class="to-send"/>
+                </div>
+                <div>
+                    <label for="br_cutoff_bound">pixel disable bound</label>
+                    <input type="number" value="" name="br_cutoff_bound" command="ebc" class="to-send"/>
+                </div>
+                <div>
+                    <label for="effect_step">effect step</label>
+                    <input type="number" value="" name="effect_step" command="ebh" class="to-send"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="effect-color">
+        <div class="effect-block">
+            <p class="name">Color</p>
+            <div insert-list="auto-send-block"></div>
+            <div class="input-fields">
+                <div insert-list="color-input-row" prop-tag="color" style="display: grid; grid-template-columns: 1fr"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="effect-rainbow">
+        <div class="effect-block">
+            <p class="name">Rainbow</p>
+            <div insert-list="auto-send-block"></div>
+            <div class="input-fields">
+                <div insert-list="rainbow-input-row" prop-tag="rainbow" style="display: grid; grid-template-columns: 1fr"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="effect-preset">
+        <div class="effect-block">
+            <p class="name">Preset</p>
+            <div class="input-fields">
+                <div insert-list="preset-button" prop-tag="preset" style="display: grid; grid-template-columns: 1fr"></div>
+            </div>
+        </div>
+    </template>
+</section>
+
+<section id="mem-timer-templates">
+    <template id="mem-timer-common">
+            <div>
+                <label for="is_active">active on create</label>
+                <input type="checkbox" checked="true" name="is_active"/>
+            </div>
+            <div>
+                <label for="repInfo">repeat on week days</label>
+                <div class="day-of-week">
+                    <input type="checkbox">
+                    <input type="checkbox">
+                    <input type="checkbox">
+                    <input type="checkbox">
+                    <input type="checkbox">
+                    <input type="checkbox">
+                    <input type="checkbox">
+                </div>
+            </div>
+            <div>
+                <label for="timer_time_raw">timer_time_raw</label>
+                <input type="number" value="" name="timer_time_raw"/>
+            </div>
+    </template>
+
+    <template id="mem-timer-button-save">
+        <div>
+            <label for="save">save to mem</label>
+            <input type="checkbox" name="save" class="save-to-mem">
+            <button style="display: block;" onclick="handleSaveTimer(this)">create</button>
+        </div>
+    </template>
+    
+    <template id="mem-timer-button-delete-templ">
+        <div>
+            <button class="mem-timer-button-delete" num="" command="tdm" onclick="processCommand(this)">delete</button>
+        </div>
+    </template>
+    
+    <template id="mem-timer-br">
+        <div class="mem-timer-block" timer-id="Brightness timer" pos="">
+            <p class="name">Brightness timer</p>
+            <div class="input-fields">
+                <div insert-list="mem-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+                <div>
+                    <label for="delay">actuation delay (ms)</label>
+                    <input type="number" value="" name="delay" />
+                </div>
+                <div>
+                    <label for="dur">duration (sec)</label>
+                    <input type="number" value="" name="dur" />
+                </div>
+                <div>
+                    <label for="to_br">final brightness</label>
+                    <input type="number" value="" name="to_br" />
+                </div>
+            </div>
+            <div insert-list="mem-timer-button-delete-templ mem-timer-button-save" prop-tag="memTimerButton"></div>
+        </div>
+    </template>
+
+    <template id="mem-timer-onOff">
+        <div class="mem-timer-block" timer-id="OnOff timer" pos="">
+            <p class="name">OnOff timer</p>
+            <div class="input-fields">
+                <div insert-list="mem-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+                <div>
+                    <label for="to_set">change state to</label>
+                    <input type="checkbox" value="" name="to_set" />
+                </div>
+            </div>
+            <div insert-list="mem-timer-button-delete-templ mem-timer-button-save" prop-tag="memTimerButton"></div>
+        </div>
+    </template>
+
+    <template id="mem-timer-command">
+        <div class="mem-timer-block" timer-id="Command timer" pos="">
+            <p class="name">Command timer</p>
+            <div class="input-fields">
+                <div insert-list="mem-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+                <div>
+                    <label for="delay">actuation delay (ms)</label>
+                    <input type="number" value="" name="delay" />
+                </div>
+                <div>
+                    <label for="once">one actuation</label>
+                    <input type="checkbox" value="" name="once" />
+                </div>
+                <div>
+                    <label for="command">command</label>
+                    <input type="text" value="" name="command" />
+                </div>
+            </div>
+            <div insert-list="mem-timer-button-delete-templ mem-timer-button-save" prop-tag="memTimerButton"></div>
+        </div>
+    </template>
+
+    <template id="mem-timer-combined-onOff-templ">
+        <div class="mem-timer-block" timer-id="Combined On Off timer" pos="">
+            <p class="name">Combined On Off timer</p>
+            <div class="input-fields">
+                <div insert-list="mem-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+                <div>
+                    <label for="dur">duration (sec)</label>
+                    <input type="number" value="" name="dur" />
+                </div>
+                <div>
+                    <label for="delay">actuation delay (ms)</label>
+                    <input type="number" value="" name="delay" />
+                </div>
+                <div>
+                    <label for="to_br">final brightness</label>
+                    <input type="number" value="" name="to_br" />
+                </div>
+                <div>
+                    <label for="from_br">start brightness</label>
+                    <input type="number" value="" name="from_br" />
+                </div>
+            </div>
+            <div insert-list="mem-timer-button-delete-templ mem-timer-button-save" prop-tag="memTimerButton"></div>
+        </div>
+    </template>
+</section>
+
+<section id="active-timer-templates">
+    <template id="active-timer-common">
+        <div>
+            <label for="is_active">is active</label>
+            <input type="checkbox" value="" name="is_active" />
+        </div>
+        <div>
+            <label for="prev_time">prev_time</label>
+            <input type="number" value="" name="prev_time" />
+        </div>
+        <div>
+            <label for="delay">actuation delay (ms)</label>
+            <input type="number" value="" name="delay" />
+        </div>
+        <div>
+            <label for="addr">in mem address</label>
+            <input type="number" value="" name="addr" />
+        </div>
+</template>
+
+<template id="active-timer-button-delete-templ">
     <div>
-      <input type="number" value="" data-to-send="" data-prefix="eb" id="br" />
-      <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
+        <button class="active-timer-button-delete" num="" command="tda" onclick="processCommand(this)">delete</button>
     </div>
-    <br />
-    <label for="effect-selector">Choose Effect:</label>
-    <select id="effect-selector">
-      <option value="m0">Single Color</option>
-      <option value="m1">Fire</option>
-      <option value="m2">Rainbow</option>
-      <option value="m3">Noise</option>
-    </select>
+</template>
 
-    <div id="form-container"></div>
-    <button class="apply-btn" onclick="applyChanges()">Apply All</button>
-    <br>
-    <div id="settings-block" style="padding: 10px; border: 1px solid #ccc; width: 300px; border-radius: 5px;">
-      <label for="interval">Через:</label>
-      <input type="number" id="interval" min="0" step="1" style="margin-bottom: 10px;"><br>
-  
-      <label for="duration">Длительность:</label>
-      <input type="number" id="duration" min="0" step="1" style="margin-bottom: 10px;"><br>
-  
-      <label for="step">Шаг:</label>
-      <input type="number" id="step" min="0" step="1" style="margin-bottom: 10px;"><br>
-  
-      <label for="brightness">Яркость:</label>
-      <input type="number" id="brightness" min="0" max="100" step="1" style="margin-bottom: 10px;"><br>
-      
-      <input type="checkbox" id="pre-set">
-      <label for="pre-set">Начальная установка</label><br><br>
+<template id="active-timer-main">
+    <div class="active-timer-block">
+        <p class="name">Main timer</p>
+        <div class="input-fields">
+            <div insert-list="active-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+        </div>
+        <div insert-list="active-timer-button-delete-templ"></div>
+    </div>
+</template>
 
-      <label for="start-brightness">Начальная яркость:</label>
-      <input type="number" id="start-brightness" min="0" max="100" step="1" style="margin-bottom: 10px;"><br>
-  
-      <input type="checkbox" id="auto-off">
-      <label for="auto-off">Выключить после</label><br><br>
-  
-      <button id="process-button" onclick="handleTimer()">Применить</button>
-      <br>
-    <label for="timerCount">timerCount</label>
-    <span id="timerCount">0</span>
-  </div>
-    <br>
-    <br>
-    <input type="text" id="textInput" placeholder="send command">
-    <button onclick="directCommandBtnHandle()">send to /submit</button>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        loadEffectOptions();
-        document
-          .getElementById("effect-selector")
-          .addEventListener("change", handleEffectChange);
-        document
-          .getElementById("state")
-          .addEventListener("change", handleCheckBox);
-        document.getElementById("UDP").addEventListener("change", handleUDP);
-        document
-          .getElementById("reset-option")
-          .addEventListener("click", handleBtnClick);
-          document.getElementById("br").addEventListener("input", handleInput);
-      });
+<template id="active-timer-br">
+    <div class="active-timer-block">
+        <p class="name">Brightness timer</p>
+        <div class="input-fields">
+            <div insert-list="active-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+            <div>
+                <label for="step_counter">remaining steps</label>
+                <input type="number" value="" name="step_counter" />
+            </div>
+            <div>
+                <label for="to_br">final brightness</label>
+                <input type="number" value="" name="to_br" />
+            </div>
+        </div>
+        <div insert-list="active-timer-button-delete-templ"></div>
+    </div>
+</template>
 
-      function applyDarkTheme() {
+<template id="active-timer-onOff">
+    <div class="active-timer-block">
+        <p class="name">OnOff timer</p>
+        <div class="input-fields">
+            <div insert-list="active-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+            <div>
+                <label for="to_set">change state to</label>
+                <input type="checkbox" value="" name="to_set" />
+            </div>
+        </div>
+        <div insert-list="active-timer-button-delete-templ"></div>
+    </div>
+</template>
+
+<template id="active-timer-command">
+    <div class="active-timer-block">
+        <p class="name">Command timer</p>
+        <div class="input-fields">
+            <div insert-list="active-timer-common" style="display: grid; grid-template-columns: 1fr"></div>
+            <div>
+                <label for="once">one actuation</label>
+                <input type="checkbox" value="" name="once" />
+            </div>
+            <div>
+                <label for="command">command</label>
+                <input type="text" value="" name="command" />
+            </div>
+        </div>
+        <div insert-list="active-timer-button-delete-templ"></div>
+    </div>
+</template>
+</section>
+
+<script>
+    const template = document.createElement('template');
+  template.innerHTML = `
+    <style>
+      :host {
+        display: inline-block;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        touch-action: none;
+        user-select: none;
+        cursor: pointer;
+      }
+      #rotator {
+        display: block;
+        --angle: 0rad;
+        transform: rotate(var(--angle));
+        will-change: transform;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+    <div id="rotator" part="rotator"><slot></slot></div>`;
+  
+  window.ShadyCSS && ShadyCSS.prepareTemplate(template, 'input-knob');
+  
+  const TWO_PI = 2 * Math.PI;
+  
+  class InputKnob extends HTMLElement {
+    constructor() {
+      super();
+  
+      window.ShadyCSS && ShadyCSS.styleElement(this);
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(template.content.cloneNode(true));
+      this._rotator = this.shadowRoot.getElementById('rotator');
+      this._fallback = null;
+  
+      this._drawState = this._drawState.bind(this);
+      this._onMousedown = this._onMousedown.bind(this);
+      this._onMousemove = this._onMousemove.bind(this);
+      this._onMouseup = this._onMouseup.bind(this);
+      this._onPointerdown = this._onPointerdown.bind(this);
+      this._onPointermove = this._onPointermove.bind(this);
+      this._onPointerup = this._onPointerup.bind(this);
+      this._onTouchend = this._onTouchend.bind(this);
+      this._onTouchmove = this._onTouchmove.bind(this);
+      this._onTouchstart = this._onTouchstart.bind(this);
+      this._rotationStart = this._rotationStart.bind(this);
+      this._rotationChange = this._rotationChange.bind(this);
+      this._rotationEnd = this._rotationEnd.bind(this);
+    }
+  
+    static get observedAttributes() {
+      return ['value', 'scale', 'min', 'max'];
+    }
+  
+    get value() {
+      return this.hasAttribute('value') ? this.getAttribute('value') : 0;
+    }
+  
+    set value(value) {
+      this.setAttribute('value', parseFloat(value));
+    }
+  
+    get scale() {
+      return this.hasAttribute('scale') ? this.getAttribute('scale') : 1;
+    }
+  
+    set scale(scale) {
+      this.setAttribute('scale', parseFloat(scale));
+    }
+  
+    get min() {
+      return this.hasAttribute('min') ? this.getAttribute('min') : null;
+    }
+  
+    set min(min) {
+      this.setAttribute('min', parseFloat(min));
+    }
+  
+    get max() {
+      return this.hasAttribute('max') ? this.getAttribute('max') : null;
+    }
+  
+    set max(max) {
+      this.setAttribute('max', parseFloat(max));
+    }
+  
+    connectedCallback() {
+      if (!this._rotator.part) {
+        this._fallback = document.createElement('span');
+        this._fallback.style.setProperty('--angle', `${this._angle}rad`);
+        this._fallback.style.setProperty('transform', `rotate(var(--angle))`);
+        this._fallback.style.setProperty('-webkit-tap-highlight-color', 'transparent');
+  
+        while (this.childNodes.length > 0) {
+          this._fallback.appendChild(this.childNodes[0]);
+        }
+  
+        this._fallback.classList.add('fallback');
+        this.classList.add('fallback');
+        this.append(this._fallback);
+      }
+  
+      this._drawState();
+  
+      if ('PointerEvent' in window) {
+        this.addEventListener('pointerdown', this._onPointerdown);
+      } else {
+        this.addEventListener('touchstart', this._onTouchstart);
+        this.addEventListener('mousedown', this._onMousedown);
+      }
+    }
+  
+    disconnectedCallback() {
+      if ('PointerEvent' in window) {
+        this.removeEventListener('pointerdown', this._onPointerdown);
+      } else {
+        this.removeEventListener('touchstart', this._onTouchstart);
+        this.removeEventListener('mousedown', this._onMousedown);
+      }
+    }
+  
+    attributeChangedCallback(attrName, oldVal, newVal) {
+      this._angle = (TWO_PI / this.scale) * (this.value % this.scale);
+      this._rotations = Math.floor(this.value / this.scale);
+      this._drawState();
+    }
+  
+    _drawState() {
+      let target = this._rotator;
+  
+      if (this._fallback !== null) {
+          target = this._fallback;
+      }
+  
+      target.style.setProperty('--angle', `${this._angle}rad`);
+    }
+  
+    _rotationStart() {
+      window.oncontextmenu = () => { return false; };
+      const rect = this.getBoundingClientRect(); 
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft; 
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      this._centerX = scrollLeft + rect.left + this.offsetWidth / 2;
+      this._centerY = scrollTop + rect.top + this.offsetHeight / 2;
+      this._initialAngle = this._angle;
+      this._attemptedAngle = this._angle;
+      this._attemptedRotations = this._rotations;
+      this._initialTouchAngle = Math.atan2(
+        this._touchY - this._centerY,
+        this._touchX - this._centerX
+      );
+  
+      const evt = new Event('knob-move-start', { bubbles: true });
+      this.dispatchEvent(evt);
+    }
+  
+    _rotationChange() {
+      this._previousAttemptedAngle = this._attemptedAngle;
+      this._attemptedAngle =
+        this._initialAngle
+        - this._initialTouchAngle
+        + Math.atan2(this._touchY - this._centerY, this._touchX - this._centerX);
+      this._attemptedAngle = (this._attemptedAngle + TWO_PI) % TWO_PI;
+  
+      if (this.max !== null && this.min !== null) {
+        if (this._attemptedAngle < 1.57 && this._previousAttemptedAngle > 4.71) {
+          this._attemptedRotations++;
+        } else if (this._previousAttemptedAngle < 1.57 && this._attemptedAngle > 4.71) {
+          this._attemptedRotations--;
+        }
+      }
+  
+      this._attemptedValue = (this._attemptedAngle / (TWO_PI / this.scale))
+        + (this.scale * this._attemptedRotations);
+  
+      if (
+        (this.min === null || this._attemptedValue >= this.min) &&
+        (this.max === null || this._attemptedValue <= this.max)
+      ) {
+        this._angle = this._attemptedAngle;
+        this._rotations = this._attemptedRotations;
+        this.value = this._attemptedValue;
+      } else if (this._attemptedValue < this.min) {
+        this.value = this.min;
+      } else if (this._attemptedValue > this.max) {
+        this.value = this.max;
+      }
+  
+      const evt = new Event('knob-move-change', { bubbles: true });
+      this.dispatchEvent(evt);
+    }
+  
+    _rotationEnd() {
+      window.oncontextmenu = null;
+      const evt = new Event('knob-move-end', { bubbles: true });
+      this.dispatchEvent(evt);
+    }
+  
+    _onPointerdown(e) {
+      e.preventDefault();
+      this._touchX = e.clientX;
+      this._touchY = e.clientY;
+  
+      this._rotationStart();
+  
+      this.setPointerCapture(e.pointerId);
+      this.addEventListener('pointermove', this._onPointermove);
+      this.addEventListener('pointerup', this._onPointerup);
+      this.addEventListener('pointercancel', this._onPointerup);
+    }
+  
+    _onPointermove(e) {
+      e.preventDefault();
+      this._touchX = e.clientX;
+      this._touchY = e.clientY;
+      this._rotationChange();
+    }
+  
+    _onPointerup(e) {
+      e.preventDefault();
+      this._rotationEnd();
+      this.releasePointerCapture(e.pointerId);
+      this.removeEventListener('pointermove', this._onPointermove);
+      this.removeEventListener('pointerup', this._onPointerup);
+      this.removeEventListener('pointercancel', this._onPointerup);
+    }
+  
+    _onMousedown(e) {
+      this._touchX = e.clientX;
+      this._touchY = e.clientY;
+      this._rotationStart();
+      document.addEventListener('mousemove', this._onMousemove);
+      document.addEventListener('mouseup', this._onMouseup);
+    }
+  
+    _onMousemove(e) {
+      e.preventDefault();
+      this._touchX = e.clientX;
+      this._touchY = e.clientY;
+      this._rotationChange();
+    }
+  
+    _onMouseup(e) {
+      e.preventDefault();
+      document.removeEventListener('mousemove', this._onMousemove);
+      document.removeEventListener('mouseup', this._onMouseup);
+      this._rotationEnd();
+    }
+  
+    _onTouchstart(e) {
+      e.preventDefault();
+      this._touchX = e.changedTouches[0].clientX;
+      this._touchY = e.changedTouches[0].clientY;
+      this._rotationStart();
+      this.addEventListener('touchmove', this._onTouchmove);
+      this.addEventListener('touchend', this._onTouchend);
+      this.addEventListener('touchcancel', this._onTouchend);
+    }
+  
+    _onTouchmove(e) {
+      e.preventDefault();
+      this._touchX = e.targetTouches[0].clientX;
+      this._touchY = e.targetTouches[0].clientY;
+      this._rotationChange();
+    }
+  
+    _onTouchend(e) {
+      e.preventDefault();
+      this.removeEventListener('touchmove', this._onTouchmove);
+      this.removeEventListener('touchend', this._onTouchend);
+      this.removeEventListener('touchcancel', this._onTouchend);
+      this._rotationEnd();
+    }
+  }
+  
+  customElements.define('input-knob', InputKnob);
+</script>
+
+<script>
+
+function applyDarkTheme() {
     const style = document.createElement('style');
     style.innerHTML = `
         * {
-            background-color: #121212 !important; /* Темно-серый фон */
-            color: #e0e0e0 !important; /* Светлый текст */
-            border-color: #444 !important; /* Темные границы */
+            background-color: #121212;
+            color: #e0e0e0;
+            border-color: #444 !important;
         }
     `;
     document.head.appendChild(style);
@@ -118,282 +830,451 @@ function applyLightTheme() {
     const style = document.createElement('style');
     style.innerHTML = `
         * {
-            background-color: #ffffff !important; /* Светлый фон */
-            color: #000000 !important; /* Черный текст */
-            border-color: #ccc !important; /* Светлые границы */
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #ccc !important;
         }
     `;
     document.head.appendChild(style);
 }
 
 function syncWithSystemTheme() {
-    // Проверяем, какая тема установлена в системе
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        applyDarkTheme();  // Применяем тёмную тему
+        applyDarkTheme(); 
     } else {
-        applyLightTheme();  // Применяем светлую тему
+        applyLightTheme();
     }
 }
 
-// Синхронизируем с темой браузера при загрузке страницы
 syncWithSystemTheme();
 
-// Обработчик изменений темы
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncWithSystemTheme);
 
+    function create(classId, prop){
+        const template = document.getElementById(classId);
+        if (!template) {
+            console.error(`Template with id "${classId}" not found.`);
+            return;
+        }
+        const clone = template.content.cloneNode(true);
+        
+        const insertListElements = clone.querySelectorAll('[insert-list]');
+        insertListElements.forEach((insertElement) => {
 
-      function directCommandBtnHandle() {
-            const text = document.getElementById("textInput").value;
-            sendPostRequest(text);
+            const namesStr = insertElement.getAttribute('insert-list');
+            const names = namesStr.split(' ');
+            const propTag = insertElement.getAttribute('prop-tag');
+            let name = names[0];
+            let count = 1;
+            let inProp = {};
+            if (prop.hasOwnProperty(propTag)){
+                const localProp = prop[propTag];
+                
+                if(localProp.hasOwnProperty('select')){
+                    const select = localProp.select;
+                    if(select >=0 && select < names.length){
+                        name = names[select];
+                    }
+                }
+
+                if(localProp.hasOwnProperty('count')){
+                    if(localProp.count > 0 ){
+                        count = localProp.count;
+                    }
+                }
+
+                if(localProp.hasOwnProperty('inProp')){
+                    inProp = localProp.inProp;
+                }
+            }
+            if(name != classId){
+                for (let i = 0; i  < count; i++) {
+                    const inner = create(name, inProp);
+                    const numerbles = inner.querySelectorAll('[num]');
+                    numerbles.forEach(numerble => {
+                        numerble.setAttribute('num', i);
+                    });
+                    insertElement.appendChild(inner);
+                }
+            }
+
+        });
+
+        return clone;
+    }
+
+    function showContent(id) {
+            const contents = document.querySelectorAll('.globalContentDiv');
+            contents.forEach(content => content.classList.add('hide'));
+            document.getElementById(id).classList.remove('hide');
         }
 
-        function handleTimer() {
-        const interval = document.getElementById('interval').value;
-        const duration = document.getElementById('duration').value;
-        const step = document.getElementById('step').value;
-        const brightness = document.getElementById('brightness').value;
-        const startBrightness = document.getElementById('start-brightness').value;
-        const autoOff = document.getElementById('auto-off').checked;
-        const preset = document.getElementById('pre-set').checked;
-
-        if(preset)
-        {
-          sendPostRequest(`tac ${interval} 1 1 eb ${startBrightness}`);
-          setTimeout(()=>{sendPostRequest(`tas ${interval} 1`);}, 100);
-          setTimeout(()=>{sendPostRequest(`tab ${interval} ${duration} ${brightness} ${step}`);}, 200);
-          if(autoOff)
-        {
-          setTimeout(()=>{sendPostRequest(`tas ${interval+duration} 0`);}, 700);
-        }
-        }
-        else
-        {
-          sendPostRequest(`tab ${interval} ${duration} ${brightness} ${step}`);
-          if(autoOff)
-          {
-            setTimeout(()=>{sendPostRequest(`tas ${parseInt(interval)+parseInt(duration)} 0`);}, 500);
-          }
+    function setDayOfWeek(block, valueToSet){
+        const inputs = block.querySelectorAll('input');
+        for (let index = 0; index < inputs.length; index++) {
+            inputs[index].checked  = ((valueToSet >> index) & 0b1) !== 0 ;
         }
     }
 
-      function handleUDP() {
-        const input = event.target;
-        fetch("/udp-state", {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain",
-          },
-          body: input.checked ? "1" : "0",
-        });
-      }
+    function getDayOfWeek(block){
+        let value = 0;
+        const inputs = block.querySelectorAll('input');
+        for (let index = 0; index < inputs.length; index++) {
+                value += inputs[index].checked?Math.pow(2,index):0;
+        }
+        return value;
+    }
 
-      function loadEffectOptions() {
+    function handleApplyAll(){
+        const currentEffectDiv = document.getElementById('currentEffect');
+        const inputs = currentEffectDiv.querySelectorAll('.to-send');
+        const changes = Array.from(inputs).map((input) => {
+          return getInputCommand(input);
+        });
+        sendPostRequest(changes.join("\n"));
+    }
+
+    function handleSaveTimer(saveBtn){
+        const timerBlock = saveBtn.closest('div .mem-timer-block');
+        const timerId = timerBlock.getAttribute('timer-id');
+        const save = timerBlock.querySelector('.save-to-mem').checked?1:0;
+        const active = timerBlock.querySelector('[name="is_active"]').checked?1:0;
+        const repInfo = getDayOfWeek(timerBlock.querySelector('.day-of-week'));
+        const time = timerBlock.querySelector('[name="timer_time_raw"]').value
+        let command ='ta';
+        switch (timerId) {
+            case 'Brightness timer': {
+                    const delay = timerBlock.querySelector('[name="delay"]').value;
+                    const dur = timerBlock.querySelector('[name="dur"]').value;
+                    const to_br = timerBlock.querySelector('[name="to_br"]').value;
+                    if(checkEmpty({save, active, repInfo, time, delay, dur, to_br})){return;}
+                    command += `b ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}`;
+                    break;
+                }
+            case 'Command timer': {
+                    const delay = timerBlock.querySelector('[name="delay"]').value;
+                    const once = timerBlock.querySelector('[name="once"]').checked?1:0;
+                    const commandToSend = timerBlock.querySelector('[name="command"]').value;
+                    if(checkEmpty({save, active, repInfo, time, delay, once, commandToSend})){return;}
+                    command += `c ${save} ${active} ${repInfo} ${time} ${delay} ${once} ${commandToSend}`;
+                    break;
+                }
+            case 'OnOff timer': {
+                    const to_set = timerBlock.querySelector('[name="to_set"]').checked?1:0;
+                    if(checkEmpty({save, active, repInfo, time, to_set})){return;}
+                    command += `s ${save} ${active} ${repInfo} ${time} ${to_set}`;
+                    break;
+                }
+            case 'Combined On Off timer': {
+                    const dur = timerBlock.querySelector('[name="dur"]').value;
+                    const delay = timerBlock.querySelector('[name="delay"]').value;
+                    const to_br = timerBlock.querySelector('[name="to_br"]').value;
+                    const from_br = timerBlock.querySelector('[name="from_br"]').value;
+                    if(checkEmpty({save, active, repInfo, time, dur, delay, to_br})){return;}
+                    command = `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
+                    command += `tas ${save} ${active} ${repInfo} ${time} 1\n`;
+                    if(to_br == 0){
+                        command += `tas ${save} ${active} ${repInfo} ${parseInt(time)+parseInt(dur)} 0\n`;
+                    }
+                    if(from_br !== ''){
+                        command += `tac ${save} ${active} ${repInfo} ${time} ${delay} 1 mb ${from_br}\n`;
+                    }
+                    break;
+                }
+            default:
+                break;
+        }
+        sendPostRequest(command);
+        loadTimers();
+    }
+
+    function checkEmpty(variables){
+        const emptyFields = Object.entries(variables).filter(([key, value]) => value === "" || value === null || value === undefined);
+
+        if (emptyFields.length > 0) {
+            alert(`empty fields: ${emptyFields.map(([key]) => key).join(", ")}`);
+            return true; 
+        }
+        return false;
+    }
+
+    function handelChangeEffectInput(event){
+        const target = event.target;
+        if(target.classList.contains('to-send')){
+            const parent = target.closest('div .effect-block');
+            const autoSendCheckBox = parent.querySelector('.auto-send-toggle');
+            if(autoSendCheckBox){
+                if(autoSendCheckBox.checked){
+                    processCommand(target);
+                }
+            }
+        }
+    }
+   
+    function processCommand(element){
+        const command = getInputCommand(element);
+        sendPostRequest(command);
+    }
+
+    function getInputCommand(input){
+        let command = input.getAttribute('command');
+        if(input.hasAttribute('num')){
+            command += ' ';
+            command += input.getAttribute('num');
+        }
+        let value ='';
+        if (input.type === "checkbox") {
+                value = input.checked ? "1" : "0";
+                command += ' ';
+        }
+        else{
+            if(input.hasAttribute('value')){
+                value = input.value.replace("#", "");
+                command += ' ';
+            }
+        }
+        command += value;
+        command += '\n';
+        return command;
+    }
+
+    function loadEffectOptions() {
         fetch("/get-effect-option")
           .then((response) => response.json())
           .then((data) => {
-            setStaticFields(data);
-            generateForm(data.blocks);
+            setStaticFields(data.staticFields);
+            generateEffect(data.effectBlocks);
           });
-      }
+    }
 
-      function setStaticFields(data) {
-        const effectSelector = document.getElementById("effect-selector");
-        for (const option of effectSelector.options) {
-          if (option.textContent === data.name) {
-            option.selected = true;
-            break;
-          }
+    function setStaticFields(data){
+        document.getElementById('UDP').checked = data.UDP !== '0';
+        document.getElementById('state-toggle').checked = (data.state !== '0');
+        document.getElementById('brKnob').max = data.maxBr;
+        document.getElementById('brKnob').value = data.br;
+        document.getElementById('brInput').value = data.br;
+        for (const option of document.getElementById('effect-selector').options) {
+            if (option.textContent === data.name) {
+                option.selected = true;
+            }
         }
-        const stateCheckbox = document.getElementById("state");
-        if (data.state==1) {
-          stateCheckbox.setAttribute("checked", "checked");
-        } else {
-          stateCheckbox.removeAttribute("checked");
-        }
-        const UPDCheckbox = document.getElementById("UDP");
-        if (data.UDP==1) {
-          UPDCheckbox.setAttribute("checked", "checked");
-        } else {
-          UPDCheckbox.removeAttribute("checked");
-        }
-        const BrInput = document.getElementById("br");
-        BrInput.value = data.br;
+    }
 
-        const TimerCount = document.getElementById("timerCount");
-        TimerCount.innerText = data.timerCount;
-      }
-
-      function generateForm(blocks) {
-        const container = document.getElementById("form-container");
-        container.innerHTML = "";
-
-        blocks.forEach((block) => {
-          const blockDiv = document.createElement("div");
-          blockDiv.className = "block";
-          blockDiv.innerHTML = `<h3>${block.block_name}</h3>`;
-
-          switch (block.block_name) {
-            case "effectable":
-              {
-                blockDiv.insertAdjacentHTML(
-                  "beforeend",
-                  `
-          <div class="field">
-              <input type="number" value="${block["strip_update_delay_time"]}" data-to-send="" data-prefix="ed" />
-              <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
-          </div>
-      `
-                );
-              }
-              {
-                blockDiv.insertAdjacentHTML(
-                  "beforeend",
-                  `
-                    <div class="field">
-              <input type="number" value="${block["br_cutoff_bound"]}" data-to-send="" data-prefix="ec" />
-              <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
-          </div>
-      `
-                );
-              }
-              {
-                blockDiv.insertAdjacentHTML(
-                  "beforeend",
-                  `
- <div class="field">
-              <input type="number" value="${block["effect_step"]}" data-to-send="" data-prefix="es" />
-              <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
-          </div>
-      `
-                );
-              }
-              break;
-            case "colorable":
-              for (const [key, value] of Object.entries(block)) {
-                if (key === "block_name") continue;
-
-                blockDiv.insertAdjacentHTML(
-                  "beforeend",
-                  `
-            <div class="field">
-                <input type="color" value="${value["Color"]}" data-to-send="" data-prefix="c${key}" />
-                <input type="checkbox" title="Auto-send on change" data-auto-send-toggle=""/>
-            </div>
-        `
-                );
-              }
-              break;
-            case "rainbowble":
-              for (const [key, value] of Object.entries(block)) {
-                if (key === "block_name") continue;
-
-                blockDiv.insertAdjacentHTML(
-                  "beforeend",
-                  `
-            <div class="field">
-                <input type="checkbox" ${
-                  value["State"] == 1 ? "checked" : ""
-                }  data-to-send="" data-prefix="rm${key}" />
-                <input type="number" value="${
-                  value["Step"]
-                }" data-to-send="" data-prefix="rs${key}" />
-                <input type="checkbox" title="Auto-send on change" data-auto-send-toggle="" />
-            </div>
-        `
-                );
-              }
-              break;
-            case "preseteble":
-              for (const [key, value] of Object.entries(block)) {
-                if (key === "block_name") continue;
-                blockDiv.insertAdjacentHTML(
-                  "beforeend",
-                  `
-            <div class="field">
-                <button data-prefix="ps" value="${key}" data-send-btn="">${value["Name"]}</button>
-            </div>
-        `
-                );
-              }
-
-              break;
-            default:
-              break;
-          }
-          const inputs = blockDiv.querySelectorAll("div.field input[data-to-send]");
-
-          inputs.forEach((input) => {
-            input.addEventListener("input", handleInput);
-          });
-
-          const buttons = blockDiv.querySelectorAll("div.field button[data-send-btn]");
-          buttons.forEach((button) => {
-            button.addEventListener("click", handleBtnClick);
-          });
-          container.appendChild(blockDiv);
+    function generateEffect(data){
+        const effectContainer = document.getElementById('currentEffect');
+        effectContainer.replaceChildren();
+            data.forEach((block)=>{
+            switch (block.block_name) {
+                case 'base':
+                    {
+                        const baseBlock = create('effect-base', {});
+                        baseBlock.querySelector('[name="strip_update_delay_time"]').value = block.strip_update_delay_time;
+                        baseBlock.querySelector('[name="br_cutoff_bound"]').value = block.br_cutoff_bound;
+                        baseBlock.querySelector('[name="effect_step"]').value = block.effect_step;
+                        effectContainer.appendChild(baseBlock);
+                        break;
+                    }
+                    case 'colorable':
+                    {
+                        const keys = Object.keys(block).filter(key => key !== "block_name");
+                        const colorableBlock = create('effect-color', {color: {count: keys.length}});
+                        const colors = colorableBlock.querySelectorAll('[name="color"]');
+                        for (let index = 0; index < keys.length; index++) {
+                            colors[index].value = block[keys[index]].Color;
+                        }
+                        effectContainer.appendChild(colorableBlock);
+                        break;
+                    }
+                    case 'rainbowble':
+                    {
+                        const keys = Object.keys(block).filter(key => key !== "block_name");
+                        const rainbowbleBlock = create('effect-rainbow', {rainbow: {count: keys.length}});
+                        const steps = rainbowbleBlock.querySelectorAll('[name="rainbow"]');
+                        const checks = rainbowbleBlock.querySelectorAll('[name="rainbow-check"]');
+                        for (let index = 0; index < keys.length; index++) {
+                            steps[index].value = block[keys[index]].Step;
+                            checks[index].checked = block[keys[index]].State !== '0';
+                        }
+                        effectContainer.appendChild(rainbowbleBlock);
+                        break;
+                    }
+                    case 'preseteble':
+                    {
+                        const keys = Object.keys(block).filter(key => key !== "block_name");
+                        const presetebleBlock = create('effect-preset', {preset: {count: keys.length}});
+                        const buttons = presetebleBlock.querySelectorAll('[name="preset-button"]');
+                        for (let index = 0; index < keys.length; index++) {
+                            buttons[index].textContent = block[keys[index]].Name;
+                        }
+                        effectContainer.appendChild(presetebleBlock);
+                        break;
+                    }
+                default:
+                    break;
+            }
         });
-      }
+    }
 
-      function handleInput(event) {
-        const input = event.target;
-        const parentDiv = input.closest("div");
-        const autoSendToggle = parentDiv.querySelector(
-          "[data-auto-send-toggle]"
-        );
-        if (autoSendToggle && autoSendToggle.checked) {
-          sendPostRequest(getEncodedString(input));
-        }
-      }
-      function handleBtnClick(event) {
-        const input = event.target;
-        sendPostRequest(getEncodedString(input));
+    function loadTimers(){
+        fetch("/get-timers")
+          .then((response) => response.json())
+          .then((data) => {
+            generateMemTimers(data.memTimers);
+            generateActiveTimers(data.activeTimers, data.millisNow);
+          });
+    }
+
+    function generateMemTimers(data){
+        const memTimersContainer = document.getElementById('memTimers');
+        memTimersContainer.replaceChildren();
+        let i = 0;
+        data.forEach((block)=>{
+            let timer = undefined;
+            switch (block.id) {
+                case 'Brightness timer':
+                    {
+                        timer = create('mem-timer-br', {});
+                        timer.querySelector('[name="delay"]').value = block.delay;
+                        timer.querySelector('[name="dur"]').value = block.dur;
+                        timer.querySelector('[name="to_br"]').value = block.to_br;
+                        break;
+                    }
+                    case 'OnOff timer':
+                    {
+                        timer = create('mem-timer-onOff', {});
+                        timer.querySelector('[name="to_set"]').checked = block.to_set !== '0';
+                        break;
+                    }
+                    case 'Command timer':
+                    {
+                        timer = create('mem-timer-command', {});
+                        timer.querySelector('[name="delay"]').value = block.delay;
+                        timer.querySelector('[name="once"]').checked = block.once !== '0';
+                        timer.querySelector('[name="command"]').value = block.command;
+                        break;
+                    }
+                default:
+                    break;
+            }
+            timer.querySelector('[name="is_active"]').value = block.is_active !== '0';
+            setDayOfWeek(timer.querySelector('.day-of-week'), block.repInfo);
+            if(block.repInfo == '0'){
+                const nowUTC = Math.floor(Date.now() / 1000);
+                const timezoneOffset = new Date().getTimezoneOffset() * 60;
+                timer.querySelector('[name="timer_time_raw"]').value = block.timer_time_raw - nowUTC + timezoneOffset;
+                timer.querySelector('[name="timer_time_raw"]').textContent = 'start in (sec)';
+            }
+            else{
+                timer.querySelector('[name="timer_time_raw"]').value = block.timer_time_raw;
+                timer.querySelector('[name="timer_time_raw"]').textContent = 'start on (sec)';
+            }
+            timer.querySelector('.mem-timer-button-delete').num = i;
+            memTimersContainer.appendChild(timer);
+            i++;
+        });
+    }
+
+    function generateActiveTimers(data, timeNow){
+        const activeTimersContainer = document.getElementById('activeTimers');
+        activeTimersContainer.replaceChildren();
+        let i = 0;
+        data.forEach((block)=>{
+            let timer = undefined;
+            switch (block.id) {
+                case 'Main timer':
+                {
+                    timer = create('active-timer-main', {});
+                    timer.querySelector('.active-timer-button-delete').classList.add('hide');
+                    break;
+                }
+                case 'Brightness timer':
+                {
+                    timer = create('active-timer-br', {});
+                    timer.querySelector('[name="step_counter"]').value = block.step_counter;
+                    timer.querySelector('[name="to_br"]').value = block.to_br;
+                    timer.querySelector('[name="dur"]').value = block.dur;
+                    break;
+                }
+                case 'OnOff timer':
+                {
+                    timer= create('active-timer-onOff', {});
+                    timer.querySelector('[name="to_set"]').checked = block.to_set !== '0';
+                    break;
+                }
+                case 'Command timer':
+                {
+                    timer = create('active-timer-command', {});
+                    timer.querySelector('[name="once"]').checked = block.once !== '0';
+                    timer.querySelector('[name="command"]').value = block.command;
+                    break;
+                }
+                default:
+                    break;
+            }
+            timer.querySelector('[name="is_active"]').checked = block.is_active !== '0';
+            let time = parseInt(timeNow) - parseInt(block.prev_time);
+            if(time<0){
+                timer.querySelector('[name="prev_time"]').textContent = 'last actuation in (ms)';
+                time = -time;
+            }
+            else{
+                timer.querySelector('[name="prev_time"]').textContent = 'next actuation in (sec)';
+                time = Math.floor(time/1000);
+            }
+            timer.querySelector('[name="prev_time"]').value = time;
+            timer.querySelector('[name="delay"]').value = block.delay;
+            timer.querySelector('[name="addr"]').value = block.addr;
+            timer.querySelector('.active-timer-button-delete').num = i;
+            activeTimersContainer.appendChild(timer);
+            i++;
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('brKnob').addEventListener('knob-move-change', brKnobHandle);
+        document.getElementById('brInput').addEventListener('knob-move-change', brInputHandle);
+
+        document.getElementById('currentEffect').addEventListener('input', handelChangeEffectInput);
+
+        document.querySelectorAll('main .to-send').forEach((toSendElement)=>{
+            toSendElement.addEventListener('change', (event)=>{                
+                processCommand(event.target);
+            });
+        });
+        document.getElementById('effect-selector').addEventListener('change', loadEffectOptions);
+
+        const createTimerDiv = document.getElementById('createTimer');
+        createTimerDiv.appendChild(create('mem-timer-br',{memTimerButton: {select: 1}}));
+        createTimerDiv.appendChild(create('mem-timer-onOff',{memTimerButton: {select: 1}}));
+        createTimerDiv.appendChild(create('mem-timer-command',{memTimerButton: {select: 1}}));
+        createTimerDiv.appendChild(create('mem-timer-combined-onOff-templ',{memTimerButton: {select: 1}}));
+
         loadEffectOptions();
-      }
+        loadTimers();
+    });
 
-      function handleCheckBox(event) {
-        const input = event.target;
-        sendPostRequest(getEncodedString(input));
-      }
+    function brInputHandle(){ 
+        const brKnob = document.getElementById('brKnob');
+        const brInput = document.getElementById('brInput');
+        brKnob.value = Number.parseInt(brInput.value); 
+    }
+    function brKnobHandle(){
+        const brKnob = document.getElementById('brKnob');
+        const brInput = document.getElementById('brInput');
+        brInput.value = Number.parseInt(brKnob.value); 
+        processCommand(brInput);
+    }
 
-      function handleEffectChange() {
-        const selectedEffectCode =
-          document.getElementById("effect-selector").value;
-        sendPostRequest(selectedEffectCode);
+    let isRequestInProgress = false;
+    let lastData = null;
 
-        setTimeout(() => loadEffectOptions(), 500);
-      }
-
-      function applyChanges() {
-        const inputs = document.querySelectorAll("input[data-to-send]");
-        const changes = Array.from(inputs).map((input) => {
-          return getEncodedString(input);
-        });
-
-        sendPostRequest(changes.join("\n"));
-      }
-
-      function getEncodedString(input) {
-        const prefix = input.dataset.prefix;
-        let value;
-
-        if (input.type === "checkbox") {
-          value = input.checked ? "1" : "0";
-        } else {
-          value = input.value.replace("#", "");
-        }
-        return `${prefix} ${value}`;
-      }
-
-      let isRequestInProgress = false;
-      let lastData = null;
-
-      function sendPostRequest(data) {
+    function sendPostRequest(data) {
+        console.log(data);
         if (isRequestInProgress) {
           lastData = data;
           return;
         }
         isRequestInProgress = true;
-
         fetch("/submit", {
           method: "POST",
           headers: {
@@ -419,6 +1300,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
             }
           });
       }
-    </script>
+
+</script>
   </body>
-</html>
+</html> 

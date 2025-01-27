@@ -142,34 +142,37 @@ void Strip::parse(char* data)
 
 void Strip::parseSingle(const char* input_str)
 {
-	LOG_USB_SWITCH("%s\n", input_str);
 	char key = input_str[0];
 	input_str++;
-	LOG_USB_SWITCH("key0 - %c\n", key);
 	switch (key)
 	{
-	case 'e':
+	case 'b':
 	{
 		key = input_str[0];
 		input_str++;
-		LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
 		case 'd':
-			set_effect_strip_update_delay_time(atoi(input_str));
+		{
+			int delay;
+			parseIn_int(delay);
+			set_effect_strip_update_delay_time(delay);
 			break;
-		case 'b':
-			set_br(atoi(input_str));
+		}
+		case 'h':
+		{
+			int step;
+			parseIn_int(step);
+			set_effect_step(step);
 			break;
+		}
 		case 'c':
-			set_effect_br_cutoff_bound(atoi(input_str));
+		{
+			int cutoff;
+			parseIn_int(cutoff);
+			set_effect_br_cutoff_bound(cutoff);
 			break;
-		case 's':
-			set_effect_step(atoi(input_str));
-			break;
-		case 'r':
-			apply_default_option();
-			break;
+		}
 		default:
 			break;
 		}
@@ -177,65 +180,35 @@ void Strip::parseSingle(const char* input_str)
 	}
 	case 'c':
 	{
-		byte pos = atoi(input_str);
-		while (input_str[0] != ' ') input_str++;
+		byte pos;
+		parseIn_int(pos);
 		Color_str col;
 		col.set(strtoul(input_str, nullptr, 16));
 		set_color(col, pos);
-	}
-	case 'p':
-	{
-		key = input_str[0];
-		input_str++;
-		LOG_USB_SWITCH("key1 - %c\n", key);
-		switch (key)
-		{
-		case 'n':
-		{
-			int count = get_preset_count();
-			if (count > 0)
-			{
-				const String* names = get_preset_names();
-				for (int i = 0; i < count; i++)
-				{
-					Serial.printf("%d - %s\n", i, names[i]);
-				}
-			}
-			else
-			{
-				Serial.printf("no preset\n");
-			}
-			break;
-		}
-		case 's':
-		{
-			set_preset(atoi(input_str));
-			break;
-		}
-		default:
-			break;
-		}
 		break;
 	}
 	case 'r':
 	{
 		key = input_str[0];
 		input_str++;
-		LOG_USB_SWITCH("key1 - %c\n", key);
 		switch (key)
 		{
-		case 'm':
-		{
-			byte pos = atoi(input_str);
-			while (input_str[0] != ' ') input_str++;
-			set_rainbow_state(atoi(input_str), pos);
-			break;
-		}
 		case 's':
 		{
-			byte pos = atoi(input_str);
-			while (input_str[0] != ' ') input_str++;
-			set_rainbow_step(atoi(input_str), pos);
+			byte pos;
+			parseIn_int(pos);
+			bool state;
+			parseIn_int(state);
+			set_rainbow_state(state, pos);
+			break;
+		}
+		case 'h':
+		{
+			byte pos;
+			parseIn_int(pos);
+			int step;
+			parseIn_int(step);
+			set_rainbow_step(step, pos);
 			break;
 		}
 		default:
@@ -243,77 +216,11 @@ void Strip::parseSingle(const char* input_str)
 		}
 		break;
 	}
-	case 'm':
+	case 'p':
 	{
-		set_effect(atoi(input_str));
-		break;
-	}
-	case 'x':
-	{
-		key = input_str[0];
-		input_str++;
-		LOG_USB_SWITCH("key1 - %t\n", key);
-		switch (key)
-		{
-		case 'r':
-		{
-			LOG_USB_STARTUP("reset\n");
-			ESP.restart();
-			break;
-		}
-		case 'f':
-		{
-			LOG_USB_STARTUP("full reset\n");
-			EEPROM.write(0, 0x80);
-			EEPROM.commit();
-			ESP.restart();
-			break;
-		}
-		case 't':
-		{
-			unsigned long now_millis_time = millis();
-			byte now_weekday = StartTimeInfo::start_weekday + (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) / 86400UL;
-			unsigned long now_daytime = (StartTimeInfo::start_day_time + (now_millis_time - StartTimeInfo::start_millis_time) / 1000UL) % 86400UL;
-
-
-			Serial.printf("start_day_time: %lu\n ", StartTimeInfo::start_day_time);
-			Serial.printf("start_epoch_time: %lu\n ", StartTimeInfo::start_epoch_time);
-			Serial.printf("start_millis_time: %lu\n ", StartTimeInfo::start_millis_time);
-			Serial.printf("start_weekday: %d\n ", StartTimeInfo::start_weekday);
-			Serial.printf("now_millis_time: %lu\n ", now_millis_time);
-			Serial.printf("now_weekday: %d\n ", now_weekday);
-			Serial.printf("now_daytime: %lu\n ", now_daytime);
-
-			break;
-		}
-		case 'p':
-		{
-			Serial.println("print mem");
-			Serial.printf("init bit: %d\n", EEPROM.read(0) >> 7);
-			Serial.printf("obj data count: %d\n", EEPROM.read(0) & 0b0111'1111);
-			for (int i = 0; i < OBJ_DATA_CAP; i++)
-			{
-				uint16_t addr;
-				EEPROM.get(1 + i * 2, addr);
-				Serial.printf("%d-%d|",addr >> 12, addr & 0x0FFF);
-			}
-			Serial.print('\n');
-
-			for (int i = (OBJ_DATA_CAP+1) * 2 + 1; i < 64 * 64; i++)
-			{
-				if((i - (OBJ_DATA_CAP + 1) * 2 + 1 )%64==0) Serial.print('\n');
-				byte value = EEPROM.read(i);
-				if (value < 0x10)
-					Serial.print("0");
-				Serial.print(value, HEX);
-				Serial.print(" ");
-			}
-			Serial.print('\n');
-			break;
-		}
-		default:
-			break;
-		}
+		byte pos;
+		parseIn_int(pos);
+		set_preset(pos);
 		break;
 	}
 	default:
@@ -321,27 +228,21 @@ void Strip::parseSingle(const char* input_str)
 	}
 }
 
-JsonDocument Strip::getJSON(bool udp, bool state, int timerCount)
+void Strip::getEffectJSON(JsonArray& blocks)
 {
-	JsonDocument doc;
-	doc["state"] = String(state);
-	doc["UDP"] = String(udp);
-	doc["name"] = get_effect_name();
-	doc["timerCount"] = timerCount;
-	doc["br"] = get_br();
-	JsonArray blocks = doc.createNestedArray("blocks");
 
-	JsonObject effectable = blocks.createNestedObject();
-	effectable["block_name"] = "effectable";
-	effectable["strip_update_delay_time"] = get_strip_update_delay_time();
-	effectable["br_cutoff_bound"] = get_br_cutoff_bound();
-	effectable["effect_step"] = get_effect_step();
+	
+
+	JsonObject base = blocks.createNestedObject();
+	base["block_name"] = "base";
+	base["strip_update_delay_time"] = get_strip_update_delay_time();
+	base["br_cutoff_bound"] = get_br_cutoff_bound();
+	base["effect_step"] = get_effect_step();
 
 	if (int len = get_color_len())
 	{
 		JsonObject colorable = blocks.createNestedObject();
 		colorable["block_name"] = "colorable";
-		//colorable["color_len"] = String(len);
 		Color_str* colors = get_colors();
 		char hex[8] = {};
 		for (int i = 0; i < len; i++)
@@ -355,7 +256,6 @@ JsonDocument Strip::getJSON(bool udp, bool state, int timerCount)
 	{
 		JsonObject preseteble = blocks.createNestedObject();
 		preseteble["block_name"] = "preseteble";
-		//preseteble["preseteble_len"] = String(len);
 		const String* presets = get_preset_names();
 		for (int i = 0; i < len; i++)
 		{
@@ -367,7 +267,6 @@ JsonDocument Strip::getJSON(bool udp, bool state, int timerCount)
 	{
 		JsonObject rainbowble = blocks.createNestedObject();
 		rainbowble["block_name"] = "rainbowble";
-		//rainbowble["rainbow_len"] = String(len);
 		bool* states = get_rainbow_states();
 		int* steps = get_rainbow_steps();
 		for (int i = 0; i < len; i++)
@@ -377,7 +276,6 @@ JsonDocument Strip::getJSON(bool udp, bool state, int timerCount)
 			field["Step"] = String(steps[i]);
 		}
 	}
-	return doc;
 }
 
 void Strip::set_effect(byte num)

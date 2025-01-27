@@ -17,7 +17,6 @@ void CommandTimer::getJson(JsonObject& doc)
 	getJsonCommon(doc);
 	doc["once"] = String(_once);
 	doc["command"] = _command;
-
 }
 
 byte CommandTimer::getId()
@@ -74,7 +73,6 @@ void CommandTimerDataHolder::getJson(JsonObject& doc)
 {
 	getJsonCommon(doc);
 	doc["once"] = String(_once);
-	doc["delay"] = String(_delay);
 	doc["command"] = _command;
 }
 

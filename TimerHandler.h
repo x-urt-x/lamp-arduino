@@ -13,7 +13,7 @@ class TimerHandler
 public:
 	TimerHandler();
 	
-	void parseTimer(char* input_str);
+	void parse(char* input_str);
 
 	void tickAll();
 	void addActiveTimer(IEventTimer* timerDataHolder);
@@ -26,8 +26,8 @@ public:
 	IDataHolderArr getMemDataAll();
 	IDataHolder* getMemData(uint16_t adrr);
 	
-	JsonDocument getMemJsonAll();
-	JsonDocument getActiveJsonAll();
+	void getMemJsonAll(JsonArray& memTimers);
+	void getActiveJsonAll(JsonArray& actimeTimers);
 
 	void setActiveState(bool state, int num);
 	bool getActiveState(int num);
