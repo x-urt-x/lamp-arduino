@@ -18,6 +18,7 @@
 #define RANDOM_CENTER 0
 #define RANDOM_RANGE 3
 
+BaseBlock Effect_fire::baseBlock = BaseBlock();
 ColorBlock Effect_fire::colorBlock = ColorBlock(new Color_str[4]{}, 4);
 PresetBlock Effect_fire::presetBlock = PresetBlock(new String[3]{ "red fire","blue fire","green fire" }, 3);
 
@@ -93,6 +94,7 @@ Cutoff_str Effect_fire::_cutoff_option
 
 Effect_fire::Effect_fire(Color_str* leds_arr) : BaseEffect(leds_arr)
 {
+	BLOCK(baseBlock);
 	BLOCK(colorBlock);
 	BLOCK(presetBlock);
 	if (!_has_init)
@@ -119,9 +121,9 @@ void Effect_fire::preset(int num)
 		colorBlock.get_colors()[1] = Color_str(255, 0, 0);
 		colorBlock.get_colors()[2] = Color_str(255, 165, 0);
 		colorBlock.get_colors()[3] = Color_str(255, 240, 200);
-		_strip_update_delay_time = 50;
-		_effect_step = 30;
-		_br_cutoff_bound = 30;
+		baseBlock.set_strip_update_delay_time(50);
+		baseBlock.set_br_cutoff_bound(30);
+		baseBlock.set_effect_step(30);
 		break;
 	}
 	case 1:
@@ -130,9 +132,9 @@ void Effect_fire::preset(int num)
 		colorBlock.get_colors()[1] = Color_str(0, 0, 255);
 		colorBlock.get_colors()[2] = Color_str(49, 207, 216);
 		colorBlock.get_colors()[3] = Color_str(255, 255, 255);
-		_strip_update_delay_time = 60;
-		_effect_step = 30;
-		_br_cutoff_bound = 60;
+		baseBlock.set_strip_update_delay_time(60);
+		baseBlock.set_br_cutoff_bound(30);
+		baseBlock.set_effect_step(60);
 		break;
 	}
 	case 2:
@@ -141,9 +143,9 @@ void Effect_fire::preset(int num)
 		colorBlock.get_colors()[1] = Color_str(0, 255, 0);
 		colorBlock.get_colors()[2] = Color_str(27, 239, 15);
 		colorBlock.get_colors()[3] = Color_str(255, 255, 255);
-		_strip_update_delay_time = 50;
-		_effect_step = 30;
-		_br_cutoff_bound = 30;
+		baseBlock.set_strip_update_delay_time(50);
+		baseBlock.set_br_cutoff_bound(30);
+		baseBlock.set_effect_step(30);
 		break;
 	}
 	default:

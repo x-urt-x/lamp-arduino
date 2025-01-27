@@ -1,5 +1,6 @@
 #include "Effect_singleColor.h"
 
+BaseBlock Effect_singleColor::baseBlock = BaseBlock();
 ColorBlock Effect_singleColor::colorBlock = ColorBlock(new Color_str[1]{}, 1);
 RainbowBlock Effect_singleColor::rainbowBlock = RainbowBlock(new bool[1], 1, new int[1]);
 
@@ -7,6 +8,7 @@ bool Effect_singleColor::_has_init = false;
 
 Effect_singleColor::Effect_singleColor(Color_str* leds_arr) : BaseEffect(leds_arr)
 {
+	BLOCK(baseBlock);
 	BLOCK(colorBlock);
 	BLOCK(rainbowBlock);
 	if (!_has_init)
@@ -18,9 +20,9 @@ Effect_singleColor::Effect_singleColor(Color_str* leds_arr) : BaseEffect(leds_ar
 
 void Effect_singleColor::apply_default_option()
 {
-	_strip_update_delay_time = 100;
-	_br_cutoff_bound = 0;
-	_effect_step = 0;
+	baseBlock.set_strip_update_delay_time(100);
+	baseBlock.set_br_cutoff_bound(0);
+	baseBlock.set_effect_step(0);
 	colorBlock.set_color(Color_str(255, 255, 255), 0);
 	rainbowBlock.set_rainbow_state(false, 0);
 	rainbowBlock.set_rainbow_step(80, 0);

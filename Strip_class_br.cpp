@@ -4,7 +4,7 @@ void Strip::apply_br() {
 
 	float br_max = float(_br_vir) / effect->get_cutoff_str()->_cutoff_units; //базовая яркость, 
 	uint8_t br_cutoff_count = effect->get_cutoff_str()->_cutoff_order_len - (_br_vir + effect->get_cutoff_str()->_cutoff_order_len) % effect->get_cutoff_str()->_cutoff_units; //количество с яркостью br_max-1
-	int br_cutoff_bound = effect->get_br_cutoff_bound();
+	int br_cutoff_bound = get_br_cutoff_bound();
 	
 	LOG_USB_BR("apply_br - _main_color %02X%02X%02X\n", options->main_color.r, options->main_color.g, options->main_color.b);
 	LOG_USB_BR("apply_br - _br_vir %d\n", _br_vir);

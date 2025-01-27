@@ -5,19 +5,8 @@ Cutoff_str* BaseEffect::get_cutoff_str()
     return &_cutoff_option;
 }
 
-void BaseEffect::set_strip_update_delay_time(int strip_update_delay_time) { _strip_update_delay_time = strip_update_delay_time; }
-void BaseEffect::set_br_cutoff_bound(int br_cutoff_bound) 
-{
-    if (br_cutoff_bound < 0) return;
-    _br_cutoff_bound = br_cutoff_bound; 
-}
-void BaseEffect::set_effect_step(int step) { _effect_step = step; }
-int BaseEffect::get_strip_update_delay_time() { return _strip_update_delay_time; }
-int BaseEffect::get_br_cutoff_bound() { return _br_cutoff_bound; }
-int BaseEffect::get_effect_step() { return _effect_step; }
 
-BaseEffect::BaseEffect(Color_str* leds_arr, int _strip_update_delay_time, int _br_cutoff_bound, int _effect_step)
-    : _strip_update_delay_time(_strip_update_delay_time), _br_cutoff_bound(_br_cutoff_bound), _effect_step(_effect_step), _leds_arr(leds_arr)
+BaseEffect::BaseEffect(Color_str* leds_arr) : _leds_arr(leds_arr)
 {
 	for (int i = 0; i < IEffectBlock::BlockIDEnum::BlocksCount; i++)
 	{
@@ -79,10 +68,3 @@ Cutoff_str BaseEffect::_cutoff_option
 #endif // MATR16x16
 #endif // MATR10x10
 };
-
-//template<typename BlockClass>
-//void* BaseEffect::get_block() 
-//{
-//	//
-//	return nullptr;
-//}

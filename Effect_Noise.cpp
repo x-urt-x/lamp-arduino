@@ -2,6 +2,7 @@
 
 #define led_m(x,y) _leds_arr[y*MATR_SIZE+(y%2==0?x:MATR_SIZE-x-1)]
 
+BaseBlock Effect_Noise::baseBlock = BaseBlock();
 ColorBlock Effect_Noise::colorBlock = ColorBlock(new Color_str[2]{}, 2);
 RainbowBlock Effect_Noise::rainbowBlock = RainbowBlock(new bool[1], 1, new int[1]);
 
@@ -9,6 +10,7 @@ bool Effect_Noise::_has_init = false;
 
 Effect_Noise::Effect_Noise(Color_str* leds_arr) : BaseEffect(leds_arr)
 {
+	BLOCK(baseBlock);
 	BLOCK(colorBlock);
 	BLOCK(rainbowBlock);
 	if (!_has_init)
@@ -20,9 +22,9 @@ Effect_Noise::Effect_Noise(Color_str* leds_arr) : BaseEffect(leds_arr)
 
 void Effect_Noise::apply_default_option()
 {
-	_strip_update_delay_time = 10;
-	_br_cutoff_bound = 0;
-	_effect_step = 1;
+	baseBlock.set_strip_update_delay_time(10);
+	baseBlock.set_br_cutoff_bound(0);
+	baseBlock.set_effect_step(1);
 	colorBlock.set_color(Color_str(0, 0, 0), 0);
 	colorBlock.set_color(Color_str(255, 255, 255), 1);
 	rainbowBlock.set_rainbow_state(true, 0);
@@ -63,5 +65,5 @@ void Effect_Noise::make_frame()
 		}
 	}
 	hue_shift += rainbowBlock.get_rainbow_steps()[0];
-	_z += _effect_step;
+	_z += baseBlock.get_effect_step();
 }

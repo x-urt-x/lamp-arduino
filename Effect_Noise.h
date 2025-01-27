@@ -7,6 +7,7 @@
 #include "Structures.h"
 #include "Config.h"
 #include "BaseEffect.h"
+#include "BaseBlock.h"
 #include "ColorBlock.h"
 #include "RainbowBlock.h"
 
@@ -23,6 +24,8 @@ public:
 
 private:
 	static bool _has_init;
+
+	static BaseBlock baseBlock;
 	static ColorBlock colorBlock;
 	static RainbowBlock rainbowBlock;
 

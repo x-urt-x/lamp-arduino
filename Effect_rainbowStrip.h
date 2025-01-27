@@ -6,6 +6,7 @@
 #include "Structures.h"
 #include "Config.h"
 #include "BaseEffect.h"
+#include "BaseBlock.h"
 #include "RainbowBlock.h"
 
 class Effect_rainbowStrip : public BaseEffect
@@ -20,6 +21,8 @@ public:
 
 private:
 	static bool _has_init;
+
+	static BaseBlock baseBlock;
 	static RainbowBlock rainbowBlock;
 
 	uint16_t _hue[MATR_LEN];

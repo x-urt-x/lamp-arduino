@@ -1,11 +1,13 @@
 #include "Effect_rainbowStrip.h"
 
+BaseBlock Effect_rainbowStrip::baseBlock = BaseBlock();
 RainbowBlock Effect_rainbowStrip::rainbowBlock = RainbowBlock(new bool[1], 1, new int[1]);
 
 bool Effect_rainbowStrip::_has_init = false;
 
 Effect_rainbowStrip::Effect_rainbowStrip(Color_str* leds_arr) : BaseEffect(leds_arr)
 {
+	BLOCK(baseBlock);
 	BLOCK(rainbowBlock);
 	if (!_has_init)
 	{
@@ -17,9 +19,9 @@ Effect_rainbowStrip::Effect_rainbowStrip(Color_str* leds_arr) : BaseEffect(leds_
 
 void Effect_rainbowStrip::apply_default_option()
 {
-	_strip_update_delay_time = 15;
-	_br_cutoff_bound = 0;
-	_effect_step = 0;
+	baseBlock.set_strip_update_delay_time(15);
+	baseBlock.set_br_cutoff_bound(0);
+	baseBlock.set_effect_step(0);
 	rainbowBlock.get_rainbow_states()[0] = true;
 	rainbowBlock.get_rainbow_steps()[0] = 512;
 }

@@ -7,6 +7,7 @@ class IEffectBlock
 public:
 	enum BlockIDEnum : byte
 	{
+		BaseBlockID,
 		ColorBlockID,
 		PresetBlockID,
 		RainbowBlockID,

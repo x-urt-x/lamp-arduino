@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "Structures.h"
 #include "BaseEffect.h"
+#include "BaseBlock.h"
 #include "ColorBlock.h"
 #include "PresetBlock.h"
 
@@ -25,6 +26,8 @@ public:
 
 private:
 	static bool _has_init;
+
+	static BaseBlock baseBlock;
 	static ColorBlock colorBlock;
 	static PresetBlock presetBlock;
 

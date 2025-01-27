@@ -13,38 +13,52 @@ void Strip::begin()
 	Adafruit_NeoPixel::begin();
 }
 
-//Effectable
-void Strip::set_effect_strip_update_delay_time(uint delay)
+//IEffect
+String Strip::get_effect_name()
 {
-	effect->set_strip_update_delay_time(delay);
-}
-void Strip::set_effect_br_cutoff_bound(int br_cutoff_bound)
-{
-	effect->set_br_cutoff_bound(br_cutoff_bound);
-}
-void Strip::set_effect_step(uint step)
-{
-	effect->set_effect_step(step);
+	return effect->get_effect_name();
 }
 void Strip::apply_default_option()
 {
 	effect->apply_default_option();
 }
+
+//BaseBlock
+void Strip::set_effect_strip_update_delay_time(uint delay)
+{
+	if (BaseBlock* tmp = effect->get_block<BaseBlock>())
+		tmp->set_strip_update_delay_time(delay);
+	return;
+}
+void Strip::set_effect_br_cutoff_bound(int br_cutoff_bound)
+{
+	if (BaseBlock* tmp = effect->get_block<BaseBlock>())
+		tmp->set_br_cutoff_bound(br_cutoff_bound);
+	return;
+}
+void Strip::set_effect_step(uint step)
+{
+	if (BaseBlock* tmp = effect->get_block<BaseBlock>())
+		tmp->set_effect_step(step);
+	return;
+}
 int Strip::get_strip_update_delay_time()
 {
-	return effect->get_strip_update_delay_time();
+	if (BaseBlock* tmp = effect->get_block<BaseBlock>())
+		return tmp->get_strip_update_delay_time();
+	return -1;
 }
 int Strip::get_br_cutoff_bound()
 {
-	return effect->get_br_cutoff_bound();
+	if (BaseBlock* tmp = effect->get_block<BaseBlock>())
+		return tmp->get_br_cutoff_bound();
+	return -1;
 }
 int Strip::get_effect_step()
 {
-	return effect->get_effect_step();
-}
-String Strip::get_effect_name()
-{
-	return effect->get_effect_name();
+	if (BaseBlock* tmp = effect->get_block<BaseBlock>())
+		return tmp->get_effect_step();
+	return -1;
 }
 
 //ColorBlock

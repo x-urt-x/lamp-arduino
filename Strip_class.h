@@ -10,13 +10,14 @@
 #include "StartTimeInfo.h"
 
 #include "IEffectBlock.h"
-#include "BaseEffect.h"
+#include "BaseBlock.h"
 #include "PresetBlock.h"
 #include "ColorBlock.h"
 #include "RainbowBlock.h"
 
 //#include "ParseBlock.h"
 
+#include "BaseEffect.h"
 #include "Effect_Noise.h"
 #include "Effect_singleColor.h"
 #include "Effect_fire.h"
