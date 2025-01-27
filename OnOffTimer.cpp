@@ -54,7 +54,7 @@ byte OnOffTimer::getId()
 
 IEventTimer* OnOffTimerDataHolder::create()
 {
-	return new OnOffTimer(calcTime(), _is_active, _target, _to_set);
+	return new OnOffTimer(calcTime(), _is_active, _target, _to_set , _addr);
 }
 
 void OnOffTimerDataHolder::save()

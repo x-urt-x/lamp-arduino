@@ -233,7 +233,10 @@
         <div id="createTimerContainer" class="globalContentDiv hide">
             <div id="createTimer"></div>
         </div>
-
+        <div>
+            <input type="text" id="commandConsole" placeholder="send command">
+            <button onclick="directCommandBtnHandle()">send to /submit</button>
+        </div>
     </main>
 
 
@@ -971,8 +974,8 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                     const to_br = timerBlock.querySelector('[name="to_br"]').value;
                     const from_br = timerBlock.querySelector('[name="from_br"]').value;
                     if(checkEmpty({save, active, repInfo, time, dur, delay, to_br})){return;}
-                    command = `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
                     command += `tas ${save} ${active} ${repInfo} ${time} 1\n`;
+                    command = `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
                     if(to_br == 0){
                         command += `tas ${save} ${active} ${repInfo} ${parseInt(time)+parseInt(dur)} 0\n`;
                     }
@@ -1162,13 +1165,13 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                 const nowUTC = Math.floor(Date.now() / 1000);
                 const timezoneOffset = new Date().getTimezoneOffset() * 60;
                 timer.querySelector('[name="timer_time_raw"]').value = block.timer_time_raw - nowUTC + timezoneOffset;
-                timer.querySelector('[name="timer_time_raw"]').textContent = 'start in (sec)';
+                timer.querySelector('[for="timer_time_raw"]').textContent = 'start in (sec)';
             }
             else{
                 timer.querySelector('[name="timer_time_raw"]').value = block.timer_time_raw;
-                timer.querySelector('[name="timer_time_raw"]').textContent = 'start on (sec)';
+                timer.querySelector('[for="timer_time_raw"]').textContent = 'start on (sec)';
             }
-            timer.querySelector('.mem-timer-button-delete').num = i;
+            timer.querySelector('.mem-timer-button-delete').setAttribute('num', i);
             memTimersContainer.appendChild(timer);
             i++;
         });
@@ -1192,7 +1195,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                     timer = create('active-timer-br', {});
                     timer.querySelector('[name="step_counter"]').value = block.step_counter;
                     timer.querySelector('[name="to_br"]').value = block.to_br;
-                    timer.querySelector('[name="dur"]').value = block.dur;
                     break;
                 }
                 case 'OnOff timer':
@@ -1212,22 +1214,34 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                     break;
             }
             timer.querySelector('[name="is_active"]').checked = block.is_active !== '0';
-            let time = parseInt(timeNow) - parseInt(block.prev_time);
+            let time = parseInt(block.prev_time) - parseInt(timeNow);
             if(time<0){
-                timer.querySelector('[name="prev_time"]').textContent = 'last actuation in (ms)';
+                timer.querySelector('[for="prev_time"]').textContent = 'last actuation in (ms)';
                 time = -time;
             }
             else{
-                timer.querySelector('[name="prev_time"]').textContent = 'next actuation in (sec)';
-                time = Math.floor(time/1000);
+                time /= 1000;
+                if(time > 86400){
+                    timer.querySelector('[for="prev_time"]').textContent = 'next actuation in (day)';
+                    time = (time/86400).toFixed(1);
+                }
+                else{
+                    timer.querySelector('[for="prev_time"]').textContent = 'next actuation in (sec)';
+                    time = time.toFixed(1);
+                }     
             }
             timer.querySelector('[name="prev_time"]').value = time;
             timer.querySelector('[name="delay"]').value = block.delay;
             timer.querySelector('[name="addr"]').value = block.addr;
-            timer.querySelector('.active-timer-button-delete').num = i;
+            timer.querySelector('.active-timer-button-delete').setAttribute('num', i);
             activeTimersContainer.appendChild(timer);
             i++;
         });
+    }
+
+    function directCommandBtnHandle(){
+        const command = document.getElementById('commandConsole').value;
+        sendPostRequest(command);
     }
 
     document.addEventListener("DOMContentLoaded", () => {

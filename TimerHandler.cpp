@@ -274,7 +274,7 @@ void TimerHandler::parse(char* input_str)
 			parseIn_int(dataholder._is_active);
 			parseIn_int(dataholder._repInfo);
 			parseIn_int(dataholder._timer_time_raw);
-			dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
+			dataholder.setTime(dataholder._timer_time_raw, !dataholder._repInfo);
 			parseIn_int(dataholder._to_set);
 			dataholder._target = &(timers[0]->_is_active);
 
@@ -294,7 +294,7 @@ void TimerHandler::parse(char* input_str)
 			parseIn_int(dataholder._is_active);
 			parseIn_int(dataholder._repInfo);
 			parseIn_int(dataholder._timer_time_raw);
-			dataholder.setTime(dataholder._timer_time_raw, dataholder._repInfo);
+			dataholder.setTime(dataholder._timer_time_raw, !dataholder._repInfo);
 			parseIn_int(dataholder._delay);
 			parseIn_int(dataholder._once);
 			input_str += 1;
@@ -329,9 +329,10 @@ void TimerHandler::tickAll()
 				if (timers[i]->_addr)
 				{
 					IDataHolder* timerdata = getMemData(timers[i]->_addr);
-					LOG_USB_TIMER("timer %d with rep = %d on addr %d\n", i, timerdata->_repInfo, timers[i]->_addr);
+					LOG_USB_TIMER("timer %d with rep = %d on addr %d end\n", i, timerdata->_repInfo, timers[i]->_addr);
 					if (timerdata->_repInfo)
 					{
+						LOG_USB_TIMER("set next time\n");
 						addActiveTimer(timerdata->create());
 					}
 					else
