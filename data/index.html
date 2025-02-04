@@ -187,16 +187,28 @@
   </head>
   <body>
     <main>
-        <div>
-            <label for="UDP">UDP</label>
-            <input type="checkbox" id="UDP" class="to-send" command="mu"/>
-        </div>
-        <div class="on-off-container">
-            <input class="l to-send" type="checkbox" command="ts 0" value="" id="state-toggle"/>
-        </div>
-        <div class="br-container" id="brContainer">
-                <input-knob value="50" scale="1000" min="0" max="64515", class="br-knob", id="brKnob"><div class="mark">&#x25B2;</div></input-knob>
-                <input type="number" min="0" max="64515" class="br-input to-send" value="50" id="brInput" command="mb">
+        <div style="display: flex; flex-direction: row;">
+            <div style="flex: 1fr; display: flex; flex-direction: column; align-items: center;">
+                <div class="on-off-container">
+                    <input class="l to-send" type="checkbox" command="ts 0" value="" id="state-toggle"/>
+                </div>
+                <div class="br-container" id="brContainer">
+                    <input-knob value="50" scale="1000" min="0" max="64515", class="br-knob", id="brKnob"><div class="mark">&#x25B2;</div></input-knob>
+                    <input type="number" min="0" max="64515" class="br-input to-send" value="50" id="brInput" command="mb">
+                </div>
+            </div>
+            <div style="flex: 100px; display: flex; flex-direction: column; align-items: center;">
+                <div>        
+                    <label for="UDP">UDP</label>
+                    <input type="checkbox" id="UDP" class="to-send" command="mu"/>
+                </div>
+                <label for="br-limit">brightness limit</label>
+                <input type="number" name="br-limit" id="brLimit" style="width: 120px;">
+                <div style="margin: 5px;">
+                    <input type="button" value="apply & save" onclick="sendPostRequest(`ml 1 ${document.getElementById('brLimit').value}`)">
+                    <input type="button" value="apply" onclick="sendPostRequest(`ml 0 ${document.getElementById('brLimit').value}`)">
+                </div>
+            </div>
         </div>
         <div class="buttons-container">
             <button class="globalContentBnt" onclick="showContent('effectContainer')">Effect options</button>
@@ -1068,6 +1080,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
         document.getElementById('brKnob').max = data.maxBr;
         document.getElementById('brKnob').value = data.br;
         document.getElementById('brInput').value = data.br;
+        document.getElementById('brLimit').value = data.brLimit;
         const options = document.getElementById('effect-selector').options;
         for (const option of options) {
             if (option.textContent === data.name) {

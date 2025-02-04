@@ -116,6 +116,21 @@ void InputHandler::parseSingleCommand(const char* input_str)
 			parseIn_int(udp_state);
 			break;
 		}
+		case 'l':
+		{
+			bool save;
+			parseIn_int(save);
+			int br_limit;
+			parseIn_int(br_limit);
+			if (br_limit > 0xFFFF) br_limit = 0xFFFF;
+			_strip->br_limit = br_limit;
+			if (save)
+			{
+				EEPROM.put(BRLIMIT_ADRR, _strip->br_limit);
+				EEPROM.commit();
+			}
+			break;
+		}
 		default:
 			break;
 		}
@@ -222,6 +237,7 @@ void InputHandler::handleGetEffectOption()
 	staticFields["name"] = _strip->get_effect_name();
 	staticFields["br"] = _strip->get_br();
 	staticFields["maxBr"] = _strip->get_max_br();
+	staticFields["brLimit"] = _strip->br_limit;
 	JsonArray blocks = doc.createNestedArray("effectBlocks");
 	_strip->getEffectJSON(blocks);
 	serializeJson(doc, output);

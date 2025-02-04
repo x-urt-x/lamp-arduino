@@ -1,7 +1,7 @@
 #include "Strip_class.h"
 
 void Strip::apply_br() {
-
+	if (_br_vir > br_limit) _br_vir = br_limit;
 	float br_max = float(_br_vir) / effect->get_cutoff_str()->_cutoff_units; //базовая яркость, 
 	uint8_t br_cutoff_count = effect->get_cutoff_str()->_cutoff_order_len - (_br_vir + effect->get_cutoff_str()->_cutoff_order_len) % effect->get_cutoff_str()->_cutoff_units; //количество с яркостью br_max-1
 	int br_cutoff_bound = get_br_cutoff_bound();

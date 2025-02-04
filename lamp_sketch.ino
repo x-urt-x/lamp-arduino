@@ -68,9 +68,11 @@ void setup() {
 			EEPROM.write(i, (byte)0x00);
 		}
 		EEPROM.put(1, (OBJ_DATA_CAP + 1) * 2 + 1);
+		EEPROM.put(BRLIMIT_ADRR, (uint16_t)0xFFFF);
 		EEPROM.commit();
 	}
-
+	EEPROM.get(BRLIMIT_ADRR, strip.br_limit);
+	LOG_USB_STARTUP("br_limit = %d\n", strip.br_limit);
 	if (!SPIFFS.begin()) {
 		LOG_USB_STARTUP("Failed to mount file system\n");
 		return;
@@ -95,6 +97,7 @@ void setup() {
 	timerHandler.addActiveTimer(new EffectEventTimer());
 	timerHandler.addActiveAllFromMem();
 	strip.set_effect(0);
+	strip.set_br(1000);
 	strip.tick();
 }
 

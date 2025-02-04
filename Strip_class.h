@@ -38,15 +38,28 @@ public:
 	int get_br();
 	void set_br(int br);
 	void set_effect(byte num);
-	//Effectable
+
+	void tick();
+
+	//IEffect
+	void apply_default_option();
+	String get_effect_name();
+
+	//Base
+	int get_strip_update_delay_time();
+
+	uint16_t br_limit = 0xFFFF;
+private:
+	BaseEffect* effect;
+	void apply_br();
+	float _br_max_gain;
+
+	//Base
 	void set_effect_strip_update_delay_time(uint delay);
 	void set_effect_br_cutoff_bound(int br_cutoff_bound);
 	void set_effect_step(uint step);
-	void apply_default_option();
-	int get_strip_update_delay_time();
 	int get_br_cutoff_bound();
 	int get_effect_step();
-	String get_effect_name();
 	//Colorable
 	void set_color(Color_str color, int num);
 	Color_str* get_colors();
@@ -62,13 +75,6 @@ public:
 	int* get_rainbow_steps();
 	int get_rainbow_len();
 
-	void tick();
-
-private:
-	BaseEffect* effect;
-	void apply_br();
-	float _br_max_gain;
-	
 	byte _cur;
 
 	uint8* _pixels;
