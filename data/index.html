@@ -211,7 +211,7 @@
                 <select id="effect-selector" class="to-send" command="me" value="">
                     <option value="0">Single Color</option>
                     <option value="1">Fire</option>
-                    <option value="2">Rainbow</option>
+                    <option value="2">Rainbow Wave</option>
                     <option value="3">Noise</option>
                 </select>
             </div>
@@ -435,8 +435,16 @@
                     <input type="number" value="" name="to_br" />
                 </div>
                 <div>
+                    <label for="end_set">turn off on end</label>
+                    <input type="checkbox" value="" name="end_set" />
+                </div>
+                <div>
                     <label for="from_br">start brightness</label>
                     <input type="number" value="" name="from_br" />
+                </div>
+                <div>
+                    <label for="start_set">turn on on start</label>
+                    <input type="checkbox" value="" name="start_set" />
                 </div>
             </div>
             <div insert-list="mem-timer-button-delete-templ mem-timer-button-save" prop-tag="memTimerButton"></div>
@@ -972,15 +980,19 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                     const dur = timerBlock.querySelector('[name="dur"]').value;
                     const delay = timerBlock.querySelector('[name="delay"]').value;
                     const to_br = timerBlock.querySelector('[name="to_br"]').value;
+                    const end_set = timerBlock.querySelector('[name="end_set"]').checked
                     const from_br = timerBlock.querySelector('[name="from_br"]').value;
+                    const start_set = timerBlock.querySelector('[name="start_set"]').checked
                     if(checkEmpty({save, active, repInfo, time, dur, delay, to_br})){return;}
-                    command += `tas ${save} ${active} ${repInfo} ${time} 1\n`;
                     command = `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
-                    if(to_br == 0){
+                    if(start_set){
+                        command += `tas ${save} ${active} ${repInfo} ${time} 1\n`;
+                    }
+                    if(end_set){
                         command += `tas ${save} ${active} ${repInfo} ${parseInt(time)+parseInt(dur)} 0\n`;
                     }
                     if(from_br !== ''){
-                        command += `tac ${save} ${active} ${repInfo} ${time} ${delay} 1 mb ${from_br}\n`;
+                        command += `tac ${save} ${active} ${repInfo} ${time} 1 1 mb ${from_br}\n`;
                     }
                     break;
                 }
@@ -1056,7 +1068,8 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
         document.getElementById('brKnob').max = data.maxBr;
         document.getElementById('brKnob').value = data.br;
         document.getElementById('brInput').value = data.br;
-        for (const option of document.getElementById('effect-selector').options) {
+        const options = document.getElementById('effect-selector').options;
+        for (const option of options) {
             if (option.textContent === data.name) {
                 option.selected = true;
             }
