@@ -15,8 +15,8 @@
 #define OBJ_DATA_MAX_ADDR 3000
 #define BRLIMIT_ADRR 4093
 
-//#define MATR10x10
-#define MATR16x16
+#define MATR10x10
+//#define MATR16x16
 
 #define UDP_PORT 8888
 
