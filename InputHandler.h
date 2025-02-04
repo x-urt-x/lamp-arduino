@@ -18,6 +18,7 @@ public:
 
 	static void parseCommand(String commands);
 	static void parseSingleCommand(const char* input_str);
+
 private:
 	static void handleUDP();
 	static void handleRoot();

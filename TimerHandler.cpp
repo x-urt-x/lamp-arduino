@@ -42,19 +42,7 @@ void TimerHandler::addActiveAllFromMem()
 {
 	IDataHolderArr dataArr = getMemDataAll();
 	for (byte i = 0; i < dataArr.len; i++)
-	{
-		if (dataArr.arr[i]->getId() == IEventTimer::TimerIDEnum::OnOffTimer)
-		{
-			//update ref
-			OnOffTimer* timer = static_cast<OnOffTimer*>(dataArr.arr[i]->create());
-			timer->_target = &(timers[0]->_is_active);
-			addActiveTimer(timer);
-		}
-		else
-		{
-			addActiveTimer(dataArr.arr[i]->create());
-		}
-	}
+		addActiveTimer(dataArr.arr[i]->create());
 }
 
 void TimerHandler::deleteMemTimer(byte num)
@@ -181,23 +169,32 @@ void TimerHandler::parse(const char* input_str)
 		parseIn_int(pos);
 		bool state;
 		parseIn_int(state);
+		if (state != getActiveState(pos))
+		{
 		setActiveState(state, pos);
-
 		if (pos == 0)
-			if (state == 0)
-			{
-#ifdef MATR16x16
-				digitalWrite(MOSFET_PIN, LOW);
-#endif
-				//WiFi.forceSleepBegin();
-			}
-			else
+			if (state)
 			{
 				//WiFi.forceSleepWake();
 #ifdef MATR16x16
 				digitalWrite(MOSFET_PIN, HIGH);
 #endif
 			}
+			else
+			{
+#ifdef MATR16x16
+				digitalWrite(MOSFET_PIN, LOW);
+#endif
+#ifdef MATR10x10
+				obj->fill(obj->Color(0, 0, 0));
+				delay(0);
+				obj->show();
+#endif 
+				//WiFi.forceSleepBegin();
+			}
+
+		}
+
 		break;
 	}
 	case 'd':
@@ -270,7 +267,6 @@ void TimerHandler::parse(const char* input_str)
 			parseIn_int(dataholder._timer_time_raw);
 			dataholder.setTime(dataholder._timer_time_raw, !dataholder._repInfo);
 			parseIn_int(dataholder._to_set);
-			dataholder._target = &(timers[0]->_is_active);
 
 			LOG_USB_TIMER("save = %d _is_active = %d _repInfo = %d _timer_time_raw = %d _to_set = %d \n", save, dataholder._is_active, dataholder._repInfo, dataholder._timer_time_raw, dataholder._to_set);
 			if (save) dataholder.save();

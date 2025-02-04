@@ -1,6 +1,8 @@
 #include "OnOffTimer.h"
 
-OnOffTimer::OnOffTimer(unsigned long time, bool is_active, bool* target, bool to_set, uint16_t addr) :_target(target), _to_set(to_set), IEventTimer(0, is_active, time, addr)
+#include "InputHandler.h"
+
+OnOffTimer::OnOffTimer(unsigned long time, bool is_active, bool to_set, uint16_t addr) :_to_set(to_set), IEventTimer(0, is_active, time, addr)
 {
 }
 
@@ -16,26 +18,13 @@ bool OnOffTimer::tick(unsigned long cur_time)
 bool OnOffTimer::action()
 {
 	LOG_USB_TIMER("OnOffTimer set to %d", _to_set);
-	*_target = _to_set;
-	if (_to_set == 0)
+	if (_to_set)
 	{
-#ifdef MATR16x16
-		digitalWrite(MOSFET_PIN, LOW);
-#endif
-#ifdef MATR10x10
-		obj->fill(obj->Color(0, 0, 0));
-		delay(0);
-		obj->show();
-#endif 
-
-		//WiFi.forceSleepBegin();
+		InputHandler::parseSingleCommand("ts 0 1");
 	}
 	else
 	{
-		//WiFi.forceSleepWake();
-#ifdef MATR16x16
-		digitalWrite(MOSFET_PIN, HIGH);
-#endif
+		InputHandler::parseSingleCommand("ts 0 0");
 	}
 	return true;
 }
@@ -54,18 +43,17 @@ byte OnOffTimer::getId()
 
 IEventTimer* OnOffTimerDataHolder::create()
 {
-	return new OnOffTimer(calcTime(), _is_active, _target, _to_set , _addr);
+	return new OnOffTimer(calcTime(), _is_active, _to_set , _addr);
 }
 
 void OnOffTimerDataHolder::save()
 {
-	uint16_t addr = reservAddr(sizeof(_to_set) + sizeof(_target));
+	uint16_t addr = reservAddr(sizeof(_to_set));
 	if (!addr) return;
 	_addr = addr;
 	saveCommon(addr, IEventTimer::TimerIDEnum::OnOffTimer);
 	EEPROM.put(addr, _to_set);
 	addr += sizeof(_to_set);
-	EEPROM.put(addr, _target);
 	EEPROM.commit();
 }
 
@@ -77,7 +65,6 @@ void OnOffTimerDataHolder::load(uint16_t addr)
 	loadCommon(addr);
 	EEPROM.get(addr, _to_set);
 	addr += sizeof(_to_set);
-	EEPROM.get(addr, _target);
 }
 
 void OnOffTimerDataHolder::getJson(JsonObject& doc)
