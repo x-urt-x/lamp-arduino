@@ -16,6 +16,8 @@ public:
 	void parse(const char* input_str);
 
 	void tickAll();
+	//unsafe num
+	void tickSingle(byte num, unsigned long cur_time);
 	void addActiveTimer(IEventTimer* timerDataHolder);
 
 	void addActiveAllFromMem();

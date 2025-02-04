@@ -1,13 +1,16 @@
 #include "CommandTimer.h"
 
+#include "InputHandler.h"
+
 CommandTimer::CommandTimer(unsigned long from_time, bool is_active, uint delay, String command, bool once, uint16_t addr) : _command(command), _once(once), IEventTimer(delay, is_active, from_time, addr)
 {
 }
 
 bool CommandTimer::action()
 {
-	LOG_USB_TIMER("CommandTimer::action\n");
-	obj->parse(const_cast<char*>(_command.c_str()));
+	LOG_USB_TIMER("CommandTimer::action %s\n", _command.c_str());
+	InputHandler::parseCommand(_command);
+	//obj->parse(_command.c_str());
 	if (_once) return true;
 	return false;
 }

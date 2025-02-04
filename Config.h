@@ -3,11 +3,11 @@
 
 #define EB_NO_FOR
 #define EB_NO_CALLBACK
-#define EB_DEB_TIME 50     // ������� ������� �������� ������ (������)
-#define EB_CLICK_TIME 500  // ������� �������� ������ (������)
-#define EB_HOLD_TIME 1500  // ������� ��������� (������)
-#define EB_STEP_TIME 200   // ������� ����������� ��������� (������)
-#define EB_FAST_TIME 30    // ������� �������� �������� (�������)
+#define EB_DEB_TIME 50
+#define EB_CLICK_TIME 500 
+#define EB_HOLD_TIME 1500
+#define EB_STEP_TIME 200
+#define EB_FAST_TIME 30
 
 #define GTMOFFSET 3600
 
@@ -15,6 +15,8 @@
 #define OBJ_DATA_MAX_ADDR 3000
 //#define MATR10x10
 #define MATR16x16
+
+#define UDP_PORT 8888
 
 #ifdef MATR10x10
 #define ENC_S1 D0

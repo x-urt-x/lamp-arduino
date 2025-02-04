@@ -315,31 +315,34 @@ void TimerHandler::tickAll()
 	unsigned long cur_time = millis();
 	for (int i = 0; i < _timers_count; i++)
 	{
-		if (timers[i]->_is_active)
-		{
-			if (timers[i]->tick(cur_time))
-			{
-				LOG_USB_TIMER("delete timer %d\n", i);
-				if (timers[i]->_addr)
-				{
-					IDataHolder* timerdata = getMemData(timers[i]->_addr);
-					LOG_USB_TIMER("timer %d with rep = %d on addr %d end\n", i, timerdata->_repInfo, timers[i]->_addr);
-					if (timerdata->_repInfo)
-					{
-						LOG_USB_TIMER("set next time\n");
-						addActiveTimer(timerdata->create());
-					}
-					else
-					{
-						LOG_USB_TIMER("no rep, delete form mem\n");
-						timerdata->deleteMem();
-						MemManager::deleteAllAddrOnDelitedDataObj();
-					}
-				}
-				deleteActiveTimer(i);
-			}
-		}
+		tickSingle(i, cur_time);
 	}
 }
 
-
+void TimerHandler::tickSingle(byte num, unsigned long cur_time)
+{
+	if (timers[num]->_is_active)
+	{
+		if (timers[num]->tick(cur_time))
+		{
+			LOG_USB_TIMER("delete timer %d\n", num);
+			if (timers[num]->_addr)
+			{
+				IDataHolder* timerdata = getMemData(timers[num]->_addr);
+				LOG_USB_TIMER("timer %d with rep = %d on addr %d end\n", num, timerdata->_repInfo, timers[num]->_addr);
+				if (timerdata->_repInfo)
+				{
+					LOG_USB_TIMER("set next time\n");
+					addActiveTimer(timerdata->create());
+				}
+				else
+				{
+					LOG_USB_TIMER("no rep, delete form mem\n");
+					timerdata->deleteMem();
+					MemManager::deleteAllAddrOnDelitedDataObj();
+				}
+			}
+			deleteActiveTimer(num);
+		}
+	}
+}

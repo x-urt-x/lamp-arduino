@@ -2,6 +2,9 @@
 #define COMMANDTIMER_H
 
 #include "IEventTimer.h"
+
+class InputHandler;
+
 class CommandTimer : public IEventTimer
 {
 public:
