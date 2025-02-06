@@ -91,13 +91,17 @@ void setup() {
 	}
 	LOG_USB_STARTUP("Connected! IP address: %s\n", WiFi.localIP().toString().c_str());
 
+	StartTimeInfo::saveTime();
 	InputHandler::setupInputs(&timerHandler, &strip);
 
 	digitalWrite(RED_PIN, LOW);
 	timerHandler.addActiveTimer(new EffectEventTimer());
 	timerHandler.addActiveAllFromMem();
 	strip.set_effect(0);
-	strip.set_br(1000);
+	strip.set_br(0);
+#ifdef MATR10x10
+	InputHandler::parseSingleCommand("ec 0 b54200");
+#endif // MATR10x10
 	strip.tick();
 }
 

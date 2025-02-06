@@ -997,14 +997,14 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                     const start_set = timerBlock.querySelector('[name="start_set"]').checked
                     if(checkEmpty({save, active, repInfo, time, dur, delay, to_br})){return;}
                     command = `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
+                    if(from_br !== ''){
+                        command += `tac ${save} ${active} ${repInfo} ${time} 1 1 mb ${from_br}\n`;
+                    }
                     if(start_set){
                         command += `tas ${save} ${active} ${repInfo} ${time} 1\n`;
                     }
                     if(end_set){
                         command += `tas ${save} ${active} ${repInfo} ${parseInt(time)+parseInt(dur)} 0\n`;
-                    }
-                    if(from_br !== ''){
-                        command += `tac ${save} ${active} ${repInfo} ${time} 1 1 mb ${from_br}\n`;
                     }
                     break;
                 }
