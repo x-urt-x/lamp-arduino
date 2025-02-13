@@ -996,10 +996,13 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
                     const from_br = timerBlock.querySelector('[name="from_br"]').value;
                     const start_set = timerBlock.querySelector('[name="start_set"]').checked
                     if(checkEmpty({save, active, repInfo, time, dur, delay, to_br})){return;}
-                    command = `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
+                    
+                    command = '';
                     if(from_br !== ''){
-                        command += `tac ${save} ${active} ${repInfo} ${time} 1 1 mb ${from_br}\n`;
+                        if(repInfo && time == '0'){time+=5;}
+                        command += `tac ${save} ${active} ${repInfo} ${parseInt(time)-4} 10 1 mb ${from_br}\n`;
                     }
+                    command += `tab ${save} ${active} ${repInfo} ${time} ${delay} ${dur} ${to_br}\n`;
                     if(start_set){
                         command += `tas ${save} ${active} ${repInfo} ${time} 1\n`;
                     }
