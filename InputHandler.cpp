@@ -279,6 +279,17 @@ void InputHandler::handleEncoder()
 			_strip->set_br(br);
 			_timerHandler->tickSingle(0, 0);
 		}
+		if (encoder.hasClicks(2)) 
+		{
+#ifdef MATR10x10
+			parseSingleCommand("tab 0 1 0 0 3000 1800 0");
+			parseSingleCommand("tas 0 1 0 1805 0");
+#endif
+#ifdef MATR16x16
+			parseSingleCommand("tab 0 1 0 0 500 600 0");
+			parseSingleCommand("tas 0 1 0 605 0");
+#endif
+		}
 		if (encoder.timeout(5000))
 		{
 			enc_state = false;
