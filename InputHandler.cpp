@@ -53,17 +53,6 @@ void InputHandler::handleCommand()
 
 void InputHandler::parseCommand(String commands)
 {
-#ifdef MATR10x10
-	if (commands.substring(0, 6).equals("ts 0 0"))
-	{
-		_strip->fill(_strip->Color(0, 0, 0));
-		delay(0);
-		_strip->show();
-		parseSingleCommand(commands.substring(0, 6).c_str());
-		return;
-	}
-#endif 
-
 	while (commands.length() > 0)
 	{
 		int index = commands.indexOf('\n');
@@ -81,6 +70,21 @@ void InputHandler::parseCommand(String commands)
 
 void InputHandler::parseSingleCommand(const char* input_str)
 {
+#ifdef MATR10x10
+	if (
+		input_str[0] == 't' &&
+		input_str[1] == 's' &&
+		input_str[2] == ' ' &&
+		input_str[3] == '0' &&
+		input_str[4] == ' ' &&
+		input_str[5] == '0'
+		)
+	{
+		_strip->fill(_strip->Color(0, 0, 0));
+		delay(0);
+		_strip->show();
+	}
+#endif 
 	LOG_USB_SWITCH("parse: %s\n", input_str);
 	char key = input_str[0];
 	input_str++;
