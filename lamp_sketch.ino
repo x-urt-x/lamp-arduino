@@ -80,6 +80,7 @@ void setup() {
 
 	WiFi.config(local_ip, gateway, subnet, primaryDNS, secondaryDNS);
 	WiFi.mode(WIFI_STA);
+	WiFi.setAutoReconnect(true);
 	WiFi.begin(ssid, password);
 
 	while (WiFi.status() != WL_CONNECTED) {
@@ -107,5 +108,6 @@ void setup() {
 
 void loop() {
 	InputHandler::tick();
+	delay(0);
 	timerHandler.tickAll();
 }

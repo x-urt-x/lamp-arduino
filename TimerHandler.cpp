@@ -307,6 +307,7 @@ void TimerHandler::tickAll()
 	for (int i = 0; i < _timers_count; i++)
 	{
 		tickSingle(i, cur_time);
+		delay(0);
 	}
 }
 
