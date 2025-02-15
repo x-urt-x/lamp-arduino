@@ -102,6 +102,7 @@ void setup() {
 	strip.set_br(0);
 #ifdef MATR10x10
 	InputHandler::parseSingleCommand("ec 0 b54200");
+	InputHandler::parseSingleCommand("ebc 8");
 #endif // MATR10x10
 	strip.tick();
 }
