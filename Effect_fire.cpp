@@ -26,9 +26,6 @@ bool Effect_fire::_has_init = false;
 
 Cutoff_str Effect_fire::_cutoff_option
 {
-	MATR_LEN - 2,
-		2,
-		new byte[MATR_LEN - 2]
 #ifdef MATR10x10
 	{
 		0,9,1,8,2,7,3,6,4,5,
@@ -43,7 +40,8 @@ Cutoff_str Effect_fire::_cutoff_option
 		90,99,
 		91,98,
 		92,97,
-		93,96
+		93,96,
+		94,95
 	}
 #else
 #ifdef MATR16x16
@@ -70,26 +68,12 @@ Cutoff_str Effect_fire::_cutoff_option
 			244, 251,
 			245, 250,
 			246, 249,
+			247, 248
 	}
 #endif // MATR16x16
 #endif // MATR10x10
 	,
-		new byte[2]
-#ifdef MATR10x10
-	{ 94, 95 }
-#else
-#ifdef MATR16x16
-	{ 247, 248 }
-#endif // MATR16x16
-#endif // MATR10x10
-	,
-#ifdef MATR10x10
-		99
-#else
-#ifdef MATR16x16
-		255
-#endif // MATR16x16
-#endif // MATR10x10
+		MATR_LEN - 2
 };
 
 Effect_fire::Effect_fire(Color_str* leds_arr) : BaseEffect(leds_arr)

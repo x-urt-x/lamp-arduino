@@ -80,10 +80,7 @@ struct Color_str
 
 struct Cutoff_str
 {
-	byte _order_len;
-	byte _imm_len;
-	byte* _order;
-	byte* _imm;
-	byte _units;
+	byte _order[MATR_LEN];
+	byte _disableable_count;
 };
 #endif

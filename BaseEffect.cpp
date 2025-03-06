@@ -16,9 +16,6 @@ BaseEffect::BaseEffect(Color_str* leds_arr) : _leds_arr(leds_arr)
 
 Cutoff_str BaseEffect::_cutoff_option
 {
-	MATR_LEN - 4,
-		4,
-		new byte[MATR_LEN - 4]
 #ifdef MATR10x10
 	{
 		0,90,1,91,2,92,3,93,4,94,5,95,6,96,7,97,8,98,9,99,
@@ -28,7 +25,8 @@ Cutoff_str BaseEffect::_cutoff_option
 		40,50,49,59,
 		41,51,48,58,
 		42,52,47,57,
-		43,53,46,56
+		43,53,46,56,
+		44,45,54,55
 	}
 #else
 #ifdef MATR16x16
@@ -46,25 +44,11 @@ Cutoff_str BaseEffect::_cutoff_option
 			115, 131, 124, 140,
 			116, 132, 123, 139,
 			117, 133, 122, 138,
-			118, 134, 121, 137
+			118, 134, 121, 137,
+			119, 120, 135, 136
 	}
 #endif // MATR16x16
 #endif // MATR10x10
 	,
-		new byte[4]
-#ifdef MATR10x10
-	{ 44,45,54,55 }
-#else
-#ifdef MATR16x16
-	{ 119, 120, 135, 136 }
-#endif // MATR16x16
-#endif // MATR10x10
-	,
-#ifdef MATR10x10
-	97
-#else
-#ifdef MATR16x16
-	253
-#endif // MATR16x16
-#endif // MATR10x10
+	MATR_LEN-4
 };
