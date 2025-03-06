@@ -2,7 +2,9 @@
 #define STRUCTURES_H
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include "Config.h"
 #include "log.h"
+#include <avr/pgmspace.h>
 
 #define byte_u(val) ((val) > 255 ? 255 : (val)) 
 #define byte_d(val) ((val) < 0 ? 0 : (val))
@@ -78,10 +80,10 @@ struct Color_str
 
 struct Cutoff_str
 {
-	const int _cutoff_order_len;
-	const int _cutoff_imm_len;
-	byte* _cutoff_order;
-	byte* _cutoff_imm;
-	byte _cutoff_units;
+	byte _order_len;
+	byte _imm_len;
+	byte* _order;
+	byte* _imm;
+	byte _units;
 };
 #endif

@@ -43,19 +43,12 @@ void setup() {
 	delay(0);
 	strip.show();
 
-#ifdef MATR10x10
-	pinMode(inbr_cur_PIN, INPUT);
-	pinMode(ORNG_PIN, OUTPUT);
-	digitalWrite(ORNG_PIN, LOW);
-#endif // MATR10x10
 	pinMode(RED_PIN, OUTPUT);
 	digitalWrite(RED_PIN, LOW);
 	pinMode(GREEN_PIN, OUTPUT);
 	digitalWrite(GREEN_PIN, LOW);
-#ifdef MATR16x16
 	pinMode(MOSFET_PIN, OUTPUT);
 	digitalWrite(MOSFET_PIN, HIGH);
-#endif
 	
 	EEPROM.begin(4096);
 
@@ -105,10 +98,17 @@ void setup() {
 	InputHandler::parseSingleCommand("ebc 8");
 #endif // MATR10x10
 	strip.tick();
+#ifdef LOG_USB_BR_ENABLE
+	InputHandler::parseSingleCommand("ebd 1000000");
+#endif // LOG_USB_BR_ENABLE
 }
 
+//uint last = 0;
 void loop() {
 	InputHandler::tick();
 	delay(0);
 	timerHandler.tickAll();
+	//uint now = micros();
+	//Serial.println(now-last);
+	//last = now;
 }

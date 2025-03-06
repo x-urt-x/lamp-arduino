@@ -8,6 +8,7 @@
 #include "log.h"
 #include "Structures.h"
 #include "StartTimeInfo.h"
+#include "Gamma.h"
 
 #include "IEffectBlock.h"
 #include "BaseBlock.h"
@@ -80,6 +81,6 @@ private:
 	uint8* _pixels;
 	byte _led_amount;
 	Color_str* _leds_arr; //array of leds color
-	int _br_vir;
+	uint16_t _br_vir;
 };
 #endif

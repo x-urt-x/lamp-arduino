@@ -176,15 +176,11 @@ void TimerHandler::parse(const char* input_str)
 			if (state)
 			{
 				//WiFi.forceSleepWake();
-#ifdef MATR16x16
 				digitalWrite(MOSFET_PIN, HIGH);
-#endif
 			}
 			else
 			{
-#ifdef MATR16x16
 				digitalWrite(MOSFET_PIN, LOW);
-#endif
 				//WiFi.forceSleepBegin();
 			}
 

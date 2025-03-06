@@ -1,82 +1,117 @@
 #include "Strip_class.h"
 
 void Strip::apply_br() {
-	if (_br_vir > br_limit) _br_vir = br_limit;
-	float br_max = float(_br_vir) / effect->get_cutoff_str()->_cutoff_units; //базовая яркость, 
-	uint8_t br_cutoff_count = effect->get_cutoff_str()->_cutoff_order_len - (_br_vir + effect->get_cutoff_str()->_cutoff_order_len) % effect->get_cutoff_str()->_cutoff_units; //количество с яркостью br_max-1
-	int br_cutoff_bound = get_br_cutoff_bound();
-	
-	LOG_USB_BR("apply_br - _main_color %02X%02X%02X\n", options->main_color.r, options->main_color.g, options->main_color.b);
-	LOG_USB_BR("apply_br - _br_vir %d\n", _br_vir);
-	LOG_USB_BR("apply_br - br_max %f\n", br_max);
-	LOG_USB_BR("apply_br - br_cutoff_count %d\n", br_cutoff_count);
-	LOG_USB_BR("apply_br - _br_cutoff_bound %d\n", options->br_cutoff_bound);
-	LOG_USB_BR("apply_br - _cur_cutoff_units %d\n", _cur_cutoff_units);
-	LOG_USB_BR("apply_br - _cutoff_option->_cutoff_order_len %d\n", _cutoff_option->_cutoff_order_len);
-	LOG_USB_BR("apply_br - _cutoff_option->_cutoff_imm_len %d\n", _cutoff_option->_cutoff_imm_len);
-
-	float br_add = 0;
-	int to_process = effect->get_cutoff_str()->_cutoff_order_len + effect->get_cutoff_str()->_cutoff_imm_len; //счетчик необработанных светодиодов 
-	float br_avg_per = 0;
-	for (byte i = 0; i < effect->get_cutoff_str()->_cutoff_order_len; i++)
+	const Cutoff_str* cutoff_str = effect->get_cutoff_str(); //save pointer of cutoff options to not repeat virtual invocation
+	const uint16_t br_cutoff_bound = get_br_cutoff_bound();
+	if (_br_vir > br_limit) _br_vir = br_limit; //check hadr limit of br 
+	const uint br_base = ((_br_vir << 16) / cutoff_str->_units) & 0xFF'FFFF; //8.16 precise br level for all led
+	uint light_avg_add = 0; //8.16 addition from rounding or disable previous leds
+	byte to_process = cutoff_str->_order_len + cutoff_str->_imm_len - 1;
+	//first process leds, that can be disable
+	for (byte i = 0; i < cutoff_str->_order_len; i++)
 	{
-		Color_str* led = _leds_arr + effect->get_cutoff_str()->_cutoff_order[i]; //текущий светодиод для обработки
-		LOG_USB_BR("main  cyc i=%d\t", i);
-		if (br_cutoff_count > 0)
-			//уменьшаем яркость на 1 
-		{
-			LOG_USB_BR("cutoff\t");
-			br_avg_per = (float(led->sum()) * byte_d(br_max - 1) + br_add) / 765; //точная яркость с учетом цвета
-			led->map((byte_round_up(byte_d(br_max - 1)) + br_add)); //дробная часть br_max уже учитена в br_cutoff_count, дробная часть br_add учтется ниже
-			br_cutoff_count--;
-		}
-		else
-			//оставляем базовую
-		{
-			LOG_USB_BR("full\t");
-			br_avg_per = (float(led->sum()) * br_max + br_add) / 765; //точная яркость с учетом цвета
-			led->map((byte_round_up(br_max) + br_add)); //дробная часть br_max уже учитена в br_cutoff_count, дробная часть br_add учтется ниже
-		}
+		Color_str* led = _leds_arr + cutoff_str->_order[i]; //current led to process
+		uint r_precise_pre = (led->r/*8.0*/ * br_base/*8.16*/)/*16.16*/ >> 8; //8.16
+		uint g_precise_pre = (led->g * br_base) >> 8;
+		uint b_precise_pre = (led->b * br_base) >> 8;
+		uint br_pre = (r_precise_pre + g_precise_pre + b_precise_pre) / 3; //8.16 base br considering color
+		byte br_pre_integer8 = br_pre >> 16; //8.0
+		uint light_pre = (LUTGamma[br_pre_integer8]/*8.8*/ << 8)/*8.16*/ + lerpGamma(br_pre_integer8, br_pre % 0xFFFF)/*8.16*/;  //8.16 base light considering base br and color
+		uint light_full = light_pre + light_avg_add; //8.16 full light considering base br, color and added light
+		byte light_full_integer8 = light_full >> 16; //8.0
+		uint br_full = (LUTInvGamma[light_full_integer8]/*8.8*/ << 8)/*8.16*/ + lerpInvGamma(light_full_integer8, light_full & 0xFFFF)/*8.16*/; //8.16 full br considering base br, color and added light
+		byte br_full_integer8 = br_full >> 16; //8.0
 
-		to_process--;
-		br_add += (br_add - int(br_add)) / to_process; //переносим дробную часть на оставшиеся
-		if (led->sum() <= br_cutoff_bound)
-			//отключаем светодиод для сохранения корректных оттенков
+		uint r_precise_final = (led->r/*8.0*/ * br_full/*8.16*/)/*16.16*/ >> 8; //8.16
+		uint g_precise_final = (led->g * br_full) >> 8;
+		uint b_precise_final = (led->b * br_full) >> 8;
+		uint br_final = (r_precise_final + g_precise_final + b_precise_final) / 3; //8.16
+		uint br_final_integer8 = br_final >> 16; //8.0
+
+		LOG_USB_BR("led= %d ", cutoff_str->_order[i]);
+		LOG_USB_BR("rem= %d ", to_process);
+		LOG_USB_BR("br_base= %d.%04d ", (br_base >> 16), (br_base & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("l_avg_add= %d.%04d ", (light_avg_add >> 16), (light_avg_add & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("br_pre= %d.%04d ", (br_pre >> 16), (br_pre & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("l_pre= %d.%04d ", (light_pre >> 16), (light_pre & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("l_full= %d.%04d ", (light_full >> 16), (light_full & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("br_full = %d.%04d ", (br_full >> 16), (br_full & 0xFFFF) * 10000L >> 16);
+
+		if (br_final_integer8 < br_cutoff_bound || br_full_integer8 == 0)
 		{
-			LOG_USB_BR("dis\t");
-			br_add += br_avg_per / to_process; //переносим его яркость на оставшиеся
-			//и отключаем
+			//disable led to keep colors
 			led->r = 0;
 			led->g = 0;
 			led->b = 0;
+			light_avg_add += light_full / (to_process | 0b1); //add whole br
+			LOG_USB_BR("dis ");
 		}
-		LOG_USB_BR("|##| br_cutoff_count= %d br_add= %f br_avg_per= %f\n", br_cutoff_count, br_add, br_avg_per);
-	}
-
-	for (byte i = 0; i < effect->get_cutoff_str()->_cutoff_imm_len; i++) //i - индекс текущего светодиода, порядок определен константой 
-	{
-		LOG_USB_BR("centr cyc i=%d\t", i);
-		LOG_USB_BR("full\t");
-		_leds_arr[effect->get_cutoff_str()->_cutoff_imm[i]].map((byte_round_up(br_max) + br_add));
+		else
+		{
+			led->r = r_precise_final >> 16; //8.0 
+			led->g = g_precise_final >> 16;
+			led->b = b_precise_final >> 16;
+			uint add = lerpGamma(br_final_integer8, br_final % 0xFFFF); //8.16
+			light_avg_add += add / (to_process | 0b1); //add only unshowble fraction part
+			LOG_USB_BR("fr %d.%04d ", (add >> 16), (add & 0xFFFF) * 10000L >> 16);
+		}
 		to_process--;
-		br_add += (br_add - int(br_add)) / to_process; //переносим дробную часть на оставшиеся
 		LOG_USB_BR("\n");
 	}
+	for (byte i = 0; i < cutoff_str->_imm_len; i++)
+	{
+		Color_str* led = _leds_arr + cutoff_str->_imm[i]; //current led to process
+		uint r_precise_pre = (led->r/*8.0*/ * br_base/*8.16*/)/*16.16*/ >> 8; //8.16
+		uint g_precise_pre = (led->g * br_base) >> 8;
+		uint b_precise_pre = (led->b * br_base) >> 8;
+		uint br_pre = (r_precise_pre + g_precise_pre + b_precise_pre) / 3; //8.16 base br considering color
+		byte br_pre_integer8 = br_pre >> 16; //8.0
+		uint light_pre = (LUTGamma[br_pre_integer8]/*8.8*/ << 8)/*8.16*/ + lerpGamma(br_pre_integer8, br_pre % 0xFFFF)/*8.16*/;  //8.16 base light considering base br and color
+		uint light_full = light_pre + light_avg_add; //8.16 full light considering base br, color and added light
+		byte light_full_integer8 = light_full >> 16; //8.0
+		uint br_full = (LUTInvGamma[light_full_integer8]/*8.8*/ << 8)/*8.16*/ + lerpInvGamma(light_full_integer8, light_full & 0xFFFF)/*8.16*/; //8.16 full br considering base br, color and added light
+		byte br_full_integer8 = br_full >> 16; //8.0
+
+		uint r_precise_final = (led->r/*8.0*/ * br_full/*8.16*/)/*16.16*/ >> 8; //8.16
+		uint g_precise_final = (led->g * br_full) >> 8;
+		uint b_precise_final = (led->b * br_full) >> 8;
+		uint br_final = (r_precise_final + g_precise_final + b_precise_final) / 3; //8.16
+		uint br_final_integer8 = br_final >> 16; //8.0
+
+		LOG_USB_BR("led= %d ", cutoff_str->_imm[i]);
+		LOG_USB_BR("rem= %d ", to_process);
+		LOG_USB_BR("br_base= %d.%04d ", (br_base >> 16), (br_base & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("l_avg_add= %d.%04d ", (light_avg_add >> 16), (light_avg_add & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("br_pre= %d.%04d ", (br_pre >> 16), (br_pre & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("l_pre= %d.%04d ", (light_pre >> 16), (light_pre & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("l_full= %d.%04d ", (light_full >> 16), (light_full & 0xFFFF) * 10000L >> 16);
+		LOG_USB_BR("br_full = %d.%04d ", (br_full >> 16), (br_full & 0xFFFF) * 10000L >> 16);
+
+		led->r = r_precise_final >> 16; //8.0 
+		led->g = g_precise_final >> 16;
+		led->b = b_precise_final >> 16;
+
+		uint add = lerpGamma(br_final_integer8, br_final % 0xFFFF); //8.16
+		light_avg_add += add / (to_process | 0b1); //add only unshowble fraction part
+		LOG_USB_BR("fract %d.%04d ", (add >> 16), (add & 0xFFFF) * 10000L >> 16);
+
+		to_process--;
+		LOG_USB_BR("\n");
+	}
+
 }
 
 void Strip::set_br(int br) {
 	LOG_USB_BR("set_br - br %d\n", br);
-	_br_vir = constrain(br, 0, 255 * effect->get_cutoff_str()->_cutoff_units);
+	_br_vir = constrain(br, 0, 255 * effect->get_cutoff_str()->_units);
 }
 
 int Strip::get_max_br()
 {
-	return effect->get_cutoff_str()->_cutoff_units * 255;
+	return effect->get_cutoff_str()->_units * 255;
 }
 
 int Strip::get_br()
 {
 	return _br_vir;
 }
-
-
