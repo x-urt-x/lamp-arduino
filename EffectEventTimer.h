@@ -10,7 +10,7 @@ public:
 protected:
 	virtual bool action() override;
 
-	// Унаследовано через IEventTimer
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ IEventTimer
 	virtual void getJson(JsonObject& doc) override;
 	virtual byte getId() override;
 };
