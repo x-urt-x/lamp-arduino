@@ -14,7 +14,7 @@
 const char* ssid = SSID;
 const char* password = PASS;
 #ifdef MATR16x16
-const IPAddress local_ip(192, 168, 1, 42);
+const IPAddress local_ip(192, 168, 1, 43);
 #else
 #ifdef MATR10x10
 const IPAddress local_ip(192, 168, 1, 41);
