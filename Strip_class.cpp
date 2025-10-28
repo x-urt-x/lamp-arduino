@@ -1,16 +1,18 @@
 #include "Strip_class.h"
 
 Strip::Strip(uint16_t n, int16_t p)
-	: Adafruit_NeoPixel(n, p),
-	_leds_arr(reinterpret_cast<Color_str*>(getPixels())),
-	_pixels(getPixels()),
-	_led_amount(n)
-{}
+	:
+	_led_amount(n),
+	_strip(n,p)
+{
+	_pixels = _strip.Pixels();
+	_leds_arr = reinterpret_cast<Color_str*>(_strip.Pixels());
+}
 
 void Strip::begin()
 {
 	//ParseBlock::setStrip(this);
-	Adafruit_NeoPixel::begin();
+	_strip.Begin();
 }
 
 //IEffect
@@ -134,7 +136,8 @@ void Strip::tick()
 {
 	effect->make_frame();
 	apply_br();
-	show();
+	_strip.Dirty();
+	_strip.Show();
 }
 
 void Strip::udp_set_color(Color_str color)
@@ -280,6 +283,16 @@ void Strip::getEffectJSON(JsonArray& blocks)
 	}
 }
 
+void Strip::clear()
+{
+	for (int i = 0; i < MATR_LEN; i++)
+	{
+		_leds_arr[i] = {0,0,0};
+	}
+	delay(0);
+	_strip.Show();
+}
+
 void Strip::set_effect(byte num)
 {
 	if (effect)
@@ -298,7 +311,7 @@ void Strip::set_effect(byte num)
 		effect = new Effect_rainbowStrip(_leds_arr);
 		break;
 	case EffectIDEnum::Noise:
-		effect = new Effect_Noise(_leds_arr);
+		//effect = new Effect_Noise(_leds_arr);
 		break;
 	default:
 		effect = new Effect_singleColor(_leds_arr);

@@ -1,7 +1,7 @@
 #ifndef STRIP_CLASS_H
 #define STRIP_CLASS_H
 
-#include <Adafruit_NeoPixel.h>
+#include <NeoPixelBus.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
 
@@ -25,7 +25,7 @@
 #include "Effect_rainbowStrip.h"
 
 
-class Strip : public Adafruit_NeoPixel
+class Strip
 {
 public:
 	Strip(uint16_t n, int16_t p = 6);
@@ -34,6 +34,7 @@ public:
 	void udp_set_color(Color_str color);
 	void parse(const char* input_str);
 	void getEffectJSON(JsonArray& blocks);
+	void clear();
 
 	int get_max_br();
 	int get_br();
@@ -77,7 +78,7 @@ private:
 	int get_rainbow_len();
 
 	byte _cur;
-
+	NeoPixelBus<NeoGrbFeature, NeoEsp8266Dma800KbpsMethod> _strip;
 	uint8* _pixels;
 	byte _led_amount;
 	Color_str* _leds_arr; //array of leds color

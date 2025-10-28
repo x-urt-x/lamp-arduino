@@ -17,7 +17,7 @@ while (*input_str != ' ') input_str++;	\
 
 struct Color_str
 {
-	byte g, r, b; //внутренний массив библиотеки имеет формат grb 
+	byte g, r, b;
 	Color_str() : r(0), g(0), b(0) {}
 	Color_str(byte red, byte green, byte blue) : r(red), g(green), b(blue) {}
 	Color_str(uint32_t colorValue) : r((colorValue >> 16) & 0xFF), g((colorValue >> 8) & 0xFF), b(colorValue & 0xFF) {}

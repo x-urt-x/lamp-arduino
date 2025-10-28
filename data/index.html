@@ -140,11 +140,18 @@
             top: 50%;
             transform: translate(-50%, -50%);
         }
+        .sbr-input{
+            width: 50px;
+        }
         .br-container{
             position: relative;
             width: 150px;
             height: 150px;
             margin: 10px;
+        }
+        .sbr-container{
+            width: 100px;
+            height: 100px;
         }
         .br-input::-webkit-outer-spin-button,
         .br-input::-webkit-inner-spin-button {
@@ -194,7 +201,7 @@
                 </div>
                 <div class="br-container" id="brContainer">
                     <input-knob value="50" scale="1000" min="0" max="64515", class="br-knob", id="brKnob"><div class="mark">&#x25B2;</div></input-knob>
-                    <input type="number" min="0" max="64515" class="br-input to-send" value="50" id="brInput" command="mb">
+                    <input type="number" min="0" max="64515" class="br-input to-send" value="0" id="brInput" command="mb">
                 </div>
             </div>
             <div style="flex: 100px; display: flex; flex-direction: column; align-items: center;">
@@ -207,6 +214,11 @@
                 <div style="margin: 5px;">
                     <input type="button" value="apply & save" onclick="sendPostRequest(`ml 1 ${document.getElementById('brLimit').value}`)">
                     <input type="button" value="apply" onclick="sendPostRequest(`ml 0 ${document.getElementById('brLimit').value}`)">
+                </div>
+                    <div class="br-container sbr-container" id="sbrContainer">
+                        <input-knob value="50" scale="256" min="0" max="1023", class="br-knob", id="sbrKnob"><div class="mark">&#x25B2;</div></input-knob>
+                        <input type="number" min="0" max="1023" class="br-input sbr-input to-send" value="0" id="sbrInput" command="sb">
+                    </div>
                 </div>
             </div>
         </div>
@@ -1083,6 +1095,8 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
         document.getElementById('brKnob').max = data.maxBr;
         document.getElementById('brKnob').value = data.br;
         document.getElementById('brInput').value = data.br;
+        document.getElementById('sbrKnob').value = data.sbr;
+        document.getElementById('sbrInput').value = data.sbr;
         document.getElementById('brLimit').value = data.brLimit;
         const options = document.getElementById('effect-selector').options;
         for (const option of options) {
@@ -1277,6 +1291,9 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
         document.getElementById('brKnob').addEventListener('knob-move-change', brKnobHandle);
         document.getElementById('brInput').addEventListener('knob-move-change', brInputHandle);
 
+        document.getElementById('sbrKnob').addEventListener('knob-move-change', sbrKnobHandle);
+        document.getElementById('sbrInput').addEventListener('knob-move-change', sbrInputHandle);
+
         document.getElementById('currentEffect').addEventListener('input', handelChangeEffectInput);
 
         document.querySelectorAll('main .to-send').forEach((toSendElement)=>{
@@ -1306,6 +1323,17 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syn
         const brInput = document.getElementById('brInput');
         brInput.value = Number.parseInt(brKnob.value); 
         processCommand(brInput);
+    }
+    function sbrInputHandle(){ 
+        const sbrKnob = document.getElementById('sbrKnob');
+        const sbrInput = document.getElementById('sbrInput');
+        sbrKnob.value = Number.parseInt(sbrInput.value); 
+    }
+    function sbrKnobHandle(){
+        const sbrKnob = document.getElementById('sbrKnob');
+        const sbrInput = document.getElementById('sbrInput');
+        sbrInput.value = Number.parseInt(sbrKnob.value); 
+        processCommand(sbrInput);
     }
 
     let isRequestInProgress = false;

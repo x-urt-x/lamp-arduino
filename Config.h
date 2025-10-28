@@ -17,16 +17,19 @@
 
 #define UDP_PORT 8888
 
-#define ENC_KEY D0
-#define MOSFET_PIN D8
-#define STRIP_PIN D6
+#define ENC_KEY D7
+#define MOSFET_PIN D1
+#define STRIP_PIN 3
 #define ENC_S1 D5
-#define ENC_S2 D7
-#define RED_PIN D4
-#define GREEN_PIN D3
+#define ENC_S2 D6
+#define RED_PIN D8
+#define SIMPLE_LED_PIN D2
+
+#define PWM_FREQ_HZ   20000
+#define PWM_RANGE     1023 
 
 //#define MATR10x10
-#define MATR16x16
+//#define MATR16x16
 
 
 #ifdef MATR10x10
@@ -41,5 +44,6 @@
 #endif // MATR16x16
 #endif
 
-#define MATR_LEN (MATR_SIZE*MATR_SIZE)
+//#define MATR_LEN (MATR_SIZE*MATR_SIZE)
+#define MATR_LEN 83
 #endif

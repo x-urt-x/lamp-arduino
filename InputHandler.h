@@ -8,11 +8,12 @@
 #include "Strip_class.h"
 #include "TimerHandler.h"
 #include "Strip_class.h"
+#include "SimpleLed.h"
 
 class InputHandler
 {
 public:
-	static void setupInputs(TimerHandler* timerHandler, Strip* strip);
+	static void setupInputs(TimerHandler* timerHandler, Strip* strip, SimpleLed* simpleLed);
 
 	static void tick();
 
@@ -33,6 +34,8 @@ private:
 	static bool enc_state;
 
 	static int br;
+	static int sbr;
+	static bool mode;
 
 	static EncButtonT<ENC_S1, ENC_S2, ENC_KEY> encoder;
 
@@ -41,6 +44,7 @@ private:
 
 	static TimerHandler* _timerHandler;
 	static Strip* _strip;
+	static SimpleLed* _simpleLed;
 };
 
 #endif
