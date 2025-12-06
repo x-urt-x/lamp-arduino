@@ -40,6 +40,8 @@ bld/
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
+.metadata/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -504,3 +506,5 @@ nbproject
 
 Pass.h
 .cd
+
+tool_set_config.json
