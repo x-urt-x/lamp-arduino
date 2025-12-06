@@ -1,5 +1,4 @@
 #include <ESP8266WiFi.h>
-#include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 #include <FS.h>
 
@@ -13,13 +12,9 @@
 
 const char* ssid = SSID;
 const char* password = PASS;
-#ifdef MATR16x16
+
 const IPAddress local_ip(192, 168, 1, 43);
-#else
-#ifdef MATR10x10
-const IPAddress local_ip(192, 168, 1, 41);
-#endif // MATR10x10
-#endif
+
 
 const IPAddress gateway(192, 168, 1, 1);
 const IPAddress subnet(255, 255, 255, 0);
@@ -27,6 +22,7 @@ const IPAddress primaryDNS(8, 8, 8, 8);
 const IPAddress secondaryDNS(8, 8, 4, 4);
 
 Strip strip(MATR_LEN, STRIP_PIN);
+SimpleLed simpleLed(SIMPLE_LED_PIN, PWM_FREQ_HZ, PWM_RANGE);
 TimerHandler timerHandler;
 
 void setup() {
@@ -39,17 +35,17 @@ void setup() {
 	LOG_USB_STARTUP("\nstart\n");
 	IEventTimer::obj = &strip;
 	strip.begin();
-	strip.fill(strip.Color(0, 0, 0));
-	delay(0);
-	strip.show();
+	strip.clear();
+
+	simpleLed.begin();
+	simpleLed.set_br(0);
 
 	pinMode(RED_PIN, OUTPUT);
 	digitalWrite(RED_PIN, LOW);
-	pinMode(GREEN_PIN, OUTPUT);
-	digitalWrite(GREEN_PIN, LOW);
 	pinMode(MOSFET_PIN, OUTPUT);
 	digitalWrite(MOSFET_PIN, HIGH);
 	
+
 	EEPROM.begin(4096);
 
 	LOG_USB_STARTUP("eeprom[0] = %d\n", EEPROM.read(0));
@@ -86,7 +82,7 @@ void setup() {
 	LOG_USB_STARTUP("Connected! IP address: %s\n", WiFi.localIP().toString().c_str());
 
 	StartTimeInfo::saveTime();
-	InputHandler::setupInputs(&timerHandler, &strip);
+	InputHandler::setupInputs(&timerHandler, &strip, &simpleLed);
 
 	digitalWrite(RED_PIN, LOW);
 	timerHandler.addActiveTimer(new EffectEventTimer());

@@ -1,10 +1,11 @@
 #include "InputHandler.h"
 
-void InputHandler::setupInputs(TimerHandler* timerHandler, Strip* strip)
+void InputHandler::setupInputs(TimerHandler* timerHandler, Strip* strip, SimpleLed* simpleLed)
 {
 	_timerHandler = timerHandler;
 	_strip = strip;
-	attachInterrupt(ENC_S2, enc_click, CHANGE);
+	_simpleLed = simpleLed;
+	attachInterrupt(ENC_KEY, enc_click, CHANGE);
 	Udp.begin(UDP_PORT);
 	server.begin();
 	server.on("/", HTTP_GET, handleRoot);
@@ -198,6 +199,11 @@ void InputHandler::parseSingleCommand(const char* input_str)
 		_timerHandler->parse(input_str);
 		break;
 	}
+	case 's':
+	{
+		_simpleLed->parse(input_str);
+		break;
+	}
 	default:
 		break;
 	}
@@ -227,6 +233,7 @@ void InputHandler::handleGetEffectOption()
 	staticFields["br"] = _strip->get_br();
 	staticFields["maxBr"] = _strip->get_max_br();
 	staticFields["brLimit"] = _strip->br_limit;
+	staticFields["sbr"] = _simpleLed->get_br();
 	JsonArray blocks = doc.createNestedArray("effectBlocks");
 	_strip->getEffectJSON(blocks);
 	serializeJson(doc, output);
@@ -250,19 +257,35 @@ void InputHandler::handleEncoder()
 		if (encoder.turn()) {
 			if (encoder.pressing())
 			{
-				br += (encoder.fast() ? 500 : 100) * encoder.dir();
+				if (mode)
+					br += (encoder.fast() ? 500 : 100) * encoder.dir();
+				else
+					sbr += (encoder.fast() ? 50 : 10) * encoder.dir();
 			}
 			else
 			{
-				br += (encoder.fast() ? 25 : 1) * encoder.dir();
+				if (mode)
+					br += (encoder.fast() ? 25 : 1) * encoder.dir();
+				else
+					sbr += (encoder.fast() ? 5 : 1) * encoder.dir();
 			}
 			if (br > _strip->get_max_br())
 				br = _strip->get_max_br();
 			if (br < 0)
 				br = 0;
+			if (sbr > 1023)
+				sbr = 1023;
+			if (sbr < 0)
+				sbr = 0;
 			LOG_USB_ENC("%d\n", br);
-			_strip->set_br(br);
-			_timerHandler->tickSingle(0, 0);
+			LOG_USB_ENC("%d\n", sbr);
+			if (mode)
+			{
+				_strip->set_br(br);
+				_timerHandler->tickSingle(0, 0);
+			}
+			else
+				_simpleLed->set_br(sbr);
 		}
 		if (encoder.hasClicks(2)) 
 		{
@@ -274,6 +297,7 @@ void InputHandler::handleEncoder()
 			parseSingleCommand("tab 0 1 0 0 500 600 0");
 			parseSingleCommand("tas 0 1 0 605 0");
 #endif
+			mode = !mode;
 		}
 		if (encoder.timeout(5000))
 		{
@@ -303,6 +327,8 @@ IRAM_ATTR void InputHandler::enc_click() {
 bool InputHandler::udp_state = false;
 bool InputHandler::enc_state = false;
 int InputHandler::br = 1000;
+int InputHandler::sbr = 1000;
+bool InputHandler::mode = false;
 
 EncButtonT<ENC_S1, ENC_S2, ENC_KEY> InputHandler::encoder = EncButtonT<ENC_S1, ENC_S2, ENC_KEY>();
 
@@ -311,3 +337,4 @@ WiFiUDP InputHandler::Udp = WiFiUDP();
 
 TimerHandler* InputHandler::_timerHandler = nullptr;
 Strip* InputHandler::_strip = nullptr;
+SimpleLed* InputHandler::_simpleLed = nullptr;

@@ -20,8 +20,6 @@ public:
 	
 	void apply_default_option() override;
 
-	virtual Cutoff_str* get_cutoff_str() override;
-
 	void preset(int num);
 
 private:
@@ -32,22 +30,10 @@ private:
 	static PresetBlock presetBlock;
 
 	uint32_t temp_to_color(byte temp);
-	void dic_map_key_gen();	
-	int dic_map_cur_step();	
-	void temp_map_gen();
 
-	byte _dic_map_key[MATR_SIZE][MATR_SIZE];
-	byte _side_coef_key[MATR_SIZE];	
-	byte _dic_map_cur[MATR_SIZE][MATR_SIZE];
-	byte _side_coef_cur[MATR_SIZE];
-	byte _temp_map[MATR_SIZE][MATR_SIZE];
-
-	byte _center_pos;
-	int _center_temp_change;
-	byte _center_temp;
-	byte _frame_count;
-
-	static Cutoff_str _cutoff_option;
+	uint8_t _pos;
+	uint8_t _key_temp;
+	uint8_t _cur_temp;
 };
 
 #endif
